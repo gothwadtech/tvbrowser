@@ -1,0 +1,6 @@
+{
+  "name": "Browser",
+  "description": "Web browser optimized for Android TV and TV devices",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
