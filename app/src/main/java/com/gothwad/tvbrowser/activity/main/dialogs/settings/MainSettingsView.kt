@@ -88,20 +88,7 @@ class MainSettingsView @JvmOverloads constructor(
         vb.spWebEngine.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
                 if (config.webEngine == Config.SupportedWebEngines[position]) return
-                if (Config.SupportedWebEngines[position] == Config.ENGINE_GECKO_VIEW && !Config.canRecommendGeckoView()) {
-                    AlertDialog.Builder(context)
-                        .setTitle(R.string.warning)
-                        .setMessage(R.string.settings_engine_change_gecko_msg)
-                        .setPositiveButton(R.string.ok) { _, _ ->
-                            config.webEngine = Config.SupportedWebEngines[position]
-                            showRestartDialog()
-                        }
-                        .setNegativeButton(R.string.cancel) { _, _ ->
-                            vb.spWebEngine.setSelection(Config.SupportedWebEngines.indexOf(config.webEngine), false)
-                        }
-                        .show()
-                    return
-                } else if (Config.SupportedWebEngines[position] == Config.ENGINE_WEB_VIEW) {
+                if (Config.SupportedWebEngines[position] == Config.ENGINE_WEB_VIEW) {
                     AlertDialog.Builder(context)
                         .setTitle(R.string.warning)
                         .setMessage(R.string.settings_engine_change_webview_msg)

@@ -176,7 +176,6 @@
   <string name="site_asks_to_open_unknown_url_message">Відкрити цю URL-адресу в зовнішній програмі?</string>
   <string name="err_no_app_to_handle_url">Неможливо знайти відповідну програму для обробки цієї URL-адреси</string>
   <string name="home_page_links">Посилання на домашній сторінці</string>
-  <string name="settings_engine_change_gecko_msg">GeckoView завантажується дещо повільніше, ніж WebView. Ви хочете продовжити\?</string>
   <string name="settings_engine_change_webview_msg">WebView оновлюється окремо від основної програми. Ви хочете продовжити\?</string>
   <string name="http_auth_title">Потрібна автентифікація</string>
   <string name="play_pause">Відтворення/Пауза</string>

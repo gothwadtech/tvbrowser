@@ -179,7 +179,6 @@
   <string name="site_asks_to_open_unknown_url_message">האם ברצונך לפתוח את כתובת האתר הזו באפליקציה חיצונית?</string>
   <string name="err_no_app_to_handle_url">לא ניתן למצוא אפליקציה מתאימה לטיפול בכתובת האתר הזו</string>
   <string name="home_page_links">קישורים בעמוד הבית</string>
-  <string name="settings_engine_change_gecko_msg">GeckoView נטען מעט לאט יותר מ-WebView. האם אתה רוצה להמשיך\?</string>
   <string name="settings_engine_change_webview_msg">WebView מתעדכן בנפרד מהאפליקציה הראשית. האם אתה רוצה להמשיך\?</string>
   <string name="http_auth_title">נדרש אימות</string>
   <string name="play_pause">נגן / השהה</string>

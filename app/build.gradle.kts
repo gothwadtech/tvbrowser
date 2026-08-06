@@ -12,7 +12,7 @@ android {
         versionName = "2.1.6"
 
         buildConfigField("String", "FLAVOR_appstore", "\"generic\"")
-        buildConfigField("String", "FLAVOR_webengine", "\"geckoIncluded\"")
+        buildConfigField("String", "FLAVOR_webengine", "\"standard\"")
         buildConfigField("Boolean", "BUILT_IN_AUTO_UPDATE", "true")
 
         javaCompileOptions {
@@ -72,6 +72,12 @@ android {
         buildConfig = true
     }
 
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
@@ -81,7 +87,6 @@ android {
 
 dependencies {
     implementation(project(":app:common"))
-    implementation(project(":app:gecko"))
 
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 

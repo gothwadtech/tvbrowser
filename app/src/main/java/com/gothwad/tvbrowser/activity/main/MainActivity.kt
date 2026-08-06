@@ -233,9 +233,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
         tabsModel.tabsStates.subscribe(this, false) {
             if (it.isEmpty()) {
-                if (!config.isWebEngineGecko()) {
-                    vb.flWebViewContainer.removeAllViews()
-                }
+                vb.flWebViewContainer.removeAllViews()
             }
         }
 
@@ -540,29 +538,27 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         } catch (e: Throwable) {
             e.printStackTrace()
 
-            if (!config.isWebEngineGecko()) {
-                val dialogBuilder = AlertDialog.Builder(this)
-                    .setTitle(R.string.error)
-                    .setCancelable(false)
-                    .setMessage(R.string.err_webview_can_not_link)
-                    .setNegativeButton(R.string.exit) { _, _ -> finish() }
+            val dialogBuilder = AlertDialog.Builder(this)
+                .setTitle(R.string.error)
+                .setCancelable(false)
+                .setMessage(R.string.err_webview_can_not_link)
+                .setNegativeButton(R.string.exit) { _, _ -> finish() }
 
-                val appPackageName = "com.google.android.webview"
-                val intent =
-                    Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$appPackageName"))
-                val activities = packageManager.queryIntentActivities(intent, 0)
-                if (activities.size > 0) {
-                    dialogBuilder.setPositiveButton(R.string.find_in_apps_store) { _, _ ->
-                        try {
-                            startActivity(intent)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                        finish()
+            val appPackageName = "com.google.android.webview"
+            val intent =
+                Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$appPackageName"))
+            val activities = packageManager.queryIntentActivities(intent, 0)
+            if (activities.size > 0) {
+                dialogBuilder.setPositiveButton(R.string.find_in_apps_store) { _, _ ->
+                    try {
+                        startActivity(intent)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                     }
+                    finish()
                 }
-                dialogBuilder.show()
             }
+            dialogBuilder.show()
             return null
         }
 
@@ -776,22 +772,18 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         val becomingIncognitoMode = !config.incognitoMode
         vb.progressBarGeneric.visibility = View.VISIBLE
         if (!becomingIncognitoMode) {
-            if (!config.isWebEngineGecko()) {
-                withContext(Dispatchers.IO) {
-                    WebStorage.getInstance().deleteAllData()
-                    CookieManager.getInstance().removeAllCookies(null)
-                    CookieManager.getInstance().flush()
-                }
-
-                WebEngineFactory.clearCache(this@MainActivity)
+            withContext(Dispatchers.IO) {
+                WebStorage.getInstance().deleteAllData()
+                CookieManager.getInstance().removeAllCookies(null)
+                CookieManager.getInstance().flush()
             }
+
+            WebEngineFactory.clearCache(this@MainActivity)
 
             tabsModel.onCloseAllTabs().join()
             tabsModel.currentTab.value = null
 
-            if (!config.isWebEngineGecko()) {
-                viewModel.clearIncognitoData().join()
-            }
+            viewModel.clearIncognitoData().join()
         }
         vb.progressBarGeneric.visibility = View.GONE
         config.incognitoMode = becomingIncognitoMode

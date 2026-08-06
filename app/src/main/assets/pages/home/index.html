@@ -483,13 +483,7 @@ function renderLinks(mode, linksArray) {
                 c.favicon = url.origin + "/favicon.ico";
 
                 if (window.hasOwnProperty( "BrowserApp" )) {
-                    if (BrowserApp.requestFavicon) {
-                        //GeckoView
-                        BrowserApp.requestFavicon(urlStr);
-                    } else {
-                        //WebView
-                        c.favicon = "favicon://" + url.host;
-                    }                    
+                    c.favicon = "favicon://" + url.host;
                 }
             } catch (e) {
                 console.log("Invalid URL: " + urlStr);
