@@ -1,10 +1,10 @@
 <resources>
-    <string name="app_name">Browser</string>
-    <string name="app_name_short" translatable="false">Browser</string>
+    <string name="app_name">Gothwad TV Browser</string>
+    <string name="app_name_short" translatable="false">Gothwad TV Browser</string>
     <string name="error">Error</string>
     <string name="ok">OK</string>
     <string name="loading">Loading&#8230;</string>
-    <string name="url_prompt">Input query text or URL</string>
+    <string name="url_prompt">Search...</string>
     <string name="can_not_recognize">Can not recognize</string>
     <string name="speak">Search query</string>
     <string name="open_new_tab">Open new Tab</string>
@@ -48,6 +48,7 @@
     <string name="open_folder">Open containing folder</string>
     <string name="no_file_explorer_msg">Seem there is no any suitable file explorer app installed on your device</string>
     <string name="shortcuts">Shortcuts</string>
+    <string name="home_screen">Home Screen</string>
     <string name="favorites">Favorites</string>
     <string name="history">History</string>
     <string name="settings">Settings</string>
@@ -121,6 +122,22 @@
     <string name="last_update">Last update</string>
     <string name="update_ad_blocker_list">Update ad-blocker list</string>
     <string name="toggle_keep_screen_on">Keep screen on</string>
+    <string name="disable_virtual_keyboard">Disable on-screen virtual keyboard (for physical/USB/BT keyboard)</string>
+    <string name="toggle_enable_virtual_cursor">Enable virtual pointer/cursor</string>
+    <string name="cursor_size">Virtual cursor size</string>
+    <string name="cursor_style">Virtual cursor style</string>
+    <string name="cursor_style_classic">Classic Circle</string>
+    <string name="cursor_style_arrow">Arrow Pointer</string>
+    <string name="cursor_style_crosshair">Crosshair Target</string>
+    <string name="cursor_style_laser">Glowing Red Laser</string>
+    <string name="cursor_style_neon">Neon Blue Pointer</string>
+    <string-array name="cursor_styles">
+        <item>@string/cursor_style_classic</item>
+        <item>@string/cursor_style_arrow</item>
+        <item>@string/cursor_style_crosshair</item>
+        <item>@string/cursor_style_laser</item>
+        <item>@string/cursor_style_neon</item>
+    </string-array>
     <string name="navigate_with_joystick_axes">Navigate with joystick axes</string>
     <string name="cursor_max_speed">Virtual cursor max speed</string>
     <string name="cursor_acceleration">Virtual cursor acceleration</string>
@@ -134,9 +151,13 @@
     <string name="web_engine_debug">Web engine debugging (need restart)</string>
     <string name="web_engine_debug_warning_message">Enabling web engine debugging can expose page content, cookies, and sensitive session data to anyone with device debugging access. Enable only on trusted devices for troubleshooting.</string>
     <array name="themes">
-        <item>System</item>
-        <item>White</item>
-        <item>Dark</item>
+        <item>Auto (Follow System)</item>
+        <item>☀️ Pure White Light</item>
+        <item>📜 Warm Paper Light</item>
+        <item>🧊 Cool Ice Light</item>
+        <item>🖤 AMOLED Pitch Black</item>
+        <item>🌑 Deep Charcoal Dark</item>
+        <item>🌌 Midnight Slate Dark</item>
     </array>
     <string name="incognito_mode">Incognito mode</string>
     <string name="incognito_mode_hint">Now you can browse privately, and other people who use this device won’t see your activity. Browser won’t save your browsing history, cookies and site data, information entered in forms.\n\nHowever, downloads and bookmarks will be saved. Your activity might still be visible to websites you visit, your organization or internet service provider.</string>
@@ -189,4 +210,13 @@
     <string name="media_rewind">Rewind Media</string>
     <string name="media_fast_forward">Fast Forward Media</string>
     <string name="long_press">Long press</string>
+    <string name="display_and_zoom">Display &amp; Zoom Controls</string>
+    <string name="ui_scale_title">Browser UI Scale (TV Interface Size)</string>
+    <string name="ui_scale_desc">Adjust overall interface size for your TV screen</string>
+    <string name="web_page_zoom_title">Website Page Zoom (Default Web Zoom)</string>
+    <string name="web_page_zoom_desc">Default text and layout zoom level for websites</string>
+    <string name="quick_zoom_in">Zoom Web In (+)</string>
+    <string name="quick_zoom_out">Zoom Web Out (-)</string>
+    <string name="quick_zoom_reset">Reset Zoom (100%)</string>
+    <string name="apply_ui_scale">Apply UI Scale</string>
 </resources>
