@@ -1,37 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="default_url_color">#000</color>
-    <color name="selected_link_bkg">#AEBBFF</color>
+    <color name="default_url_color">#0F172A</color>
+    <color name="selected_link_bkg">#BAE6FD</color>
 
-    <color name="top_bar_background">#eee</color>
-    <color name="top_bar_background2">#fff</color>
+    <color name="top_bar_background">#F1F5F9</color>
+    <color name="top_bar_background2">#FFFFFF</color>
 
-    <color name="day_night_text_color">#777</color>
-    <color name="day_night_text_color_contrast">#000</color>
-    <color name="day_night_background_color">#eee</color>
+    <color name="day_night_text_color">#475569</color>
+    <color name="day_night_text_color_contrast">#0F172A</color>
+    <color name="day_night_text_secondary">#64748B</color>
+    <color name="day_night_background_color">#F8FAFC</color>
+    <color name="day_night_surface_color">#FFFFFF</color>
+    <color name="day_night_surface_subtle">#F1F5F9</color>
+    <color name="day_night_card_stroke">#E2E8F0</color>
+    <color name="day_night_divider">#E2E8F0</color>
+    <color name="day_night_input_bg">#F1F5F9</color>
+    <color name="day_night_focus_bg">#E0F2FE</color>
+    <color name="day_night_focus_stroke">#0284C7</color>
 
-    <color name="day_night_list_header_background_color">#ccc</color>
-    <color name="day_night_list_focused_background_color">#ACE0F4</color>
-    <color name="day_night_list_divider_color">#DFDFDF</color>
+    <color name="day_night_list_header_background_color">#E2E8F0</color>
+    <color name="day_night_list_focused_background_color">#0284C7</color>
+    <color name="day_night_list_divider_color">#E2E8F0</color>
 
-    <color name="button_background">#d0d9e1</color>
-    <color name="button_background_focused">#ade1f5</color>
-    <color name="button_background_pressed">#ebebeb</color>
-    <color name="button_background_disabled">#ebebeb</color>
-    <color name="button_corner">#afafaf</color>
+    <color name="button_background">#E2E8F0</color>
+    <color name="button_background_focused">#0284C7</color>
+    <color name="button_background_pressed">#CBD5E1</color>
+    <color name="button_background_disabled">#F1F5F9</color>
+    <color name="button_corner">#CBD5E1</color>
 
-    <color name="day_night_icon_color">#212121</color>
-    <color name="day_night_disabled_icon_color">#BDBDBD</color>
+    <color name="day_night_icon_color">#0F172A</color>
+    <color name="day_night_disabled_icon_color">#94A3B8</color>
 
-    <color name="badge_bg">#E6E6E6</color>
-    <color name="badge_stroke">#afafaf</color>
+    <color name="badge_bg">#F1F5F9</color>
+    <color name="badge_stroke">#CBD5E1</color>
 
-    <color name="progressbar_tint">#75D5FA</color>
+    <color name="progressbar_tint">#0284C7</color>
 
-    <color name="web_tab_text_color">#000</color>
-    <color name="web_tab_selected_text_color">#006EC5</color>
+    <color name="web_tab_text_color">#0F172A</color>
+    <color name="web_tab_selected_text_color">#0284C7</color>
 
-    <color name="settings_tab_color">#EBEBEB</color>
-    <color name="settings_tab_color_focused">#ade1f5</color>
-    <color name="settings_tab_color_activated">#ade1f5</color>
-    <color name="settings_tab_activated_underline_color">#009688</color>
+    <color name="settings_tab_color">#F1F5F9</color>
+    <color name="settings_tab_color_focused">#0284C7</color>
+    <color name="settings_tab_color_activated">#0284C7</color>
+    <color name="settings_tab_activated_underline_color">#0284C7</color>
 </resources>
