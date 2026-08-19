@@ -86,10 +86,9 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
     }
 
     private suspend fun saveThumbnail(context: Context) {
-        val thumbnail = this.thumbnail
+        val originalThumb = this.thumbnail ?: return
         val thumbnailHash = this.thumbnailHash
         val url = url
-        if (thumbnail == null) return
         withContext(Dispatchers.IO) {
             synchronized(this@WebTabState) {
                 val tabsThumbsDir = File(context.cacheDir.absolutePath + File.separator + TAB_THUMBNAILS_DIR)
@@ -104,7 +103,20 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
                             var fos: FileOutputStream? = null
                             try {
                                 fos = FileOutputStream(file)
-                                thumbnail.compress(Bitmap.CompressFormat.PNG, 100, fos)
+                                // TV Optimization: Scale down thumbnail to max 360px width to save 85% RAM & storage
+                                val maxDimension = 360
+                                val scaledBitmap = if (originalThumb.width > maxDimension || originalThumb.height > maxDimension) {
+                                    val scale = maxDimension.toFloat() / Math.max(originalThumb.width, originalThumb.height)
+                                    val targetW = (originalThumb.width * scale).toInt().coerceAtLeast(1)
+                                    val targetH = (originalThumb.height * scale).toInt().coerceAtLeast(1)
+                                    Bitmap.createScaledBitmap(originalThumb, targetW, targetH, true)
+                                } else {
+                                    originalThumb
+                                }
+                                scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 75, fos)
+                                if (scaledBitmap != originalThumb) {
+                                    scaledBitmap.recycle()
+                                }
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             } finally {
@@ -207,6 +219,8 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
 
     fun trimMemory() {
         webEngine.trimMemory()
+        thumbnail?.recycle()
+        thumbnail = null
         savedState = null
     }
 
@@ -232,8 +246,13 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
         val hash = thumbnailHash ?: return null
         val thumbnailFile = File(getThumbnailPath(hash))
         if (thumbnailFile.exists()) {
-            thumbnail = BitmapFactory.decodeFile(thumbnailFile.absolutePath,
-                    BitmapFactory.Options().apply { this.inMutable = true })
+            thumbnail = BitmapFactory.decodeFile(
+                thumbnailFile.absolutePath,
+                BitmapFactory.Options().apply {
+                    inPreferredConfig = Bitmap.Config.RGB_565
+                    inMutable = false
+                }
+            )
             return thumbnail
         } else {
             thumbnailHash = null
