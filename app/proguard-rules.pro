@@ -1,14 +1,25 @@
-# Add project specific ProGuard rules here.
-# By default, the flags in this file are appended to flags specified
-# in /Users/fedex/libs/android_sdk/tools/proguard/proguard-android.txt
-# You can edit the include path and order by changing the proguardFiles
-# directive in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# TV Browser ProGuard / R8 Performance & Size Rules
 
-# Add any project specific keep options here:
+# Strip excessive Android debug logging in release builds to eliminate string allocations & logging overhead on TV D-Pad navigation
+-assumenosideeffects class android.util.Log {
+    public static boolean isLoggable(java.lang.String, int);
+    public static int v(...);
+    public static int d(...);
+    public static int i(...);
+    public static int w(...);
+}
 
+# Optimize Room & SQLite Database
+-keepclassmembers class * extends androidx.room.RoomDatabase {
+    <init>();
+}
+
+# WebKit & JavaScript Interfaces
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+
+# WebEngine and Models
 -keep class com.gothwad.tvbrowser.webengine.webview.WebViewWebEngine { *; }
 
 -keepclassmembers class com.gothwad.tvbrowser.model.** {
@@ -22,8 +33,3 @@
    public *;
    private *;
 }
-
-
-#-keepclasseswithmembers class com.gothwad.tvbrowser.model.** {
-#    <fields>;
-#}
