@@ -47,11 +47,19 @@ jobs:
             -dname "CN=Gothwad TV Browser, OU=AppDev, O=Gothwad, C=IN" \
             -storepass android123 -keypass android123
           
+          # Find latest zipalign and apksigner dynamically
+          ZIPALIGN=$(find $ANDROID_HOME/build-tools/ -name "zipalign" | sort -V | tail -n 1)
+          APKSIGNER=$(find $ANDROID_HOME/build-tools/ -name "apksigner" | sort -V | tail -n 1)
+          
           # Align APK
-          zipalign -v -p 4 "$UNSIGNED_APK" output_release/GothwadTVBrowser-v1.0.0-unaligned.apk || cp "$UNSIGNED_APK" output_release/GothwadTVBrowser-v1.0.0-unaligned.apk
+          if [ -n "$ZIPALIGN" ]; then
+            $ZIPALIGN -v -p 4 "$UNSIGNED_APK" output_release/GothwadTVBrowser-v1.0.0-unaligned.apk || cp "$UNSIGNED_APK" output_release/GothwadTVBrowser-v1.0.0-unaligned.apk
+          else
+            cp "$UNSIGNED_APK" output_release/GothwadTVBrowser-v1.0.0-unaligned.apk
+          fi
           
           # Sign APK with apksigner (V1, V2, V3 signature)
-          $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
+          $APKSIGNER sign \
             --ks output_release/gothwad_release_key.jks \
             --ks-key-alias gothwad_tv_key \
             --ks-pass pass:android123 \
@@ -60,7 +68,7 @@ jobs:
             output_release/GothwadTVBrowser-v1.0.0-unaligned.apk
             
           # Verify Signature
-          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --verbose output_release/GothwadTVBrowser-v1.0.0-Release.apk
+          $APKSIGNER verify --verbose output_release/GothwadTVBrowser-v1.0.0-Release.apk
           
           # Cleanup temp files
           rm -f output_release/*unaligned.apk
