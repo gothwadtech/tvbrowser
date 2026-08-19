@@ -1,5 +1,6 @@
 package com.gothwad.tvbrowser.utils
 
+import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.app.ActivityManager.RunningAppProcessInfo
 import android.app.UiModeManager
@@ -7,6 +8,8 @@ import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Point
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Bundle
 import android.os.Parcel
 import android.view.WindowManager
@@ -102,10 +105,22 @@ object Utils {
         return null
     }
 
+    @SuppressLint("MissingPermission")
     fun isNetworkConnected(context: Context): Boolean {
-        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork = cm.activeNetworkInfo
-        return activeNetwork != null && activeNetwork.isConnectedOrConnecting
+        return try {
+            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return true
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val network = cm.activeNetwork ?: return false
+                val capabilities = cm.getNetworkCapabilities(network) ?: return false
+                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            } else {
+                @Suppress("DEPRECATION")
+                val activeNetwork = cm.activeNetworkInfo
+                activeNetwork != null && activeNetwork.isConnectedOrConnecting
+            }
+        } catch (e: Exception) {
+            true
+        }
     }
 
     fun isSameDate(date: Long, other: Long): Boolean {
