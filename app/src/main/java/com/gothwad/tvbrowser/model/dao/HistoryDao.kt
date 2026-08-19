@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import com.gothwad.tvbrowser.model.HistoryItem
 
@@ -27,7 +28,8 @@ interface HistoryDao {
     @Query("SELECT * FROM history ORDER BY time DESC LIMIT :limit")
     suspend fun last(limit: Int = 1): List<HistoryItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @RewriteQueriesToDropUnusedColumns
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH, RoomWarnings.QUERY_MISMATCH)
     @Query("SELECT \"\" as id, title, url, favicon, count(url) as cnt , max(time) as time FROM history GROUP BY title, url, favicon ORDER BY cnt DESC, time DESC LIMIT 8")
     suspend fun frequentlyUsedUrls(): List<HistoryItem>
 
