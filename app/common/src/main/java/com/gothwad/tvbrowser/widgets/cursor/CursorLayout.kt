@@ -64,7 +64,7 @@ class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeS
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         Log.d("CursorLayout", "dispatchKeyEvent: $event")
 
-        if (willNotDraw()) return super.dispatchKeyEvent(event)
+        if (willNotDraw() || !AppContext.provideConfig().enableVirtualCursor) return super.dispatchKeyEvent(event)
 
         if (inputEventsAdapter.dispatchKeyEvent(event)) {
             return true
@@ -76,7 +76,7 @@ class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeS
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
         Log.d("CursorLayout", "dispatchGenericMotionEvent: $event")
 
-        if (willNotDraw()) return super.dispatchGenericMotionEvent(event)
+        if (willNotDraw() || !AppContext.provideConfig().enableVirtualCursor) return super.dispatchGenericMotionEvent(event)
 
         if (inputEventsAdapter.dispatchGenericMotionEvent(event)) {
             return true
