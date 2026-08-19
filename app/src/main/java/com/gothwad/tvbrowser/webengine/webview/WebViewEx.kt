@@ -127,7 +127,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             setSupportZoom(true)
             builtInZoomControls = true
             displayZoomControls = false
-            setSupportZoom(true)
+            textZoom = config.webPageZoomPercent
             domStorageEnabled = true
             allowContentAccess = false
             cacheMode = WebSettings.LOAD_DEFAULT
@@ -368,21 +368,6 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                         ignoreCase = true)) {
                     HomePageHelper.shouldInterceptRequest(view, request)?.let {
                         return it
-                    }
-                    if (request.url.toString().startsWith(Config.HOME_PAGE_URL)) {
-                        var relativePath = request.url.toString().substring(Config.HOME_PAGE_URL.length)
-                        if (relativePath.isEmpty() || relativePath == "/") {
-                            relativePath = "index.html"
-                        }
-                        val assetsPath = "pages/home/$relativePath"
-                        val response = Utils.getWebResourceResponseFromAssets(view.context, assetsPath)
-                        if (response != null) {
-                            Log.d(TAG, "shouldInterceptRequest url: ${request.url} -> $assetsPath")
-                            return response
-                        } else {
-                            Log.w(TAG, "shouldInterceptRequest url: ${request.url} -> not found in assets")
-                        }
-                        return response ?: super.shouldInterceptRequest(view, request)
                     }
                 }
 
