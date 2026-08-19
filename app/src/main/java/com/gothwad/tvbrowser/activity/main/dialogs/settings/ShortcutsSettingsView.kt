@@ -28,6 +28,12 @@ class ShortcutsSettingsView @JvmOverloads constructor(
     val items = Shortcut.entries.map { it.titleResId }
 
     init {
+        setBackgroundColor(0xFF0B0F19.toInt())
+        val p = (16 * context.resources.displayMetrics.density).toInt()
+        setPadding(p, p, p, p * 2)
+        clipToPadding = false
+        divider = null
+        dividerHeight = (6 * context.resources.displayMetrics.density).toInt()
         selector = ResourcesCompat.getDrawable(context.resources, R.drawable.list_item_bg_selector, null)
         adapter = ShortcutItemAdapter()
         onItemClickListener = this
