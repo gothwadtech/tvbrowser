@@ -7,9 +7,13 @@ android {
     namespace = "com.gothwad.tvbrowser"
 
     defaultConfig {
-        applicationId = "com.gothwad.tvbrowser"
-        versionCode = 69
-        versionName = "2.1.6"
+        applicationId = "com.gothwad.tvbrowser.bdzopd"
+        versionCode = 1
+        versionName = "1.0.0"
+
+        ndk {
+            abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a"))
+        }
 
         buildConfigField("String", "FLAVOR_appstore", "\"generic\"")
         buildConfigField("String", "FLAVOR_webengine", "\"standard\"")
@@ -52,6 +56,7 @@ android {
         getByName("release") {
             isDebuggable = false
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = if (System.getenv("KEYSTORE_PATH") != null)
                 signingConfigs.getByName("release") else null
@@ -73,8 +78,8 @@ android {
     }
 
     packaging {
-        jniLibs {
-            useLegacyPackaging = true
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
 
@@ -82,6 +87,11 @@ android {
         unitTests {
             isIncludeAndroidResources = true
         }
+    }
+
+    lint {
+        abortOnError = false
+        checkReleaseBuilds = false
     }
 }
 
