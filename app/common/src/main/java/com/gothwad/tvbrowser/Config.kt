@@ -19,6 +19,17 @@ class Config(val prefs: SharedPreferences) {
         const val TV_BRO_UA_PREFIX = "Browser/1.0 "
         const val HOME_URL_ALIAS = "about:home"
         const val KEEP_SCREEN_ON_KEY = "keep_screen_on"
+        const val SCREEN_ORIENTATION_KEY = "screen_orientation"
+        const val ORIENTATION_LANDSCAPE = 0
+        const val ORIENTATION_PORTRAIT = 1
+        const val ORIENTATION_AUTO = 2
+        const val DISABLE_VIRTUAL_KEYBOARD_KEY = "disable_virtual_keyboard"
+        const val ENABLE_VIRTUAL_CURSOR_KEY = "enable_virtual_cursor"
+        const val CURSOR_SIZE_PERCENT_KEY = "cursor_size_percent"
+        const val CURSOR_STYLE_KEY = "cursor_style"
+
+        const val CURSOR_SIZE_PERCENT_MIN = 50
+        const val CURSOR_SIZE_PERCENT_MAX = 200
         /** When true, analog stick / hat axes from generic motion events are not translated to DPAD keys. */
         const val DISABLE_MOTION_AXES_DPAD_NAVIGATION_KEY = "disable_motion_axes_dpad_navigation"
         /** Percent of built-in default (100 = default). Range [CURSOR_PHYSICS_PERCENT_MIN], [CURSOR_PHYSICS_PERCENT_MAX]. */
@@ -26,6 +37,14 @@ class Config(val prefs: SharedPreferences) {
         const val CURSOR_ACCELERATION_PERCENT_KEY = "cursor_acceleration_percent"
         const val CURSOR_PHYSICS_PERCENT_MIN = 25
         const val CURSOR_PHYSICS_PERCENT_MAX = 200
+        const val UI_SCALE_PERCENT_KEY = "ui_scale_percent"
+        const val UI_SCALE_PERCENT_MIN = 75
+        const val UI_SCALE_PERCENT_MAX = 200
+        const val UI_SCALE_PERCENT_DEFAULT = 100
+        const val WEB_PAGE_ZOOM_PERCENT_KEY = "web_page_zoom_percent"
+        const val WEB_PAGE_ZOOM_PERCENT_MIN = 50
+        const val WEB_PAGE_ZOOM_PERCENT_MAX = 300
+        const val WEB_PAGE_ZOOM_PERCENT_DEFAULT = 100
         const val INCOGNITO_MODE_KEY = "incognito_mode"
         const val INCOGNITO_MODE_HINT_SUPPRESS_KEY = "incognito_mode_hint_suppress"
         const val DIRECT_NAVIGATION_MODE_HINT_SUPPRESS_KEY = "direct_navigation_mode_hint_suppress"
@@ -62,7 +81,13 @@ class Config(val prefs: SharedPreferences) {
     }
 
     enum class Theme {
-        SYSTEM, WHITE, BLACK;
+        SYSTEM,
+        WHITE_PURE,
+        WHITE_WARM,
+        WHITE_COOL,
+        BLACK_AMOLED,
+        BLACK_CHARCOAL,
+        BLACK_MIDNIGHT;
     }
 
     enum class HomePageMode {
@@ -98,6 +123,40 @@ class Config(val prefs: SharedPreferences) {
             prefs.edit().putBoolean(KEEP_SCREEN_ON_KEY, value).apply()
         }
 
+    var screenOrientation: Int
+        get() = prefs.getInt(SCREEN_ORIENTATION_KEY, ORIENTATION_LANDSCAPE)
+        set(value) {
+            prefs.edit().putInt(SCREEN_ORIENTATION_KEY, value).apply()
+        }
+
+    var disableVirtualKeyboard: Boolean
+        get() = prefs.getBoolean(DISABLE_VIRTUAL_KEYBOARD_KEY, false)
+        set(value) {
+            prefs.edit().putBoolean(DISABLE_VIRTUAL_KEYBOARD_KEY, value).apply()
+        }
+
+    var enableVirtualCursor: Boolean
+        get() = prefs.getBoolean(ENABLE_VIRTUAL_CURSOR_KEY, true)
+        set(value) {
+            prefs.edit().putBoolean(ENABLE_VIRTUAL_CURSOR_KEY, value).apply()
+        }
+
+    var cursorSizePercent: Int
+        get() = prefs.getInt(CURSOR_SIZE_PERCENT_KEY, 100)
+            .coerceIn(CURSOR_SIZE_PERCENT_MIN, CURSOR_SIZE_PERCENT_MAX)
+        set(value) {
+            prefs.edit().putInt(
+                CURSOR_SIZE_PERCENT_KEY,
+                value.coerceIn(CURSOR_SIZE_PERCENT_MIN, CURSOR_SIZE_PERCENT_MAX)
+            ).apply()
+        }
+
+    var cursorStyle: Int
+        get() = prefs.getInt(CURSOR_STYLE_KEY, 0)
+        set(value) {
+            prefs.edit().putInt(CURSOR_STYLE_KEY, value).apply()
+        }
+
     var disableMotionAxesDpadNavigation: Boolean
         get() = prefs.getBoolean(DISABLE_MOTION_AXES_DPAD_NAVIGATION_KEY, false)
         set(value) {
@@ -126,8 +185,36 @@ class Config(val prefs: SharedPreferences) {
             ).apply()
         }
 
+    /** UI scaling percent for Android TV interface (100 = default, 75 to 200). */
+    var uiScalePercent: Int
+        get() = prefs.getInt(UI_SCALE_PERCENT_KEY, UI_SCALE_PERCENT_DEFAULT)
+            .coerceIn(UI_SCALE_PERCENT_MIN, UI_SCALE_PERCENT_MAX)
+        set(value) {
+            prefs.edit().putInt(
+                UI_SCALE_PERCENT_KEY,
+                value.coerceIn(UI_SCALE_PERCENT_MIN, UI_SCALE_PERCENT_MAX)
+            ).apply()
+        }
+
+    /** Default web page zoom percent for websites (100 = default, 50 to 300). */
+    var webPageZoomPercent: Int
+        get() = prefs.getInt(WEB_PAGE_ZOOM_PERCENT_KEY, WEB_PAGE_ZOOM_PERCENT_DEFAULT)
+            .coerceIn(WEB_PAGE_ZOOM_PERCENT_MIN, WEB_PAGE_ZOOM_PERCENT_MAX)
+        set(value) {
+            prefs.edit().putInt(
+                WEB_PAGE_ZOOM_PERCENT_KEY,
+                value.coerceIn(WEB_PAGE_ZOOM_PERCENT_MIN, WEB_PAGE_ZOOM_PERCENT_MAX)
+            ).apply()
+        }
+
     var theme = object : ObservableValue<Theme>(Theme.SYSTEM) {
-        override var value: Theme = Theme.entries[prefs.getInt(THEME_KEY, 0)]
+        override var value: Theme =
+            try {
+                val index = prefs.getInt(THEME_KEY, 0)
+                if (index in Theme.values().indices) Theme.values()[index] else Theme.SYSTEM
+            } catch (e: Exception) {
+                Theme.SYSTEM
+            }
             set(value) {
                 prefs.edit().putInt(THEME_KEY, value.ordinal).apply()
                 field = value
