@@ -8,10 +8,14 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
+import android.webkit.CookieManager
+import android.webkit.WebStorage
+import android.webkit.WebView
 import android.widget.AbsListView
 import android.widget.AdapterView
 import android.widget.ImageButton
 import android.widget.PopupMenu
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.gothwad.tvbrowser.R
@@ -24,11 +28,7 @@ import com.gothwad.tvbrowser.utils.activemodel.ActiveModelsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-/**
- * Created by fedex on 29.12.16.
- */
-
-class HistoryActivity : AppCompatActivity(), AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
+class HistoryActivity : AppCompatActivity(), AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
     private lateinit var vb: ActivityHistoryBinding
     private var ibDelete: ImageButton? = null
@@ -38,9 +38,7 @@ class HistoryActivity : AppCompatActivity(), AdapterView.OnItemClickListener, Ad
         VOICE_SEARCH_PERMISSIONS_REQUEST_CODE)
 
     internal var onListScrollListener: AbsListView.OnScrollListener = object : AbsListView.OnScrollListener {
-        override fun onScrollStateChanged(view: AbsListView, scrollState: Int) {
-
-        }
+        override fun onScrollStateChanged(view: AbsListView, scrollState: Int) {}
 
         override fun onScroll(view: AbsListView, firstVisibleItem: Int, visibleItemCount: Int, totalItemCount: Int) {
             if (totalItemCount != 0 && firstVisibleItem + visibleItemCount >= totalItemCount - 1 && "" == historyModel.searchQuery) {
@@ -56,7 +54,10 @@ class HistoryActivity : AppCompatActivity(), AdapterView.OnItemClickListener, Ad
 
         historyModel = ActiveModelsRepository.get(HistoryModel::class, this)
 
-        ibDelete = findViewById(R.id.ibDelete)
+        ibDelete = vb.ibDelete
+        vb.ibHistoryBack.setOnClickListener { finish() }
+        vb.btnClear.setOnClickListener { showClearBrowsingDataDialog() }
+        vb.ibDelete.setOnClickListener { onClearHistoryItemsClick(it) }
 
         adapter = HistoryAdapter()
         vb.listView.adapter = adapter
@@ -74,32 +75,52 @@ class HistoryActivity : AppCompatActivity(), AdapterView.OnItemClickListener, Ad
         historyModel.loadItems(false)
     }
 
+    private fun showClearBrowsingDataDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Clear Browsing Data")
+            .setMessage("Delete all browsing history, cached files, and cookies?")
+            .setPositiveButton("Clear Everything") { _, _ ->
+                lifecycleScope.launch(Dispatchers.Main) {
+                    try {
+                        AppDatabase.db.historyDao().deleteWhereTimeLessThan(Long.MAX_VALUE)
+                        adapter!!.erase()
+                        CookieManager.getInstance().removeAllCookies(null)
+                        WebStorage.getInstance().deleteAllData()
+                        WebView(this@HistoryActivity).clearCache(true)
+                        Toast.makeText(this@HistoryActivity, "Browsing history and data cleared", Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        Toast.makeText(this@HistoryActivity, "History cleared", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
     private fun showDeleteDialog(deleteAll: Boolean) {
         if (adapter!!.items.isEmpty() || (adapter!!.selectedItems.isEmpty() && !deleteAll)) return
         AlertDialog.Builder(this)
-                .setTitle(R.string.delete)
-                .setMessage(if (deleteAll) R.string.msg_delete_history_all else R.string.msg_delete_history)
-                .setPositiveButton(android.R.string.ok) { _, _ ->
-                    lifecycleScope.launch(Dispatchers.Main) {
-                        if (deleteAll) {
-                            AppDatabase.db.historyDao().deleteWhereTimeLessThan(Long.MAX_VALUE)
-                            adapter!!.erase()
-                        } else {
-                            AppDatabase.db.historyDao().delete(*(adapter!!.selectedItems).toTypedArray())
-                            adapter!!.remove(adapter!!.selectedItems)
-                        }
+            .setTitle(R.string.delete)
+            .setMessage(if (deleteAll) R.string.msg_delete_history_all else R.string.msg_delete_history)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                lifecycleScope.launch(Dispatchers.Main) {
+                    if (deleteAll) {
+                        AppDatabase.db.historyDao().deleteWhereTimeLessThan(Long.MAX_VALUE)
+                        adapter!!.erase()
+                    } else {
+                        AppDatabase.db.historyDao().delete(*(adapter!!.selectedItems).toTypedArray())
+                        adapter!!.remove(adapter!!.selectedItems)
                     }
                 }
-                .setNeutralButton(android.R.string.cancel) { dialogInterface, i -> }
-                .show()
+            }
+            .setNeutralButton(android.R.string.cancel, null)
+            .show()
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         when (event.keyCode) {
             KeyEvent.KEYCODE_SEARCH -> {
-                if (event.action == KeyEvent.ACTION_DOWN) {
-                    //nop
-                } else if (event.action == KeyEvent.ACTION_UP) {
+                if (event.action == KeyEvent.ACTION_UP) {
                     voiceSearchHelper.initiateVoiceSearch(object : VoiceSearchHelper.Callback {
                         override fun onResult(text: String?) {
                             if (text == null) {
@@ -182,21 +203,8 @@ class HistoryActivity : AppCompatActivity(), AdapterView.OnItemClickListener, Ad
         super.onBackPressed()
     }
 
-    private fun showItemOptionsPopup(v: HistoryItemView) {
-        val pm = PopupMenu(this, v, Gravity.BOTTOM)
-        pm.menu.add(R.string.delete)
-        pm.setOnMenuItemClickListener {
-            lifecycleScope.launch(Dispatchers.Main) {
-                AppDatabase.db.historyDao().delete(v.historyItem!!)
-                adapter!!.remove(v.historyItem!!)
-            }
-            true
-        }
-        pm.show()
-    }
-
     fun onClearHistoryClick(view: View) {
-        showDeleteDialog(true)
+        showClearBrowsingDataDialog()
     }
 
     fun onClearHistoryItemsClick(view: View) {
