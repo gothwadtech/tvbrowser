@@ -1,0 +1,72 @@
+name: Build Signed Release APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & Sign APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17 (JDK)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x ./gradlew
+
+      - name: Build Release APK with Gradle
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Sign Release APK
+        run: |
+          echo "Locating generated Release APK..."
+          UNSIGNED_APK=$(find app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
+          if [ -z "$UNSIGNED_APK" ]; then
+            echo "Error: No APK found!"
+            exit 1
+          fi
+          echo "Found APK: $UNSIGNED_APK"
+          
+          # Create Release Directory
+          mkdir -p output_release
+          
+          # Generate permanent release key
+          keytool -genkey -v \
+            -keystore output_release/gothwad_release_key.jks \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -alias gothwad_tv_key \
+            -dname "CN=Gothwad TV Browser, OU=AppDev, O=Gothwad, C=IN" \
+            -storepass android123 -keypass android123
+          
+          # Align APK
+          zipalign -v -p 4 "$UNSIGNED_APK" output_release/GothwadTVBrowser-v1.0.0-unaligned.apk || cp "$UNSIGNED_APK" output_release/GothwadTVBrowser-v1.0.0-unaligned.apk
+          
+          # Sign APK with apksigner (V1, V2, V3 signature)
+          $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
+            --ks output_release/gothwad_release_key.jks \
+            --ks-key-alias gothwad_tv_key \
+            --ks-pass pass:android123 \
+            --key-pass pass:android123 \
+            --out output_release/GothwadTVBrowser-v1.0.0-Release.apk \
+            output_release/GothwadTVBrowser-v1.0.0-unaligned.apk
+            
+          # Verify Signature
+          $ANDROID_HOME/build-tools/34.0.0/apksigner verify --verbose output_release/GothwadTVBrowser-v1.0.0-Release.apk
+          
+          # Cleanup temp files
+          rm -f output_release/*unaligned.apk
+
+      - name: Upload Signed Release APK & Keystore
+        uses: actions/upload-artifact@v4
+        with:
+          name: Gothwad-TV-Browser-v1.0.0-Release
+          path: output_release/
