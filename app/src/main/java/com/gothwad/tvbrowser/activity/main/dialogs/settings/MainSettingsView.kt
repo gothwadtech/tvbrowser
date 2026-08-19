@@ -14,6 +14,8 @@ import android.widget.ScrollView
 import android.widget.SeekBar
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebViewFeature
@@ -40,8 +42,13 @@ class MainSettingsView @JvmOverloads constructor(
     var settingsModel = ActiveModelsRepository.get(SettingsModel::class, activity!!)
     var adblockModel = ActiveModelsRepository.get(AdblockModel::class, activity!!)
     var config = AppContext.provideConfig()
+    var onDismissDialog: (() -> Unit)? = null
 
     init {
+        initQuickToolsUI()
+
+        initDisplayAndZoomSettingsUI()
+
         initWebBrowserEngineSettingsUI()
 
         initHomePageAndSearchEngineConfigUI()
@@ -60,9 +67,13 @@ class MainSettingsView @JvmOverloads constructor(
 
         initKeepScreenOnUI()
 
+        initDisableVirtualKeyboardUI()
+
         initJoystickAxesNavigationUI()
 
         initVirtualCursorPhysicsSettingsUI()
+
+        initAppLockSettingsUI()
 
         vb.btnClearWebCache.setOnClickListener {
             (activity as MainActivity).lifecycleScope.launch {
@@ -70,6 +81,60 @@ class MainSettingsView @JvmOverloads constructor(
                 Toast.makeText(context, android.R.string.ok, Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun initAppLockSettingsUI() {
+        val isLocked = com.gothwad.tvbrowser.singleton.AppLockManager.isLockEnabled(context)
+        vb.scAppLock.isChecked = isLocked
+        vb.llAppLock.setOnClickListener {
+            vb.scAppLock.toggle()
+        }
+        vb.scAppLock.setOnCheckedChangeListener { _, isChecked ->
+            com.gothwad.tvbrowser.singleton.AppLockManager.setLockEnabled(context, isChecked)
+            updateAppLockStatus()
+        }
+
+        vb.btnChangePin.setOnClickListener {
+            showChangePinDialog()
+        }
+
+        updateAppLockStatus()
+    }
+
+    private fun updateAppLockStatus() {
+        val isEnabled = com.gothwad.tvbrowser.singleton.AppLockManager.isLockEnabled(context)
+        if (isEnabled) {
+            vb.tvAppLockStatus.text = "PIN lock is enabled (Protected)"
+            vb.tvAppLockStatus.setTextColor(0xFF38BDF8.toInt())
+            vb.btnChangePin.visibility = View.VISIBLE
+        } else {
+            vb.tvAppLockStatus.text = "PIN lock is disabled"
+            vb.tvAppLockStatus.setTextColor(0xFF94A3B8.toInt())
+        }
+    }
+
+    private fun showChangePinDialog() {
+        val input = EditText(context).apply {
+            hint = "Enter 4-digit PIN"
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD
+            setPadding(40, 30, 40, 30)
+            setTextColor(0xFFFFFFFF.toInt())
+        }
+
+        AlertDialog.Builder(context)
+            .setTitle("🔒 Set 4-Digit TV PIN")
+            .setView(input)
+            .setPositiveButton("Save PIN") { _, _ ->
+                val newPin = input.text.toString().trim()
+                if (newPin.length == 4 && newPin.all { it.isDigit() }) {
+                    com.gothwad.tvbrowser.singleton.AppLockManager.setPin(context, newPin)
+                    Toast.makeText(context, "New PIN saved successfully!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "PIN must be exactly 4 digits!", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun initWebBrowserEngineSettingsUI() {
@@ -134,8 +199,23 @@ class MainSettingsView @JvmOverloads constructor(
         vb.spTheme.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
                 if (config.theme.value.ordinal == position) return
-                config.theme.value = Config.Theme.values()[position]
-                Toast.makeText(context, context.getString(R.string.need_restart), Toast.LENGTH_SHORT).show()
+                val newTheme = Config.Theme.values()[position]
+                config.theme.value = newTheme
+                val nightMode = when (newTheme) {
+                    Config.Theme.BLACK_AMOLED,
+                    Config.Theme.BLACK_CHARCOAL,
+                    Config.Theme.BLACK_MIDNIGHT -> AppCompatDelegate.MODE_NIGHT_YES
+                    Config.Theme.WHITE_PURE,
+                    Config.Theme.WHITE_WARM,
+                    Config.Theme.WHITE_COOL -> AppCompatDelegate.MODE_NIGHT_NO
+                    else -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+                }
+                AppCompatDelegate.setDefaultNightMode(nightMode)
+                WebEngineFactory.onThemeSettingUpdated(newTheme)
+
+                // Instantly apply theme to current activity without full app exit/restart
+                onDismissDialog?.invoke()
+                (activity as? AppCompatActivity)?.recreate()
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {}
@@ -190,6 +270,14 @@ class MainSettingsView @JvmOverloads constructor(
         }
     }
 
+    private fun initDisableVirtualKeyboardUI() {
+        vb.scDisableVirtualKeyboard.isChecked = config.disableVirtualKeyboard
+        vb.scDisableVirtualKeyboard.setOnCheckedChangeListener { _, isChecked ->
+            config.disableVirtualKeyboard = isChecked
+            (activity as? MainActivity)?.applySoftInputMode()
+        }
+    }
+
     private fun initJoystickAxesNavigationUI() {
         vb.scNavigateWithJoystickAxes.isChecked = !config.disableMotionAxesDpadNavigation
         vb.scNavigateWithJoystickAxes.setOnCheckedChangeListener { _, isChecked ->
@@ -198,6 +286,38 @@ class MainSettingsView @JvmOverloads constructor(
     }
 
     private fun initVirtualCursorPhysicsSettingsUI() {
+        vb.scEnableVirtualCursor.isChecked = config.enableVirtualCursor
+        vb.llVirtualCursorDetails.visibility = if (config.enableVirtualCursor) VISIBLE else GONE
+        vb.scEnableVirtualCursor.setOnCheckedChangeListener { _, isChecked ->
+            config.enableVirtualCursor = isChecked
+            vb.llVirtualCursorDetails.visibility = if (isChecked) VISIBLE else GONE
+        }
+
+        // Style spinner
+        vb.spCursorStyle.setSelection(config.cursorStyle.coerceIn(0, 4))
+        vb.spCursorStyle.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                config.cursorStyle = position
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        // Size seekbar
+        val minSize = Config.CURSOR_SIZE_PERCENT_MIN
+        val maxSize = Config.CURSOR_SIZE_PERCENT_MAX
+        vb.sbCursorSize.max = maxSize - minSize
+        vb.sbCursorSize.progress = config.cursorSizePercent - minSize
+        vb.tvCursorSizeValue.text = context.getString(R.string.cursor_physics_percent, config.cursorSizePercent)
+        vb.sbCursorSize.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                config.cursorSizePercent = minSize + progress
+                vb.tvCursorSizeValue.text = context.getString(R.string.cursor_physics_percent, config.cursorSizePercent)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        // Speed and Acceleration
         val minP = Config.CURSOR_PHYSICS_PERCENT_MIN
         val maxP = Config.CURSOR_PHYSICS_PERCENT_MAX
         val range = maxP - minP
@@ -385,4 +505,199 @@ class MainSettingsView @JvmOverloads constructor(
         config.userAgentString.value = userAgent.ifEmpty { null }
         saveAdBlockListUrl()
     }
+
+    private fun initQuickToolsUI() {
+        vb.btnQuickHistory.setOnClickListener {
+            onDismissDialog?.invoke()
+            (activity as? MainActivity)?.showHistory()
+        }
+        vb.btnQuickFavorites.setOnClickListener {
+            onDismissDialog?.invoke()
+            (activity as? MainActivity)?.showFavorites()
+        }
+        vb.btnQuickClipboard.setOnClickListener {
+            onDismissDialog?.invoke()
+            (activity as? MainActivity)?.showClipboard()
+        }
+        vb.btnQuickDownloads.setOnClickListener {
+            onDismissDialog?.invoke()
+            (activity as? MainActivity)?.showDownloads()
+        }
+        vb.btnQuickIncognito.setOnClickListener {
+            (activity as? MainActivity)?.toggleIncognitoMode()
+            Toast.makeText(context, R.string.incognito_mode, Toast.LENGTH_SHORT).show()
+        }
+        vb.btnQuickPopupBlock.setOnClickListener {
+            onDismissDialog?.invoke()
+            (activity as? MainActivity)?.apply {
+                lifecycleScope.launch {
+                    showPopupBlockOptions()
+                }
+            }
+        }
+        vb.btnQuickRotate.setOnClickListener {
+            val nextOrientation = when (config.screenOrientation) {
+                Config.ORIENTATION_LANDSCAPE -> Config.ORIENTATION_PORTRAIT
+                Config.ORIENTATION_PORTRAIT -> Config.ORIENTATION_AUTO
+                else -> Config.ORIENTATION_LANDSCAPE
+            }
+            config.screenOrientation = nextOrientation
+            (activity as? MainActivity)?.applyScreenOrientation()
+            val label = when (nextOrientation) {
+                Config.ORIENTATION_PORTRAIT -> "Screen Orientation: Portrait"
+                Config.ORIENTATION_AUTO -> "Screen Orientation: Auto Rotate"
+                else -> "Screen Orientation: Landscape"
+            }
+            Toast.makeText(context, label, Toast.LENGTH_SHORT).show()
+        }
+
+        vb.btnQuickZoomIn.setOnClickListener {
+            (activity as? MainActivity)?.zoomWebIn()
+            Toast.makeText(context, R.string.quick_zoom_in, Toast.LENGTH_SHORT).show()
+        }
+
+        vb.btnQuickZoomOut.setOnClickListener {
+            (activity as? MainActivity)?.zoomWebOut()
+            Toast.makeText(context, R.string.quick_zoom_out, Toast.LENGTH_SHORT).show()
+        }
+
+        vb.btnQuickZoomReset.setOnClickListener {
+            (activity as? MainActivity)?.applyWebPageZoom(100)
+            config.webPageZoomPercent = 100
+            vb.sbWebPageZoom.progress = 100 - Config.WEB_PAGE_ZOOM_PERCENT_MIN
+            vb.tvWebPageZoomValue.text = "100%"
+            Toast.makeText(context, R.string.quick_zoom_reset, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun initDisplayAndZoomSettingsUI() {
+        // UI Scaling controls
+        val minUiScale = Config.UI_SCALE_PERCENT_MIN
+        val maxUiScale = Config.UI_SCALE_PERCENT_MAX
+        vb.sbUiScale.max = maxUiScale - minUiScale
+        vb.sbUiScale.progress = config.uiScalePercent - minUiScale
+        vb.tvUiScaleValue.text = "${config.uiScalePercent}%"
+
+        vb.sbUiScale.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val value = minUiScale + progress
+                config.uiScalePercent = value
+                vb.tvUiScaleValue.text = "$value%"
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        vb.btnUiScale100.setOnClickListener {
+            config.uiScalePercent = 100
+            vb.sbUiScale.progress = 100 - minUiScale
+            vb.tvUiScaleValue.text = "100%"
+        }
+        vb.btnUiScale125.setOnClickListener {
+            config.uiScalePercent = 125
+            vb.sbUiScale.progress = 125 - minUiScale
+            vb.tvUiScaleValue.text = "125%"
+        }
+        vb.btnUiScale150.setOnClickListener {
+            config.uiScalePercent = 150
+            vb.sbUiScale.progress = 150 - minUiScale
+            vb.tvUiScaleValue.text = "150%"
+        }
+        vb.btnUiScaleApply.setOnClickListener {
+            onDismissDialog?.invoke()
+            (activity as? MainActivity)?.applyUiScale()
+            Toast.makeText(context, R.string.apply_ui_scale, Toast.LENGTH_SHORT).show()
+        }
+
+        // Web Page Zoom controls
+        val minWebZoom = Config.WEB_PAGE_ZOOM_PERCENT_MIN
+        val maxWebZoom = Config.WEB_PAGE_ZOOM_PERCENT_MAX
+        vb.sbWebPageZoom.max = maxWebZoom - minWebZoom
+        vb.sbWebPageZoom.progress = config.webPageZoomPercent - minWebZoom
+        vb.tvWebPageZoomValue.text = "${config.webPageZoomPercent}%"
+
+        vb.sbWebPageZoom.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val value = minWebZoom + progress
+                config.webPageZoomPercent = value
+                vb.tvWebPageZoomValue.text = "$value%"
+                (activity as? MainActivity)?.applyWebPageZoom(value)
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        fun setWebZoom(percent: Int) {
+            config.webPageZoomPercent = percent
+            vb.sbWebPageZoom.progress = (percent - minWebZoom).coerceIn(0, maxWebZoom - minWebZoom)
+            vb.tvWebPageZoomValue.text = "$percent%"
+            (activity as? MainActivity)?.applyWebPageZoom(percent)
+        }
+
+        vb.btnWebZoom75.setOnClickListener { setWebZoom(75) }
+        vb.btnWebZoom100.setOnClickListener { setWebZoom(100) }
+        vb.btnWebZoom125.setOnClickListener { setWebZoom(125) }
+        vb.btnWebZoom150.setOnClickListener { setWebZoom(150) }
+        vb.btnWebZoom200.setOnClickListener { setWebZoom(200) }
+    }
+
+    fun showCategory(category: SettingsCategory) {
+        when (category) {
+            SettingsCategory.GENERAL -> {
+                vb.cardDisplayZoom.visibility = View.VISIBLE
+                vb.cardThemeMedia.visibility = View.VISIBLE
+                vb.cardBrowserEngine.visibility = View.GONE
+                vb.cardAdBlockPrivacy.visibility = View.GONE
+                vb.cardQuickTools.visibility = View.GONE
+                vb.cardRemoteCursor.visibility = View.GONE
+                vb.cardCacheData.visibility = View.GONE
+            }
+            SettingsCategory.PRIVACY -> {
+                vb.cardAdBlockPrivacy.visibility = View.VISIBLE
+                vb.cardCacheData.visibility = View.VISIBLE
+                vb.cardDisplayZoom.visibility = View.GONE
+                vb.cardThemeMedia.visibility = View.GONE
+                vb.cardBrowserEngine.visibility = View.GONE
+                vb.cardQuickTools.visibility = View.GONE
+                vb.cardRemoteCursor.visibility = View.GONE
+            }
+            SettingsCategory.BROWSER -> {
+                vb.cardBrowserEngine.visibility = View.VISIBLE
+                vb.cardDisplayZoom.visibility = View.GONE
+                vb.cardThemeMedia.visibility = View.GONE
+                vb.cardAdBlockPrivacy.visibility = View.GONE
+                vb.cardQuickTools.visibility = View.GONE
+                vb.cardRemoteCursor.visibility = View.GONE
+                vb.cardCacheData.visibility = View.GONE
+            }
+            SettingsCategory.TOOLS -> {
+                vb.cardQuickTools.visibility = View.VISIBLE
+                vb.cardAdBlockPrivacy.visibility = View.VISIBLE
+                vb.cardDisplayZoom.visibility = View.GONE
+                vb.cardThemeMedia.visibility = View.GONE
+                vb.cardBrowserEngine.visibility = View.GONE
+                vb.cardRemoteCursor.visibility = View.GONE
+                vb.cardCacheData.visibility = View.GONE
+            }
+            SettingsCategory.REMOTE -> {
+                vb.cardRemoteCursor.visibility = View.VISIBLE
+                vb.cardDisplayZoom.visibility = View.GONE
+                vb.cardThemeMedia.visibility = View.GONE
+                vb.cardBrowserEngine.visibility = View.GONE
+                vb.cardAdBlockPrivacy.visibility = View.GONE
+                vb.cardQuickTools.visibility = View.GONE
+                vb.cardCacheData.visibility = View.GONE
+            }
+        }
+        post { fullScroll(ScrollView.FOCUS_UP) }
+    }
 }
+
+enum class SettingsCategory {
+    GENERAL,
+    PRIVACY,
+    BROWSER,
+    TOOLS,
+    REMOTE
+}
+
