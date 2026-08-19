@@ -9,7 +9,9 @@ import android.webkit.WebView
 import com.gothwad.tvbrowser.AppContext
 import com.gothwad.tvbrowser.model.HostConfig
 import com.gothwad.tvbrowser.utils.FaviconExtractor
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -29,7 +31,7 @@ object FaviconsPool {
         suspend fun insert(newHostConfig: HostConfig) {}
     }
 
-    private val cache: LruCache<String, Bitmap> = object : LruCache<String, Bitmap>(10 * 1024 * 1024) {
+    private val cache: LruCache<String, Bitmap> = object : LruCache<String, Bitmap>(2 * 1024 * 1024) {
         override fun sizeOf(key: String, value: Bitmap): Int {
             return value.byteCount
         }
@@ -118,7 +120,7 @@ object FaviconsPool {
                                 if (icon != null) {
                                     Log.d(TAG, "get: favicon received from webview for $host")
                                     cache.put(host, icon)
-                                    runBlocking {
+                                    CoroutineScope(Dispatchers.IO).launch {
                                         saveFavicon(host, icon, hostConfig)
                                     }
                                 }
@@ -165,23 +167,32 @@ object FaviconsPool {
     }
 
     private suspend fun downloadIcon(iconInfo: FaviconExtractor.IconInfo): Bitmap? = withContext(Dispatchers.IO) {
-        val url = URL(iconInfo.src)
-        val connection = url.openConnection()
-        connection.connect()
-        val input = connection.getInputStream()
-        val options = BitmapFactory.Options()
-        options.inJustDecodeBounds = true
-        BitmapFactory.decodeStream(input, null, options)
-        input.close()
-        val width = options.outWidth
-        val height = options.outHeight
-        val scale = Math.max(width / 512, height / 512)
-        options.inJustDecodeBounds = false
-        options.inSampleSize = scale
-        val input2 = url.openConnection().getInputStream()
-        val bitmap = BitmapFactory.decodeStream(input2, null, options)
-        input2.close()
-        return@withContext bitmap
+        if (iconInfo.type?.contains("svg", ignoreCase = true) == true || iconInfo.src.endsWith(".svg", ignoreCase = true)) {
+            return@withContext null
+        }
+        try {
+            val url = URL(iconInfo.src)
+            val connection = url.openConnection()
+            connection.connectTimeout = 4000
+            connection.readTimeout = 4000
+            connection.connect()
+            val bytes = connection.getInputStream().use { it.readBytes() }
+            if (bytes.isEmpty()) return@withContext null
+            val options = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+            val width = options.outWidth
+            val height = options.outHeight
+            if (width <= 0 || height <= 0) return@withContext null
+            val scale = Math.max(1, Math.max(width / 512, height / 512))
+            val decodeOptions = BitmapFactory.Options().apply {
+                inSampleSize = scale
+            }
+            return@withContext BitmapFactory.decodeByteArray(bytes, 0, bytes.size, decodeOptions)
+        } catch (e: Throwable) {
+            return@withContext null
+        }
     }
 
     private fun chooseNearestSizeIcon(icons: List<FaviconExtractor.IconInfo>, w: Int, h: Int): FaviconExtractor.IconInfo? {
