@@ -1,46 +1,202 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/day_night_background_color">
 
-    <com.fedir.segmentedbutton.SegmentedButton
-        android:id="@+id/sbTabs"
+    <!-- Top Settings Header Bar -->
+    <RelativeLayout
+        android:id="@+id/rlSettingsHeader"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:nextFocusDown="@android:id/tabcontent"
-        app:checkedButton="@+id/btnMainTab"
-        app:cornerRadiusX="0"
-        app:cornerRadiusY="0">
-        <Button
-            android:id="@+id/btnMainTab"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:text="@string/main"
-            android:background="@drawable/settings_tab_bg_selector"/>
-        <Button
-            android:id="@+id/btnShortcutsTab"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:text="@string/shortcuts"
-            android:background="@drawable/settings_tab_bg_selector"
-            android:layout_marginStart="1dp"
-            android:layout_marginEnd="1dp"/>
-        <Button
-            android:id="@+id/btnVersionTab"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="1"
-            android:text="@string/version_and_updates"
-            android:background="@drawable/settings_tab_bg_selector"/>
-    </com.fedir.segmentedbutton.SegmentedButton>
+        android:layout_height="52dp"
+        android:background="@color/top_bar_background"
+        android:elevation="4dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
 
-    <FrameLayout
-        android:id="@+id/flTabsContent"
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_settings_grey_900_24dp"
+                android:tint="@color/day_night_icon_color"
+                android:contentDescription="@null" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="@string/settings"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/ibCloseSettings"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/button_bg_selector"
+            android:contentDescription="Close"
+            android:focusable="true"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_close_grey_900_24dp"
+            android:tint="@color/day_night_icon_color" />
+    </RelativeLayout>
+
+    <!-- TV Split Body: Left Categories Navigation Rail + Right Content Area -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    </FrameLayout>
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <!-- Left Categories Navigation Rail (File Manager Style with SVG Icons) -->
+        <ScrollView
+            android:layout_width="200dp"
+            android:layout_height="match_parent"
+            android:background="@color/day_night_surface_subtle"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/llSettingsTabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp">
+
+                <!-- 1. General & Theme -->
+                <Button
+                    android:id="@+id/btnTabGeneral"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginBottom="6dp"
+                    android:background="@drawable/button_bg_selector"
+                    android:drawableStart="@drawable/ic_settings_general"
+                    android:drawableTint="@color/day_night_icon_color"
+                    android:drawablePadding="10dp"
+                    android:focusable="true"
+                    android:gravity="start|center_vertical"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="10dp"
+                    android:text="General &amp; Theme"
+                    android:textColor="@color/day_night_text_color_contrast"
+                    android:textSize="12.5sp"
+                    android:textStyle="bold" />
+
+                <!-- 2. Privacy & PIN Lock -->
+                <Button
+                    android:id="@+id/btnTabPrivacy"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginBottom="6dp"
+                    android:background="@drawable/button_bg_selector"
+                    android:drawableStart="@drawable/ic_settings_privacy"
+                    android:drawableTint="@color/day_night_icon_color"
+                    android:drawablePadding="10dp"
+                    android:focusable="true"
+                    android:gravity="start|center_vertical"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="10dp"
+                    android:text="Privacy &amp; PIN Lock"
+                    android:textColor="@color/day_night_text_secondary"
+                    android:textSize="12.5sp" />
+
+                <!-- 3. Browser & Search Engine -->
+                <Button
+                    android:id="@+id/btnTabBrowser"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginBottom="6dp"
+                    android:background="@drawable/button_bg_selector"
+                    android:drawableStart="@drawable/ic_settings_browser"
+                    android:drawableTint="@color/day_night_icon_color"
+                    android:drawablePadding="10dp"
+                    android:focusable="true"
+                    android:gravity="start|center_vertical"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="10dp"
+                    android:text="Browser &amp; Search"
+                    android:textColor="@color/day_night_text_secondary"
+                    android:textSize="12.5sp" />
+
+                <!-- 4. Tools & AdBlock -->
+                <Button
+                    android:id="@+id/btnTabTools"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginBottom="6dp"
+                    android:background="@drawable/button_bg_selector"
+                    android:drawableStart="@drawable/ic_settings_tools"
+                    android:drawableTint="@color/day_night_icon_color"
+                    android:drawablePadding="10dp"
+                    android:focusable="true"
+                    android:gravity="start|center_vertical"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="10dp"
+                    android:text="Tools &amp; AdBlock"
+                    android:textColor="@color/day_night_text_secondary"
+                    android:textSize="12.5sp" />
+
+                <!-- 5. TV Remote & Keys -->
+                <Button
+                    android:id="@+id/btnTabRemote"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginBottom="6dp"
+                    android:background="@drawable/button_bg_selector"
+                    android:drawableStart="@drawable/ic_settings_remote"
+                    android:drawableTint="@color/day_night_icon_color"
+                    android:drawablePadding="10dp"
+                    android:focusable="true"
+                    android:gravity="start|center_vertical"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="10dp"
+                    android:text="TV Remote &amp; Keys"
+                    android:textColor="@color/day_night_text_secondary"
+                    android:textSize="12.5sp" />
+
+                <!-- 6. About & Version -->
+                <Button
+                    android:id="@+id/btnTabAbout"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:background="@drawable/button_bg_selector"
+                    android:drawableStart="@drawable/ic_settings_about"
+                    android:drawableTint="@color/day_night_icon_color"
+                    android:drawablePadding="10dp"
+                    android:focusable="true"
+                    android:gravity="start|center_vertical"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="10dp"
+                    android:text="About &amp; Version"
+                    android:textColor="@color/day_night_text_secondary"
+                    android:textSize="12.5sp" />
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Right Content Area -->
+        <FrameLayout
+            android:id="@+id/flTabsContent"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/day_night_background_color">
+        </FrameLayout>
+    </LinearLayout>
 </LinearLayout>
