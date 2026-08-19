@@ -23,6 +23,7 @@ interface WebEngine {
     fun canZoomOut(): Boolean
     fun zoomOut()
     fun zoomBy(zoomBy: Float)
+    fun setPageZoom(percent: Int)
     fun evaluateJavascript(script: String)
     fun setNetworkAvailable(connected: Boolean)
     fun getView(): View?
