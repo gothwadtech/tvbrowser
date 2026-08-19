@@ -5,18 +5,15 @@ import android.transition.TransitionManager
 import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.LayoutInflater
+import android.view.ViewGroup
 import android.view.View.OnFocusChangeListener
 import android.view.View.OnKeyListener
 import android.view.animation.Animation
-import android.view.animation.AnimationUtils
 import android.view.inputmethod.InputMethodManager
-import android.widget.ImageButton
 import android.widget.LinearLayout
-import androidx.appcompat.app.AppCompatActivity
 import com.gothwad.tvbrowser.AppContext
 import com.gothwad.tvbrowser.Config
 import com.gothwad.tvbrowser.R
-import com.gothwad.tvbrowser.BrowserApp
 import com.gothwad.tvbrowser.activity.downloads.ActiveDownloadsModel
 import com.gothwad.tvbrowser.databinding.ViewActionbarBinding
 import com.gothwad.tvbrowser.utils.Utils
@@ -26,7 +23,7 @@ class ActionBar @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
 ) : LinearLayout(context, attrs) {
 
-    private val vb = ViewActionbarBinding.inflate( LayoutInflater.from(context),this)
+    private val vb = ViewActionbarBinding.inflate(LayoutInflater.from(context), this)
     var callback: Callback? = null
     private var downloadAnimation: Animation? = null
     private var downloadsModel = ActiveModelsRepository.get(ActiveDownloadsModel::class, context)
@@ -43,6 +40,7 @@ class ActionBar @JvmOverloads constructor(
         fun onExtendedAddressBarMode()
         fun onUrlInputDone()
         fun toggleIncognitoMode()
+        fun toggleHeader()
     }
 
     private val etUrlFocusChangeListener = OnFocusChangeListener { _, focused ->
@@ -51,11 +49,17 @@ class ActionBar @JvmOverloads constructor(
 
             val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
 
-            imm.showSoftInput(vb.etUrl, InputMethodManager.SHOW_IMPLICIT)
+            if (!AppContext.provideConfig().disableVirtualKeyboard) {
+                imm.showSoftInput(vb.etUrl, InputMethodManager.SHOW_IMPLICIT)
+            } else {
+                imm.hideSoftInputFromWindow(vb.etUrl.windowToken, 0)
+            }
             postDelayed(//workaround an android TV bug
                 {
                     vb.etUrl.selectAll()
                 }, 500)
+        } else {
+            dismissExtendedAddressBarMode()
         }
     }
 
@@ -84,51 +88,38 @@ class ActionBar @JvmOverloads constructor(
 
         if (isInEditMode) return
 
-        val incognitoMode = AppContext.provideConfig().incognitoMode
-
-        vb.ibMenu.setOnClickListener { callback?.closeWindow() }
-        vb.ibDownloads.setOnClickListener { callback?.showDownloads() }
-        vb.ibFavorites.setOnClickListener { callback?.showFavorites() }
-        vb.ibHistory.setOnClickListener { callback?.showHistory() }
-        vb.ibIncognito.setOnClickListener { callback?.toggleIncognitoMode() }
-        vb.ibSettings.setOnClickListener { callback?.showSettings() }
-
         if (Utils.isFireTV(context)) {
-            vb.ibMenu.nextFocusRightId = R.id.ibHistory
-            removeView(vb.ibVoiceSearch)
+            (vb.ibVoiceSearch.parent as? ViewGroup)?.removeView(vb.ibVoiceSearch)
         } else {
             vb.ibVoiceSearch.setOnClickListener { callback?.initiateVoiceSearch() }
         }
 
-        vb.ibIncognito.isChecked = incognitoMode
-
         vb.etUrl.onFocusChangeListener = etUrlFocusChangeListener
-
         vb.etUrl.setOnKeyListener(etUrlKeyListener)
 
+        updateAddressBarIcon(vb.etUrl.text.toString())
 
-        downloadsModel.activeDownloads.subscribe(context as AppCompatActivity) {
-            if (it.isNotEmpty()) {
-                if (downloadAnimation == null) {
-                    downloadAnimation = AnimationUtils.loadAnimation(context, R.anim.infinite_fadeinout_anim)
-                    vb.ibDownloads.startAnimation(downloadAnimation)
-                }
-            } else {
-                downloadAnimation?.apply {
-                    this.reset()
-                    vb.ibDownloads.clearAnimation()
-                    downloadAnimation = null
-                }
-            }
-        }
+        AppContext.provideConfig().searchEngineURL.subscribe({ _ ->
+            post { updateAddressBarIcon(vb.etUrl.text.toString()) }
+        })
     }
 
     fun setAddressBoxText(text: String) {
-        if (text == Config.HOME_PAGE_URL) {
+        if (text == Config.HOME_PAGE_URL || text == Config.HOME_URL_ALIAS) {
             vb.etUrl.setText("")
+            updateAddressBarIcon("")
         } else {
             vb.etUrl.setText(text)
+            updateAddressBarIcon(text)
         }
+    }
+
+    fun setHeaderToggleIcon(isExpanded: Boolean) {
+        // No-op (header toggle icon removed from inside actionbar)
+    }
+
+    fun updateAddressBarIcon(url: String?) {
+        vb.ivLockIcon.setImageResource(R.drawable.ic_lock_security)
     }
 
     fun setAddressBoxTextColor(color: Int) {
@@ -138,12 +129,6 @@ class ActionBar @JvmOverloads constructor(
     private fun enterExtendedAddressBarMode() {
         if (extendedAddressBarMode) return
         extendedAddressBarMode = true
-        for (i in 0 until childCount) {
-            val child = getChildAt(i)
-            if (child is ImageButton) {
-                child.visibility = GONE
-            }
-        }
         TransitionManager.beginDelayedTransition(this)
         callback?.onExtendedAddressBarMode()
     }
@@ -151,15 +136,10 @@ class ActionBar @JvmOverloads constructor(
     fun dismissExtendedAddressBarMode() {
         if (!extendedAddressBarMode) return
         extendedAddressBarMode = false
-        for (i in 0 until childCount) {
-            val child = getChildAt(i)
-            if (child is ImageButton) {
-                child.visibility = VISIBLE
-            }
-        }
+        TransitionManager.beginDelayedTransition(this)
     }
 
     fun catchFocus() {
-        vb.ibMenu.requestFocus()
+        vb.etUrl.requestFocus()
     }
 }
