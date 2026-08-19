@@ -16,7 +16,7 @@ import com.gothwad.tvbrowser.model.util.Converters
     HistoryItem::class, WebTabState::class,
     HostConfig::class
                      ],
-    version = 19/*, exportSchema = true*/)
+    version = 19, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun downloadDao(): DownloadDao
