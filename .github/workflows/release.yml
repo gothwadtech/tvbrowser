@@ -41,7 +41,8 @@ jobs:
             -dname "CN=Gothwad TV Browser, O=Gothwad, C=IN" \
             -storepass android123 -keypass android123
 
-          $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
+          APKSIGNER=$(find $ANDROID_HOME/build-tools/ -name "apksigner" | sort -V | tail -n 1)
+          $APKSIGNER sign \
             --ks release_out/release_key.jks \
             --ks-key-alias gothwad_key \
             --ks-pass pass:android123 \
@@ -57,3 +58,4 @@ jobs:
           draft: false
           prerelease: false
           files: release_out/GothwadTVBrowser-v${{ inputs.version }}-Release.apk
+
