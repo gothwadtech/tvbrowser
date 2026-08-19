@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:parentTag="android.widget.RelativeLayout">
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toStartOf="@+id/tvKey"
+        android:ellipsize="end"
+        android:lines="1"
+        android:paddingStart="16dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="12dp"
+        android:textColor="@color/day_night_text_color_contrast"
+        android:textSize="15sp"
+        tools:text="Open Search" />
+
+    <TextView
+        android:id="@+id/tvKey"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/key_badge_bg"
+        android:ellipsize="end"
+        android:lines="1"
+        android:paddingStart="12dp"
+        android:paddingTop="6dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="6dp"
+        android:textColor="@color/progressbar_tint"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        tools:text="KEY_F" />
+</merge>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    android:background="@color/day_night_background_color">
+
+    <!-- Top Header Bar -->
+    <LinearLayout
+        android:id="@+id/llHistoryHeader"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@color/top_bar_background"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:elevation="4dp">
+
+        <!-- Back Button -->
+        <ImageButton
+            android:id="@+id/ibHistoryBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/button_bg_selector"
+            android:contentDescription="Back"
+            android:focusable="true"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_arrow_back_grey_900_24dp"
+            android:tint="@color/day_night_icon_color"
+            android:nextFocusRight="@+id/btnClear"
+            android:nextFocusDown="@+id/listView" />
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/tvHistoryTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_weight="1"
+            android:text="Browsing History"
+            android:textColor="@color/day_night_text_color_contrast"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <!-- Multi-select Delete Button (shown when items selected) -->
+        <ImageButton
+            android:id="@+id/ibDelete"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/button_bg_selector"
+            android:contentDescription="Delete selected"
+            android:focusable="true"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_delete"
+            android:tint="@color/day_night_icon_color"
+            android:visibility="gone"
+            android:nextFocusLeft="@+id/ibHistoryBack"
+            android:nextFocusRight="@+id/btnClear"
+            android:nextFocusDown="@+id/listView" />
+
+        <!-- Top Prominent "Clear Browsing Data" Button -->
+        <Button
+            android:id="@+id/btnClear"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:background="@drawable/button_bg_selector"
+            android:focusable="true"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:text="🗑️ Clear Browsing Data"
+            android:textColor="@color/day_night_text_color_contrast"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:nextFocusLeft="@+id/ibHistoryBack"
+            android:nextFocusDown="@+id/listView" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/day_night_divider" />
+
+    <!-- History Items List -->
+    <de.halfbit.pinnedsection.PinnedSectionListView
+        android:id="@+id/listView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@color/day_night_list_divider_color"
+        android:dividerHeight="1dp"
+        android:listSelector="@drawable/list_item_bg_selector"
+        android:nextFocusUp="@+id/btnClear" />
+
+</LinearLayout>

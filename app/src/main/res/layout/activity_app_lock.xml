@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/day_night_background_color"
+    android:orientation="horizontal"
+    android:gravity="center"
+    android:paddingStart="48dp"
+    android:paddingEnd="48dp"
+    android:paddingTop="24dp"
+    android:paddingBottom="24dp">
+
+    <!-- Left Side: Only Lock Icon & 4 PIN Dots -->
+    <LinearLayout
+        android:id="@+id/llDotsContainer"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingEnd="32dp">
+
+        <ImageView
+            android:id="@+id/ivLock"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@drawable/ic_lock_security"
+            android:tint="@color/day_night_icon_color"
+            android:contentDescription="@null" />
+
+        <!-- 4 PIN Dots -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:orientation="horizontal">
+
+            <View
+                android:id="@+id/dot1"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/pin_dot_empty" />
+
+            <View
+                android:id="@+id/dot2"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/pin_dot_empty" />
+
+            <View
+                android:id="@+id/dot3"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/pin_dot_empty" />
+
+            <View
+                android:id="@+id/dot4"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_margin="10dp"
+                android:background="@drawable/pin_dot_empty" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Right Side: Keypad Container with theme background -->
+    <LinearLayout
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/keypad_card_bg"
+        android:elevation="4dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Row 1: 1 2 3 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnKey1"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="1"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:nextFocusRight="@+id/btnKey2"
+                android:nextFocusDown="@+id/btnKey4" />
+
+            <Button
+                android:id="@+id/btnKey2"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="2"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:nextFocusLeft="@+id/btnKey1"
+                android:nextFocusRight="@+id/btnKey3"
+                android:nextFocusDown="@+id/btnKey5" />
+
+            <Button
+                android:id="@+id/btnKey3"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="3"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:nextFocusLeft="@+id/btnKey2"
+                android:nextFocusDown="@+id/btnKey6" />
+        </LinearLayout>
+
+        <!-- Row 2: 4 5 6 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnKey4"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="4"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:nextFocusUp="@+id/btnKey1"
+                android:nextFocusRight="@+id/btnKey5"
+                android:nextFocusDown="@+id/btnKey7" />
+
+            <Button
+                android:id="@+id/btnKey5"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="5"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:nextFocusUp="@+id/btnKey2"
+                android:nextFocusLeft="@+id/btnKey4"
+                android:nextFocusRight="@+id/btnKey6"
+                android:nextFocusDown="@+id/btnKey8" />
+
+            <Button
+                android:id="@+id/btnKey6"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="6"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:nextFocusUp="@+id/btnKey3"
+                android:nextFocusLeft="@+id/btnKey5"
+                android:nextFocusDown="@+id/btnKey9" />
+        </LinearLayout>
+
+        <!-- Row 3: 7 8 9 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnKey7"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="7"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:nextFocusUp="@+id/btnKey4"
+                android:nextFocusRight="@+id/btnKey8"
+                android:nextFocusDown="@+id/btnKeyClear" />
+
+            <Button
+                android:id="@+id/btnKey8"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="8"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:nextFocusUp="@+id/btnKey5"
+                android:nextFocusLeft="@+id/btnKey7"
+                android:nextFocusRight="@+id/btnKey9"
+                android:nextFocusDown="@+id/btnKey0" />
+
+            <Button
+                android:id="@+id/btnKey9"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="9"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:nextFocusUp="@+id/btnKey6"
+                android:nextFocusLeft="@+id/btnKey8"
+                android:nextFocusDown="@+id/btnKeyBackspace" />
+        </LinearLayout>
+
+        <!-- Row 4: Clear 0 Backspace -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnKeyClear"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="C"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:nextFocusUp="@+id/btnKey7"
+                android:nextFocusRight="@+id/btnKey0" />
+
+            <Button
+                android:id="@+id/btnKey0"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="0"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:nextFocusUp="@+id/btnKey8"
+                android:nextFocusLeft="@+id/btnKeyClear"
+                android:nextFocusRight="@+id/btnKeyBackspace" />
+
+            <Button
+                android:id="@+id/btnKeyBackspace"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="⌫"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:nextFocusUp="@+id/btnKey9"
+                android:nextFocusLeft="@+id/btnKey0" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

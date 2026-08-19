@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/llFileManagerRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/day_night_background_color"
+    android:fitsSystemWindows="true">
+
+    <!-- Top Header Bar -->
+    <RelativeLayout
+        android:id="@+id/rlHeader"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:background="@color/top_bar_background"
+        android:elevation="4dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/ibBack"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:background="@drawable/button_bg_selector"
+                android:contentDescription="@string/navigate_back"
+                android:focusable="true"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/back_icon_selector" />
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="File Manager"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvStorageStats"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:background="@drawable/settings_tab_bg_selector"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:textColor="@color/day_night_text_secondary"
+                android:textSize="11sp"
+                tools:text="Free: 24.5 GB / 64 GB" />
+        </LinearLayout>
+
+        <!-- Right Quick Actions -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/ibFolderUp"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/button_bg_selector"
+                android:contentDescription="Folder Up"
+                android:focusable="true"
+                android:padding="7dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_folder"
+                android:tint="@color/day_night_icon_color" />
+
+            <ImageButton
+                android:id="@+id/ibNewFolder"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/button_bg_selector"
+                android:contentDescription="New Folder"
+                android:focusable="true"
+                android:padding="7dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_folder_new"
+                android:tint="@color/day_night_icon_color" />
+
+            <ImageButton
+                android:id="@+id/ibRefresh"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:background="@drawable/button_bg_selector"
+                android:contentDescription="Refresh"
+                android:focusable="true"
+                android:padding="7dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_refresh_grey_900_24dp"
+                android:tint="@color/day_night_icon_color" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <!-- Path Breadcrumb Bar -->
+    <LinearLayout
+        android:id="@+id/llPathBar"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:background="@color/day_night_surface_color"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Path: "
+            android:textColor="@color/day_night_text_secondary"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvCurrentPath"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="start"
+            android:singleLine="true"
+            android:textColor="@color/progressbar_tint"
+            android:textSize="12sp"
+            tools:text="/storage/emulated/0/Download" />
+    </LinearLayout>
+
+    <!-- Main Content: Left Category Bar + Right Files Grid -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <!-- Left Categories Navigation Rail -->
+        <ScrollView
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:background="@color/day_night_surface_subtle"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp">
+
+                <Button
+                    android:id="@+id/btnCatStorage"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/button_bg_selector"
+                    android:focusable="true"
+                    android:gravity="start|center_vertical"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="8dp"
+                    android:text="📱 Internal"
+                    android:textColor="@color/day_night_text_color_contrast"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnCatDownloads"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/button_bg_selector"
+                    android:focusable="true"
+                    android:gravity="start|center_vertical"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="8dp"
+                    android:text="⬇️ Downloads"
+                    android:textColor="@color/day_night_text_secondary"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/btnCatApks"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/button_bg_selector"
+                    android:focusable="true"
+                    android:gravity="start|center_vertical"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="8dp"
+                    android:text="📦 APKs"
+                    android:textColor="@color/day_night_text_secondary"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/btnCatVideos"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/button_bg_selector"
+                    android:focusable="true"
+                    android:gravity="start|center_vertical"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="8dp"
+                    android:text="🎬 Videos"
+                    android:textColor="@color/day_night_text_secondary"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/btnCatAudio"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/button_bg_selector"
+                    android:focusable="true"
+                    android:gravity="start|center_vertical"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="8dp"
+                    android:text="🎵 Audio"
+                    android:textColor="@color/day_night_text_secondary"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/btnCatImages"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/button_bg_selector"
+                    android:focusable="true"
+                    android:gravity="start|center_vertical"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="8dp"
+                    android:text="🖼 Images"
+                    android:textColor="@color/day_night_text_secondary"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/btnCatDocs"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@drawable/button_bg_selector"
+                    android:focusable="true"
+                    android:gravity="start|center_vertical"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="8dp"
+                    android:text="📄 Documents"
+                    android:textColor="@color/day_night_text_secondary"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Right Content Area -->
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:padding="8dp">
+
+            <!-- Files Grid (3 Columns on TV Landscape) -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvFiles"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:paddingBottom="24dp" />
+
+            <!-- Empty Directory View -->
+            <LinearLayout
+                android:id="@+id/llEmptyView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@drawable/ic_folder"
+                    android:alpha="0.4"
+                    android:tint="@color/day_night_disabled_icon_color" />
+
+                <TextView
+                    android:id="@+id/tvEmptyText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="No files found in this directory"
+                    android:textColor="@color/day_night_text_secondary"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- Loading Spinner -->
+            <ProgressBar
+                android:id="@+id/pbLoading"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center"
+                android:indeterminateTint="@color/progressbar_tint"
+                android:visibility="gone" />
+        </FrameLayout>
+    </LinearLayout>
+
+</LinearLayout>

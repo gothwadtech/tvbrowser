@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="24dp"
+    android:paddingTop="16dp"
+    android:paddingEnd="24dp"
+    android:paddingBottom="40dp"
+    android:background="@color/day_night_background_color">
+
+    <!-- Card 1: App Info & Version -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/settings_card_bg"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name_short"
+            android:textColor="@color/progressbar_tint"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/web_browser_optimized_for_tvs"
+            android:textColor="@color/day_night_text_secondary"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/tvLink"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/button_bg_selector"
+            android:clickable="true"
+            android:focusable="true"
+            android:lines="1"
+            android:paddingStart="12dp"
+            android:paddingTop="6dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="6dp"
+            android:textColor="@color/progressbar_tint"
+            android:textSize="13sp"
+            tools:text="https://github.com/truefedex/tvbrowser" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="14dp"
+            android:background="@color/day_night_divider" />
+
+        <TextView
+            android:id="@+id/tvVersion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/version_s"
+            android:textColor="@color/day_night_text_color_contrast"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvBuildFlavor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/day_night_text_secondary"
+            android:textSize="13sp"
+            tools:text="Build flavor: generic · standard" />
+
+        <TextView
+            android:id="@+id/tvWebViewVersion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/day_night_text_secondary"
+            android:textSize="13sp"
+            tools:text="WebView Version: 10.0.1" />
+    </LinearLayout>
+
+    <!-- Card 2: Support, License & Privacy -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/settings_card_bg"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="📜 Legal &amp; Author"
+            android:textColor="@color/progressbar_tint"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvSupportAuthor"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/button_bg_selector"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:lines="1"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:textColor="@color/day_night_text_color_contrast"
+            android:textSize="14sp"
+            tools:text="Support the author" />
+
+        <TextView
+            android:id="@+id/tvLicense"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/button_bg_selector"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:lines="1"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:textColor="@color/day_night_text_color_contrast"
+            android:textSize="14sp"
+            tools:text="License" />
+
+        <TextView
+            android:id="@+id/tvPrivacy"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/button_bg_selector"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:lines="1"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:textColor="@color/day_night_text_color_contrast"
+            android:textSize="14sp"
+            tools:text="Privacy policy" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvUkraine"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:clickable="true"
+                android:ellipsize="end"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:lines="1"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:text="@string/why_icon_changed"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="14sp" />
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="10dp"
+                android:src="@drawable/banner" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Card 3: Updates -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/settings_card_bg"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="🔄 Software Updates"
+            android:textColor="@color/progressbar_tint"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <CheckBox
+            android:id="@+id/chkAutoCheckUpdates"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/auto_check_for_updates"
+            android:textColor="@color/day_night_text_color_contrast"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvUpdateChannel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/update_channel"
+                android:textColor="@color/day_night_text_secondary"
+                android:textSize="14sp"
+                android:visibility="invisible" />
+
+            <Spinner
+                android:id="@+id/spUpdateChannel"
+                android:layout_width="wrap_content"
+                android:layout_height="42dp"
+                android:layout_marginStart="16dp"
+                android:visibility="invisible" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvNewVersion"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/new_version_available_s"
+                android:textColor="#22C55E"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:visibility="invisible" />
+
+            <Button
+                android:id="@+id/btnUpdate"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:background="@drawable/button_bg_selector"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="@string/update"
+                android:textColor="@color/progressbar_tint"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:visibility="invisible" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>
