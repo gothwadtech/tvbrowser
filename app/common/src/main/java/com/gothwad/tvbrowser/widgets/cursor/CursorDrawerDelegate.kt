@@ -330,28 +330,95 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
     }
 
     fun dispatchDraw(canvas: Canvas) {
+        val cfg = AppContext.provideConfig()
+        if (!cfg.enableVirtualCursor) return
+
         if (grabMode || !isCursorDisappear) {
             val cx = cursorPosition.x
             val cy = cursorPosition.y
-            val radius = if (dpadCenterPressed) cursorRadiusPressed else
+            val baseRadius = if (dpadCenterPressed) cursorRadiusPressed.toFloat() else
                     (cursorRadius * cursorRadiusAnimationMultiplier)
 
-            paint.color = when {
-                grabMode -> Color.argb(128, 200, 200, 255)
-                else -> Color . argb (128, 255, 255, 255)
-            }
-            paint.style = Paint.Style.FILL
-            canvas.drawCircle(cx, cy, radius.toFloat(), paint)
+            val sizeScale = cfg.cursorSizePercent / 100f
+            val radius = baseRadius * sizeScale
 
-            paint.color = Color.GRAY
-            paint.strokeWidth = cursorStrokeWidth
-            paint.style = Paint.Style.STROKE
-            canvas.drawCircle(cx, cy, radius.toFloat(), paint)
+            when (cfg.cursorStyle) {
+                0 -> { // Classic Circle / Ring
+                    paint.color = when {
+                        grabMode -> Color.argb(128, 200, 200, 255)
+                        else -> Color.argb(128, 255, 255, 255)
+                    }
+                    paint.style = Paint.Style.FILL
+                    canvas.drawCircle(cx, cy, radius, paint)
 
-            if (grabMode) {
-                val halfRadius = radius.toFloat() / 2
-                canvas.drawLine(cx - halfRadius, cy, cx + halfRadius, cy, paint)
-                canvas.drawLine(cx, cy - halfRadius, cx, cy + halfRadius, paint)
+                    paint.color = Color.GRAY
+                    paint.strokeWidth = cursorStrokeWidth * sizeScale
+                    paint.style = Paint.Style.STROKE
+                    canvas.drawCircle(cx, cy, radius, paint)
+
+                    if (grabMode) {
+                        val halfRadius = radius / 2f
+                        canvas.drawLine(cx - halfRadius, cy, cx + halfRadius, cy, paint)
+                        canvas.drawLine(cx, cy - halfRadius, cx, cy + halfRadius, paint)
+                    }
+                }
+                1 -> { // Arrow Pointer
+                    val path = android.graphics.Path()
+                    val arrowSize = (cursorRadius * 2.5f) * sizeScale
+                    path.moveTo(cx, cy)
+                    path.lineTo(cx, cy + arrowSize)
+                    path.lineTo(cx + arrowSize * 0.45f, cy + arrowSize * 0.75f)
+                    path.lineTo(cx + arrowSize * 0.75f, cy + arrowSize * 1.1f)
+                    path.lineTo(cx + arrowSize * 0.95f, cy + arrowSize * 0.95f)
+                    path.lineTo(cx + arrowSize * 0.65f, cy + arrowSize * 0.6f)
+                    path.lineTo(cx + arrowSize * 0.9f, cy + arrowSize * 0.6f)
+                    path.close()
+
+                    paint.color = if (dpadCenterPressed) Color.rgb(200, 200, 200) else Color.WHITE
+                    paint.style = Paint.Style.FILL
+                    canvas.drawPath(path, paint)
+
+                    paint.color = Color.BLACK
+                    paint.style = Paint.Style.STROKE
+                    paint.strokeWidth = (cursorStrokeWidth * 0.8f * sizeScale).coerceAtLeast(2f)
+                    canvas.drawPath(path, paint)
+                }
+                2 -> { // Crosshair Target
+                    val crossSize = (cursorRadius * 1.8f) * sizeScale
+                    paint.color = if (dpadCenterPressed) Color.RED else Color.GREEN
+                    paint.style = Paint.Style.STROKE
+                    paint.strokeWidth = (cursorStrokeWidth * sizeScale).coerceAtLeast(3f)
+
+                    canvas.drawCircle(cx, cy, crossSize * 0.5f, paint)
+                    canvas.drawLine(cx - crossSize, cy, cx + crossSize, cy, paint)
+                    canvas.drawLine(cx, cy - crossSize, cx, cy + crossSize, paint)
+                }
+                3 -> { // Glowing Red Laser
+                    paint.style = Paint.Style.FILL
+                    paint.color = Color.argb(80, 255, 0, 0)
+                    canvas.drawCircle(cx, cy, radius * 1.8f, paint)
+
+                    paint.color = if (dpadCenterPressed) Color.YELLOW else Color.RED
+                    canvas.drawCircle(cx, cy, radius * 0.8f, paint)
+                }
+                4 -> { // Neon Blue Pointer
+                    val path = android.graphics.Path()
+                    val arrowSize = (cursorRadius * 2.5f) * sizeScale
+                    path.moveTo(cx, cy)
+                    path.lineTo(cx, cy + arrowSize)
+                    path.lineTo(cx + arrowSize * 0.35f, cy + arrowSize * 0.7f)
+                    path.lineTo(cx + arrowSize * 0.7f, cy + arrowSize * 0.7f)
+                    path.close()
+
+                    paint.style = Paint.Style.FILL
+                    paint.color = if (dpadCenterPressed) Color.rgb(255, 64, 129) else Color.rgb(0, 229, 255)
+                    canvas.drawPath(path, paint)
+
+                    paint.style = Paint.Style.STROKE
+                    paint.color = Color.WHITE
+                    paint.strokeWidth = (cursorStrokeWidth * sizeScale).coerceAtLeast(2f)
+                    canvas.drawPath(path, paint)
+                }
             }
         }
     }
