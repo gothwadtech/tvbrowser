@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/day_night_surface_color"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Custom Bookmark"
+        android:textColor="@color/day_night_text_color_contrast"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
+    <EditText
+        android:id="@+id/etBookmarkName"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:background="@drawable/chrome_omnibox_bg"
+        android:hint="Site Title (e.g. JioCinema)"
+        android:textColorHint="@color/day_night_text_secondary"
+        android:textColor="@color/day_night_text_color_contrast"
+        android:textSize="14sp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:layout_marginBottom="12dp"
+        android:singleLine="true" />
+
+    <EditText
+        android:id="@+id/etBookmarkUrl"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:background="@drawable/chrome_omnibox_bg"
+        android:hint="URL (https://...)"
+        android:textColorHint="@color/day_night_text_secondary"
+        android:textColor="@color/day_night_text_color_contrast"
+        android:textSize="14sp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:inputType="textUri"
+        android:singleLine="true" />
+
+</LinearLayout>
