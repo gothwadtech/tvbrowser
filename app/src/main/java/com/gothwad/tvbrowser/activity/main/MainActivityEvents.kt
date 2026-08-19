@@ -1,0 +1,135 @@
+package com.gothwad.tvbrowser.activity.main
+
+import android.Manifest
+import android.app.AlertDialog
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Environment
+import android.util.Log
+import android.view.View
+import android.widget.Toast
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
+import com.gothwad.tvbrowser.R
+import com.gothwad.tvbrowser.model.Download
+import com.gothwad.tvbrowser.utils.Utils
+import com.gothwad.tvbrowser.activity.main.view.CursorMenuView
+import java.io.File
+import java.io.InputStream
+
+internal fun MainActivity.onDownloadRequested(
+    url: String,
+    referer: String,
+    originalDownloadFileName: String,
+    userAgent: String?,
+    mimeType: String? = null,
+    operationAfterDownload: Download.OperationAfterDownload = Download.OperationAfterDownload.NOP,
+    base64BlobData: String? = null,
+    stream: InputStream? = null,
+    size: Long = 0L
+) {
+    downloadIntent = Download(
+        url, originalDownloadFileName, null, operationAfterDownload,
+        mimeType, referer, userAgent, base64BlobData, stream, size
+    )
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R &&
+        checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+    ) {
+        requestPermissions(
+            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+            MainActivity.MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE_ACCESS
+        )
+    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+        checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+    ) {
+        requestPermissions(
+            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+            MainActivity.MY_PERMISSIONS_REQUEST_POST_NOTIFICATIONS_ACCESS
+        )
+    } else {
+        startDownload()
+    }
+}
+
+internal fun MainActivity.startDownload() {
+    val download = this.downloadIntent ?: return
+    this.downloadIntent = null
+    downloadService?.startDownload(download)
+    onDownloadStarted(download.filename)
+}
+
+internal fun MainActivity.onDownloadStarted(fileName: String) {
+    Utils.showToast(
+        this, getString(
+            R.string.download_started,
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString() + File.separator + fileName
+        )
+    )
+    showMenuOverlay()
+}
+
+internal fun MainActivity.hideSoftwareKeyboardIfVisible(): Boolean {
+    val root = window.decorView.rootView
+    val insets = ViewCompat.getRootWindowInsets(root) ?: return false
+    if (!insets.isVisible(WindowInsetsCompat.Type.ime())) {
+        return false
+    }
+    val view = currentFocus ?: root
+    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+    imm.hideSoftInputFromWindow(view.windowToken, 0)
+    return true
+}
+
+internal fun MainActivity.handleBackNavigation() {
+    Log.d("MainActivity", "handleBackNavigation")
+    if (tabsModel.currentTab.value?.webEngine?.isVirtualCursorMode() == false) {
+        tabsModel.currentTab.value?.webEngine?.setVirtualCursorMode(true)
+        backNavigationEventsAdapter.gameControllersLongPressBForBackNavigation = false
+        return
+    }
+
+    if (vb.vCursorMenu.isVisible) {
+        vb.vCursorMenu.close(CursorMenuView.CloseAnimation.ROTATE_OUT)
+    } else if (vb.flWebViewContainer.cursorDrawerDelegate.canHandleBackNavigation()) {
+        vb.flWebViewContainer.cursorDrawerDelegate.handleBackNavigation()
+    } else if (isFullscreen) {
+        tabsModel.currentTab.value?.webEngine?.hideFullscreenView()
+    } else if (vb.llBottomPanel.isVisible && !vb.rlActionBar.isVisible) {
+        hideBottomPanel()
+    } else {
+        if (vb.rlActionBar.visibility != View.VISIBLE) {
+            showMenuOverlay()
+        } else {
+            hideMenuOverlay()
+            val currentTab = tabsModel.currentTab.value
+            if (currentTab != null && currentTab.webEngine.canGoBack()) {
+                currentTab.webEngine.goBack()
+            }
+        }
+    }
+}
+
+internal fun MainActivity.askUserAndOpenInExternalApp(url: String, intent: Intent) {
+    if (openUrlInExternalAppDialog != null) {
+        return
+    }
+    openUrlInExternalAppDialog = AlertDialog.Builder(this)
+        .setTitle(R.string.site_asks_to_open_unknown_url)
+        .setMessage(getString(R.string.site_asks_to_open_unknown_url_message) + "\n\n" + url)
+        .setPositiveButton(R.string.yes) { _, _ ->
+            try {
+                startActivity(intent)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this, R.string.external_app_open_error, Toast.LENGTH_SHORT).show()
+            }
+        }
+        .setNegativeButton(R.string.no, null)
+        .setOnDismissListener {
+            openUrlInExternalAppDialog = null
+        }
+        .show()
+}
