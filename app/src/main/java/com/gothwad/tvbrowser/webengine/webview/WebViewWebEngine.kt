@@ -98,6 +98,10 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         webView?.zoomBy(zoomBy)
     }
 
+    override fun setPageZoom(percent: Int) {
+        webView?.settings?.textZoom = percent
+    }
+
     override fun evaluateJavascript(script: String) {
         webView?.evaluateJavascript(script, null)
     }
