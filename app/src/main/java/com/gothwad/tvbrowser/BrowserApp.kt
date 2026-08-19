@@ -63,8 +63,12 @@ class BrowserApp : Application(), Application.ActivityLifecycleCallbacks {
         ActiveModelsRepository.init(this)
 
         when (AppContext.provideConfig().theme.value) {
-            Config.Theme.BLACK -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-            Config.Theme.WHITE -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            Config.Theme.BLACK_AMOLED,
+            Config.Theme.BLACK_CHARCOAL,
+            Config.Theme.BLACK_MIDNIGHT -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            Config.Theme.WHITE_PURE,
+            Config.Theme.WHITE_WARM,
+            Config.Theme.WHITE_COOL -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         }
 
