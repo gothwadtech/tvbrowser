@@ -1,4 +1,4 @@
-name: Build Signed Release APK
+name: Build Signed Release APK & Play Store AAB
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Build & Sign APK
+    name: Build & Sign APK & AAB
     runs-on: ubuntu-latest
 
     steps:
@@ -23,23 +23,19 @@ jobs:
       - name: Make Gradle Wrapper Executable
         run: chmod +x ./gradlew
 
-      - name: Build Release APK with Gradle
-        run: ./gradlew assembleRelease --no-daemon
-
-      - name: Sign Release APK
+      - name: Build Release APK and AAB Bundle with Gradle
         run: |
-          echo "Locating generated Release APK..."
+          ./gradlew assembleRelease bundleRelease --no-daemon
+
+      - name: Sign Release APK & AAB
+        run: |
+          echo "Locating generated Release APK and AAB..."
           UNSIGNED_APK=$(find app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
-          if [ -z "$UNSIGNED_APK" ]; then
-            echo "Error: No APK found!"
-            exit 1
-          fi
-          echo "Found APK: $UNSIGNED_APK"
+          UNSIGNED_AAB=$(find app/build/outputs/bundle/release/ -name "*.aab" | head -n 1)
           
-          # Create Release Directory
           mkdir -p output_release
           
-          # Generate permanent release key
+          # Generate permanent release keystore
           keytool -genkey -v \
             -keystore output_release/gothwad_release_key.jks \
             -keyalg RSA -keysize 2048 -validity 10000 \
@@ -51,30 +47,40 @@ jobs:
           ZIPALIGN=$(find $ANDROID_HOME/build-tools/ -name "zipalign" | sort -V | tail -n 1)
           APKSIGNER=$(find $ANDROID_HOME/build-tools/ -name "apksigner" | sort -V | tail -n 1)
           
-          # Align APK
-          if [ -n "$ZIPALIGN" ]; then
-            $ZIPALIGN -v -p 4 "$UNSIGNED_APK" output_release/GothwadTVBrowser-v1.0.0-unaligned.apk || cp "$UNSIGNED_APK" output_release/GothwadTVBrowser-v1.0.0-unaligned.apk
-          else
-            cp "$UNSIGNED_APK" output_release/GothwadTVBrowser-v1.0.0-unaligned.apk
+          # 1. Sign APK
+          if [ -n "$UNSIGNED_APK" ]; then
+            if [ -n "$ZIPALIGN" ]; then
+              $ZIPALIGN -v -p 4 "$UNSIGNED_APK" output_release/GothwadTVBrowser-v1.0.0-unaligned.apk || cp "$UNSIGNED_APK" output_release/GothwadTVBrowser-v1.0.0-unaligned.apk
+            else
+              cp "$UNSIGNED_APK" output_release/GothwadTVBrowser-v1.0.0-unaligned.apk
+            fi
+            
+            $APKSIGNER sign \
+              --ks output_release/gothwad_release_key.jks \
+              --ks-key-alias gothwad_tv_key \
+              --ks-pass pass:android123 \
+              --key-pass pass:android123 \
+              --out output_release/GothwadTVBrowser-v1.0.0-Release.apk \
+              output_release/GothwadTVBrowser-v1.0.0-unaligned.apk
+              
+            $APKSIGNER verify --verbose output_release/GothwadTVBrowser-v1.0.0-Release.apk
+            rm -f output_release/*unaligned.apk
           fi
           
-          # Sign APK with apksigner (V1, V2, V3 signature)
-          $APKSIGNER sign \
-            --ks output_release/gothwad_release_key.jks \
-            --ks-key-alias gothwad_tv_key \
-            --ks-pass pass:android123 \
-            --key-pass pass:android123 \
-            --out output_release/GothwadTVBrowser-v1.0.0-Release.apk \
-            output_release/GothwadTVBrowser-v1.0.0-unaligned.apk
-            
-          # Verify Signature
-          $APKSIGNER verify --verbose output_release/GothwadTVBrowser-v1.0.0-Release.apk
-          
-          # Cleanup temp files
-          rm -f output_release/*unaligned.apk
+          # 2. Sign Play Store AAB Bundle using jarsigner
+          if [ -n "$UNSIGNED_AAB" ]; then
+            cp "$UNSIGNED_AAB" output_release/GothwadTVBrowser-v1.0.0-PlayStore.aab
+            jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+              -keystore output_release/gothwad_release_key.jks \
+              -storepass android123 -keypass android123 \
+              output_release/GothwadTVBrowser-v1.0.0-PlayStore.aab \
+              gothwad_tv_key
+            echo "Successfully signed Play Store AAB!"
+          fi
 
-      - name: Upload Signed Release APK & Keystore
+      - name: Upload Signed Release APK, AAB & Keystore
         uses: actions/upload-artifact@v4
         with:
-          name: Gothwad-TV-Browser-v1.0.0-Release
+          name: Gothwad-TV-Browser-v1.0.0-Production-Binaries
           path: output_release/
+
