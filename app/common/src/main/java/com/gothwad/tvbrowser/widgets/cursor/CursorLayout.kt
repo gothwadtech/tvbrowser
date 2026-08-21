@@ -76,6 +76,12 @@ class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeS
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
         Log.d("CursorLayout", "dispatchGenericMotionEvent: $event")
 
+        // Handle hardware mouse click / button press anomalies (Airtel STB fix)
+        val hwInput = com.gothwad.tvbrowser.utils.HardwareInputManager.getInstance(context)
+        if (hwInput.processHardwareMouseEvent(event, this)) {
+            return true
+        }
+
         if (willNotDraw() || !AppContext.provideConfig().enableVirtualCursor) return super.dispatchGenericMotionEvent(event)
 
         if (inputEventsAdapter.dispatchGenericMotionEvent(event)) {
@@ -83,6 +89,15 @@ class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeS
         }
 
         return super.dispatchGenericMotionEvent(event)
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        // Direct hardware mouse click routing
+        val hwInput = com.gothwad.tvbrowser.utils.HardwareInputManager.getInstance(context)
+        if (hwInput.processHardwareMouseEvent(ev, this)) {
+            return true
+        }
+        return super.dispatchTouchEvent(ev)
     }
 
     override fun dispatchDraw(canvas: Canvas) {

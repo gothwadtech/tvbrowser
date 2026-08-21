@@ -35,7 +35,9 @@ import com.gothwad.tvbrowser.BrowserApp
 import com.gothwad.tvbrowser.Config
 import com.gothwad.tvbrowser.R
 import com.gothwad.tvbrowser.activity.IncognitoModeMainActivity
+import com.gothwad.tvbrowser.activity.filemanager.FileManagerActivity
 import com.gothwad.tvbrowser.activity.history.HistoryActivity
+import com.gothwad.tvbrowser.activity.notes.NotesActivity
 import com.gothwad.tvbrowser.activity.main.dialogs.tabs.TabsGridDialog
 import com.gothwad.tvbrowser.activity.main.view.ActionBar
 import com.gothwad.tvbrowser.databinding.ActivityMainBinding
@@ -204,6 +206,9 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.flTabsSwitcher.setOnClickListener {
             showTabsGrid()
         }
+        vb.ibNotes.setOnClickListener {
+            startActivity(Intent(this, NotesActivity::class.java))
+        }
         vb.ibBack.setOnClickListener { navigateBack() }
         vb.ibForward.setOnClickListener {
             val tab = tabsModel.currentTab.value ?: return@setOnClickListener
@@ -213,12 +218,27 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
         vb.ibRefresh.setOnClickListener { refresh() }
         vb.ibDownloads.setOnClickListener { showDownloads() }
+        vb.ibFileManager.setOnClickListener {
+            startActivity(Intent(this, FileManagerActivity::class.java))
+        }
         vb.ibBookmarks.setOnClickListener { showFavorites() }
         vb.ibSettings.setOnClickListener { showChromeMenu() }
 
         vb.vActionBar.callback = this
 
-        listOf(vb.ibHome, vb.ibNewTab, vb.flTabsSwitcher, vb.ibBack, vb.ibForward, vb.ibRefresh, vb.ibDownloads, vb.ibBookmarks, vb.ibSettings).forEach {
+        listOf(
+            vb.ibHome,
+            vb.ibBack,
+            vb.ibForward,
+            vb.ibRefresh,
+            vb.ibNewTab,
+            vb.flTabsSwitcher,
+            vb.ibNotes,
+            vb.ibDownloads,
+            vb.ibFileManager,
+            vb.ibBookmarks,
+            vb.ibSettings
+        ).forEach {
             it.setOnTouchListener(bottomButtonsOnTouchListener)
             it.onFocusChangeListener = bottomButtonsFocusListener
             it.setOnKeyListener(bottomButtonsKeyListener)
@@ -527,13 +547,13 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     fun zoomWebIn() {
-        val currentTab = tabsModel.currentTab.value
-        currentTab?.webEngine?.zoomIn()
+        val next = (config.webPageZoomPercent + 10).coerceAtMost(Config.WEB_PAGE_ZOOM_PERCENT_MAX)
+        applyWebPageZoom(next)
     }
 
     fun zoomWebOut() {
-        val currentTab = tabsModel.currentTab.value
-        currentTab?.webEngine?.zoomOut()
+        val next = (config.webPageZoomPercent - 10).coerceAtLeast(Config.WEB_PAGE_ZOOM_PERCENT_MIN)
+        applyWebPageZoom(next)
     }
 
     override fun search(aText: String) {

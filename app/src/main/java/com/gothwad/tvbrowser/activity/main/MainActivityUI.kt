@@ -194,7 +194,7 @@ internal fun MainActivity.showSettingsDialog() {
 }
 
 internal fun MainActivity.showChromeMenu() {
-    val anchorView = vb.vActionBar.findViewById<View>(R.id.ibSettings) ?: vb.vActionBar
+    val anchorView = vb.ibSettings
     com.gothwad.tvbrowser.activity.main.dialogs.ChromeMenuPopup(this).show(anchorView)
 }
 

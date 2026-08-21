@@ -73,6 +73,8 @@ class MainSettingsView @JvmOverloads constructor(
 
         initVirtualCursorPhysicsSettingsUI()
 
+        initKeyboardMouseSettingsUI()
+
         initAppLockSettingsUI()
 
         vb.btnClearWebCache.setOnClickListener {
@@ -553,11 +555,15 @@ class MainSettingsView @JvmOverloads constructor(
 
         vb.btnQuickZoomIn.setOnClickListener {
             (activity as? MainActivity)?.zoomWebIn()
+            vb.sbWebPageZoom.progress = (config.webPageZoomPercent - Config.WEB_PAGE_ZOOM_PERCENT_MIN).coerceIn(0, Config.WEB_PAGE_ZOOM_PERCENT_MAX - Config.WEB_PAGE_ZOOM_PERCENT_MIN)
+            vb.tvWebPageZoomValue.text = "${config.webPageZoomPercent}%"
             Toast.makeText(context, R.string.quick_zoom_in, Toast.LENGTH_SHORT).show()
         }
 
         vb.btnQuickZoomOut.setOnClickListener {
             (activity as? MainActivity)?.zoomWebOut()
+            vb.sbWebPageZoom.progress = (config.webPageZoomPercent - Config.WEB_PAGE_ZOOM_PERCENT_MIN).coerceIn(0, Config.WEB_PAGE_ZOOM_PERCENT_MAX - Config.WEB_PAGE_ZOOM_PERCENT_MIN)
+            vb.tvWebPageZoomValue.text = "${config.webPageZoomPercent}%"
             Toast.makeText(context, R.string.quick_zoom_out, Toast.LENGTH_SHORT).show()
         }
 
@@ -641,6 +647,60 @@ class MainSettingsView @JvmOverloads constructor(
         vb.btnWebZoom200.setOnClickListener { setWebZoom(200) }
     }
 
+    private fun initKeyboardMouseSettingsUI() {
+        // Sync soft keyboard disable toggle with config
+        vb.scDisableVirtualKeyboardKm.isChecked = config.disableVirtualKeyboard
+        vb.scDisableVirtualKeyboardKm.setOnCheckedChangeListener { _, isChecked ->
+            config.disableVirtualKeyboard = isChecked
+            vb.scDisableVirtualKeyboard.isChecked = isChecked
+            (activity as? MainActivity)?.applySoftInputMode()
+        }
+
+        vb.llDisableVirtualKeyboardKm.setOnClickListener {
+            vb.scDisableVirtualKeyboardKm.toggle()
+        }
+
+        vb.llMouseCompatibility.setOnClickListener {
+            vb.scMouseCompatibility.toggle()
+        }
+
+        // Live hardware input detection
+        val hwInput = com.gothwad.tvbrowser.utils.HardwareInputManager.getInstance(context)
+        val updateDeviceList: (List<com.gothwad.tvbrowser.utils.HardwareInputManager.DeviceInfo>) -> Unit = { devices ->
+            val nonVirtual = devices.filter { !it.isVirtual }
+            if (nonVirtual.isEmpty()) {
+                vb.tvConnectedHardwareStatus.text = "⚠️ No external physical keyboard or mouse currently detected.\n(Using standard TV Remote / D-Pad navigation)"
+            } else {
+                val sb = StringBuilder()
+                for (dev in nonVirtual) {
+                    val typeLabel = when {
+                        dev.isMouse && dev.isKeyboard -> "⌨️ 🖱️ Combo Input"
+                        dev.isMouse -> "🖱️ Mouse / Touchpad"
+                        dev.isKeyboard -> "⌨️ Physical Keyboard"
+                        dev.isGamepad -> "🎮 Gamepad / Controller"
+                        else -> "🔌 Input Device"
+                    }
+                    sb.append("• ").append(typeLabel).append(": ").append(dev.name).append("\n")
+                }
+                sb.append("✅ Precision STB Click Optimization: Active")
+                vb.tvConnectedHardwareStatus.text = sb.toString().trim()
+            }
+        }
+
+        hwInput.addListener(object : com.gothwad.tvbrowser.utils.HardwareInputManager.InputDevicesListener {
+            override fun onInputDevicesChanged(devices: List<com.gothwad.tvbrowser.utils.HardwareInputManager.DeviceInfo>) {
+                post { updateDeviceList(devices) }
+            }
+        })
+
+        vb.btnRefreshDevices.setOnClickListener {
+            updateDeviceList(hwInput.getConnectedDevices())
+            Toast.makeText(context, "Device list refreshed", Toast.LENGTH_SHORT).show()
+        }
+
+        updateDeviceList(hwInput.getConnectedDevices())
+    }
+
     fun showCategory(category: SettingsCategory) {
         when (category) {
             SettingsCategory.GENERAL -> {
@@ -650,16 +710,20 @@ class MainSettingsView @JvmOverloads constructor(
                 vb.cardAdBlockPrivacy.visibility = View.GONE
                 vb.cardQuickTools.visibility = View.GONE
                 vb.cardRemoteCursor.visibility = View.GONE
+                vb.cardKeyboardMouse.visibility = View.GONE
+                vb.cardAppLock.visibility = View.GONE
                 vb.cardCacheData.visibility = View.GONE
             }
             SettingsCategory.PRIVACY -> {
-                vb.cardAdBlockPrivacy.visibility = View.VISIBLE
+                vb.cardAppLock.visibility = View.VISIBLE
                 vb.cardCacheData.visibility = View.VISIBLE
+                vb.cardAdBlockPrivacy.visibility = View.GONE
                 vb.cardDisplayZoom.visibility = View.GONE
                 vb.cardThemeMedia.visibility = View.GONE
                 vb.cardBrowserEngine.visibility = View.GONE
                 vb.cardQuickTools.visibility = View.GONE
                 vb.cardRemoteCursor.visibility = View.GONE
+                vb.cardKeyboardMouse.visibility = View.GONE
             }
             SettingsCategory.BROWSER -> {
                 vb.cardBrowserEngine.visibility = View.VISIBLE
@@ -668,6 +732,8 @@ class MainSettingsView @JvmOverloads constructor(
                 vb.cardAdBlockPrivacy.visibility = View.GONE
                 vb.cardQuickTools.visibility = View.GONE
                 vb.cardRemoteCursor.visibility = View.GONE
+                vb.cardKeyboardMouse.visibility = View.GONE
+                vb.cardAppLock.visibility = View.GONE
                 vb.cardCacheData.visibility = View.GONE
             }
             SettingsCategory.TOOLS -> {
@@ -677,15 +743,30 @@ class MainSettingsView @JvmOverloads constructor(
                 vb.cardThemeMedia.visibility = View.GONE
                 vb.cardBrowserEngine.visibility = View.GONE
                 vb.cardRemoteCursor.visibility = View.GONE
+                vb.cardKeyboardMouse.visibility = View.GONE
+                vb.cardAppLock.visibility = View.GONE
                 vb.cardCacheData.visibility = View.GONE
             }
             SettingsCategory.REMOTE -> {
                 vb.cardRemoteCursor.visibility = View.VISIBLE
+                vb.cardKeyboardMouse.visibility = View.GONE
                 vb.cardDisplayZoom.visibility = View.GONE
                 vb.cardThemeMedia.visibility = View.GONE
                 vb.cardBrowserEngine.visibility = View.GONE
                 vb.cardAdBlockPrivacy.visibility = View.GONE
                 vb.cardQuickTools.visibility = View.GONE
+                vb.cardAppLock.visibility = View.GONE
+                vb.cardCacheData.visibility = View.GONE
+            }
+            SettingsCategory.KEYBOARD_MOUSE -> {
+                vb.cardKeyboardMouse.visibility = View.VISIBLE
+                vb.cardRemoteCursor.visibility = View.GONE
+                vb.cardDisplayZoom.visibility = View.GONE
+                vb.cardThemeMedia.visibility = View.GONE
+                vb.cardBrowserEngine.visibility = View.GONE
+                vb.cardAdBlockPrivacy.visibility = View.GONE
+                vb.cardQuickTools.visibility = View.GONE
+                vb.cardAppLock.visibility = View.GONE
                 vb.cardCacheData.visibility = View.GONE
             }
         }
@@ -698,6 +779,7 @@ enum class SettingsCategory {
     PRIVACY,
     BROWSER,
     TOOLS,
-    REMOTE
+    REMOTE,
+    KEYBOARD_MOUSE
 }
 

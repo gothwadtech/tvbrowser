@@ -3,44 +3,34 @@ package com.gothwad.tvbrowser.activity.main.dialogs.settings
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.text.Html
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.ScrollView
-import androidx.webkit.WebViewCompat
+import androidx.core.net.toUri
 import com.gothwad.tvbrowser.AppContext
 import com.gothwad.tvbrowser.BuildConfig
 import com.gothwad.tvbrowser.R
-import com.gothwad.tvbrowser.BrowserApp
 import com.gothwad.tvbrowser.activity.IncognitoModeMainActivity
-import com.gothwad.tvbrowser.activity.main.AutoUpdateModel
 import com.gothwad.tvbrowser.activity.main.MainActivity
 import com.gothwad.tvbrowser.activity.main.SettingsModel
+import com.gothwad.tvbrowser.activity.main.dialogs.NativeInfoDialog
 import com.gothwad.tvbrowser.databinding.ViewSettingsVersionBinding
 import com.gothwad.tvbrowser.utils.activemodel.ActiveModelsRepository
 import com.gothwad.tvbrowser.utils.activity
 import com.gothwad.tvbrowser.webengine.WebEngineFactory
-import androidx.core.net.toUri
 
 @SuppressLint("SetTextI18n")
 class VersionSettingsView @JvmOverloads constructor(
-        context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : ScrollView(context, attrs, defStyleAttr) {
 
     companion object {
-        private const val URL_SUPPORT_AUTHOR = "https://donatello.to/truefedex"
-        private const val URL_LICENSE =
-            "https://raw.githubusercontent.com/truefedex/tvbrowser/refs/heads/master/LICENSE.md"
-        private const val URL_PRIVACY_POLICY =
-            "https://raw.githubusercontent.com/truefedex/tvbrowser/refs/heads/master/PRIVACY.md"
+        const val URL_GITHUB_REPO = "https://github.com/gothwadtech/tvbrowser"
+        const val URL_GOTHWAD_TECH = "https://gothwadtech.com"
     }
-    private var vb = ViewSettingsVersionBinding.inflate(LayoutInflater.from(getContext()), this, true)
-    var config = AppContext.provideConfig()
+
+    private var vb = ViewSettingsVersionBinding.inflate(LayoutInflater.from(context), this, true)
     var settingsModel = ActiveModelsRepository.get(SettingsModel::class, activity!!)
-    var autoUpdateModel = ActiveModelsRepository.get(AutoUpdateModel::class, activity!!)
     var callback: Callback? = null
 
     interface Callback {
@@ -59,69 +49,68 @@ class VersionSettingsView @JvmOverloads constructor(
         val engineVersion = "Engine: " + WebEngineFactory.getWebEngineVersionString()
         vb.tvWebViewVersion.text = engineVersion
 
-        vb.tvLink.text = Html.fromHtml("<p><u>https://github.com/truefedex/tvbrowser</u></p>",
-            Html.FROM_HTML_MODE_LEGACY)
-        vb.tvLink.setOnClickListener {
-            loadUrl(vb.tvLink.text.toString())
+        // Top GitHub & Website links
+        vb.tvGithubLink.setOnClickListener {
+            loadUrl(URL_GITHUB_REPO)
         }
 
-        vb.tvSupportAuthor.text = context.getString(R.string.support_the_author)
-        vb.tvSupportAuthor.setOnClickListener {
-            loadUrl(URL_SUPPORT_AUTHOR)
+        vb.tvWebsiteLink.setOnClickListener {
+            loadUrl(URL_GOTHWAD_TECH)
         }
 
-        vb.tvLicense.text = context.getString(R.string.view_license)
-        vb.tvLicense.setOnClickListener {
-            loadUrl(URL_LICENSE)
-        }
-
-        vb.tvPrivacy.text = context.getString(R.string.privacy_policy)
-        vb.tvPrivacy.setOnClickListener {
-            loadUrl(URL_PRIVACY_POLICY)
-        }
-
-        vb.tvUkraine.setOnClickListener {
-            loadUrl("https://tvbrowser-3546c.web.app/msg001.html")
-        }
-
-        if (BuildConfig.BUILT_IN_AUTO_UPDATE) {
-            vb.chkAutoCheckUpdates.isChecked = autoUpdateModel.needAutoCheckUpdates
-
-            vb.chkAutoCheckUpdates.setOnCheckedChangeListener { _, isChecked ->
-                autoUpdateModel.saveAutoCheckUpdates(isChecked)
-
-                updateUIVisibility()
-            }
-
-            vb.spUpdateChannel.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>,
-                    view: View,
-                    position: Int,
-                    id: Long
-                ) {
-                    val selectedChannel =
-                        autoUpdateModel.updateChecker.versionCheckResult!!.availableChannels[position]
-                    if (selectedChannel == config.updateChannel) return
-                    config.updateChannel = selectedChannel
-                    autoUpdateModel.checkUpdate(true) {
-                        updateUIVisibility()
-                    }
+        // Native In-App Documents
+        vb.btnAboutGothwadTech.setOnClickListener {
+            NativeInfoDialog(
+                context = context,
+                title = "About Gothwad Tech",
+                subtitle = "Fastest · Lightest · Securest · Zero Tracking",
+                contentText = NativeInfoDialog.ABOUT_GOTHWAD_TECH_TEXT,
+                iconRes = R.drawable.ic_gothwad_logo,
+                actionButtonText = "Visit Website",
+                actionUrl = URL_GOTHWAD_TECH,
+                onActionClick = {
+                    loadUrl(URL_GOTHWAD_TECH)
                 }
+            ).show()
+        }
 
-                override fun onNothingSelected(parent: AdapterView<*>) {
+        vb.btnPrivacyPolicy.setOnClickListener {
+            NativeInfoDialog(
+                context = context,
+                title = "Privacy Policy",
+                subtitle = "100% Local-Side · Zero Telemetry Guaranteed",
+                contentText = NativeInfoDialog.PRIVACY_POLICY_TEXT,
+                iconRes = R.drawable.ic_lock_security
+            ).show()
+        }
 
-                }
-            }
+        vb.btnTermsConditions.setOnClickListener {
+            NativeInfoDialog(
+                context = context,
+                title = "Terms & Conditions",
+                subtitle = "Free & Open Source TV Browser License Terms",
+                contentText = NativeInfoDialog.TERMS_TEXT,
+                iconRes = R.drawable.ic_file_doc
+            ).show()
+        }
 
-            vb.btnUpdate.setOnClickListener {
-                callback?.onNeedToCloseSettings()
-                autoUpdateModel.showUpdateDialogIfNeeded(activity as MainActivity, true)
-            }
+        vb.btnLicense.setOnClickListener {
+            NativeInfoDialog(
+                context = context,
+                title = "Open Source License",
+                subtitle = "MIT Permissive Software License",
+                contentText = NativeInfoDialog.LICENSE_TEXT,
+                iconRes = R.drawable.ic_file_doc
+            ).show()
+        }
 
-            updateUIVisibility()
-        } else {
-            vb.chkAutoCheckUpdates.visibility = View.INVISIBLE
+        // Support & Website Actions
+        vb.btnSupportAuthor.setOnClickListener {
+            loadUrl(URL_GOTHWAD_TECH)
+        }
+
+        vb.btnOpenWebsite.setOnClickListener {
+            loadUrl(URL_GOTHWAD_TECH)
         }
     }
 
@@ -132,40 +121,5 @@ class VersionSettingsView @JvmOverloads constructor(
         val intent = Intent(activity, activityClass)
         intent.data = url.toUri()
         activity?.startActivity(intent)
-    }
-
-    private fun updateUIVisibility() {
-        if (autoUpdateModel.updateChecker.versionCheckResult == null) {
-            autoUpdateModel.checkUpdate(false) {
-                if (autoUpdateModel.updateChecker.versionCheckResult != null) {
-                    updateUIVisibility()
-                }
-            }
-            return
-        }
-
-        vb.tvUpdateChannel.visibility = if (autoUpdateModel.needAutoCheckUpdates) View.VISIBLE else View.INVISIBLE
-        vb.spUpdateChannel.visibility = if (autoUpdateModel.needAutoCheckUpdates) View.VISIBLE else View.INVISIBLE
-
-        if (autoUpdateModel.needAutoCheckUpdates) {
-            val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item,
-                autoUpdateModel.updateChecker.versionCheckResult!!.availableChannels)
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            vb.spUpdateChannel.adapter = adapter
-            val selected = autoUpdateModel.updateChecker.versionCheckResult!!.availableChannels.indexOf(config.updateChannel)
-            if (selected != -1) {
-                val tmp = vb.spUpdateChannel.onItemSelectedListener
-                vb.spUpdateChannel.onItemSelectedListener = null
-                vb.spUpdateChannel.setSelection(selected)
-                vb.spUpdateChannel.onItemSelectedListener = tmp
-            }
-        }
-
-        val hasUpdate = autoUpdateModel.updateChecker.hasUpdate()
-        vb.tvNewVersion.visibility = if (autoUpdateModel.needAutoCheckUpdates && hasUpdate) View.VISIBLE else View.INVISIBLE
-        vb.btnUpdate.visibility = if (autoUpdateModel.needAutoCheckUpdates && hasUpdate) View.VISIBLE else View.INVISIBLE
-        if (hasUpdate) {
-            vb.tvNewVersion.text = context.getString(R.string.new_version_available_s, autoUpdateModel.updateChecker.versionCheckResult!!.latestVersionName)
-        }
     }
 }

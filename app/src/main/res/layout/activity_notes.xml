@@ -45,9 +45,9 @@
         <!-- Search Input -->
         <EditText
             android:id="@+id/etSearchNotes"
-            android:layout_width="220dp"
+            android:layout_width="200dp"
             android:layout_height="40dp"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="12dp"
             android:background="@drawable/chrome_omnibox_bg"
             android:hint="Search notes..."
             android:importantForAutofill="no"
@@ -56,6 +56,23 @@
             android:paddingEnd="12dp"
             android:textColor="@color/day_night_text_color_contrast"
             android:textColorHint="@color/day_night_text_secondary"
+            android:textSize="13sp" />
+
+        <!-- Clipboard History Button (Merged into Notes) -->
+        <Button
+            android:id="@+id/btnClipboardHistory"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/button_bg_selector"
+            android:drawableStart="@drawable/ic_nav_clipboard"
+            android:drawableTint="@color/day_night_icon_color"
+            android:drawablePadding="8dp"
+            android:focusable="true"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:text="Clipboard History"
+            android:textColor="@color/day_night_text_color_contrast"
             android:textSize="13sp" />
 
         <!-- Add Note Button -->

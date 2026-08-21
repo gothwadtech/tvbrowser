@@ -7,7 +7,7 @@ android {
     namespace = "com.gothwad.tvbrowser"
 
     defaultConfig {
-        applicationId = "com.gothwad.tvbrowser.bdzopd"
+        applicationId = "com.gothwad.tvbrowser"
         versionCode = 1
         versionName = "1.0.0"
 

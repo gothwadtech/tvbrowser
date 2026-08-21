@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="600dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/menu_popup_bg"
+    android:elevation="12dp"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Header Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingBottom="12dp">
+
+        <ImageView
+            android:id="@+id/ivDialogIcon"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@drawable/ic_gothwad_logo"
+            android:tint="@color/progressbar_tint"
+            android:contentDescription="@null" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvDialogTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="Privacy Policy" />
+
+            <TextView
+                android:id="@+id/tvDialogSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="@color/day_night_text_secondary"
+                android:textSize="12sp"
+                tools:text="100% Local · Zero Tracking" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/ibCloseDialog"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/button_bg_selector"
+            android:contentDescription="Close"
+            android:focusable="true"
+            android:padding="6dp"
+            android:src="@drawable/ic_close_grey_900_24dp"
+            android:tint="@color/day_night_icon_color" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/day_night_divider"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Scrollable Content Box -->
+    <ScrollView
+        android:id="@+id/svDialogContent"
+        android:layout_width="match_parent"
+        android:layout_height="320dp"
+        android:background="@drawable/settings_card_bg"
+        android:focusable="true"
+        android:padding="16dp"
+        android:scrollbars="vertical">
+
+        <TextView
+            android:id="@+id/tvDialogBody"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:lineSpacingExtra="4dp"
+            android:textColor="@color/day_night_text_color_contrast"
+            android:textSize="13sp"
+            tools:text="Full Document Content here..." />
+    </ScrollView>
+
+    <!-- Bottom Actions -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnDialogAction"
+            android:layout_width="wrap_content"
+            android:layout_height="42dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/button_bg_selector"
+            android:focusable="true"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:text="Open Website"
+            android:textColor="@color/progressbar_tint"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btnDialogClose"
+            android:layout_width="wrap_content"
+            android:layout_height="42dp"
+            android:background="@drawable/button_bg_selector"
+            android:focusable="true"
+            android:paddingStart="22dp"
+            android:paddingEnd="22dp"
+            android:text="@string/close"
+            android:textColor="@color/day_night_text_color_contrast"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</LinearLayout>

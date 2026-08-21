@@ -5,10 +5,19 @@ import android.content.SharedPreferences
 import android.os.Handler
 import android.os.Looper
 import android.view.KeyEvent
+import android.widget.Toast
 import androidx.annotation.UiThread
-import com.gothwad.tvbrowser.Config
 import com.gothwad.tvbrowser.BrowserApp
+import com.gothwad.tvbrowser.Config
+import com.gothwad.tvbrowser.R
 import com.gothwad.tvbrowser.activity.main.MainActivity
+import com.gothwad.tvbrowser.activity.main.closeTab
+import com.gothwad.tvbrowser.activity.main.openInNewTab
+import com.gothwad.tvbrowser.activity.main.showMenuOverlay
+import com.gothwad.tvbrowser.activity.main.switchToTab
+import com.gothwad.tvbrowser.activity.main.view.home.HomeData
+import com.gothwad.tvbrowser.activity.main.view.home.HomeShortcutItem
+import com.gothwad.tvbrowser.activity.main.view.home.NativeHomeView
 import com.gothwad.tvbrowser.model.WebTabState
 import com.gothwad.tvbrowser.webengine.WebEngine
 
@@ -54,6 +63,17 @@ class ShortcutMgr private constructor() {
                 .apply()
     }
 
+    fun resetAllToDefaults() {
+        prefs.edit().clear().apply()
+        shortcuts.clear()
+        Shortcut.resetToDefaults()
+        for (shortcut in Shortcut.entries) {
+            if (shortcut.keyCode != 0) {
+                shortcuts.add(shortcut)
+            }
+        }
+    }
+
     fun findForId(id: Int): Shortcut {
         val shortcut = Shortcut.entries[id]
         for (s in shortcuts) {
@@ -70,14 +90,122 @@ class ShortcutMgr private constructor() {
             Shortcut.NAVIGATE_BACK -> {
                 mainActivity.navigateBack()
             }
+            Shortcut.NAVIGATE_FORWARD -> {
+                if (webEngine?.canGoForward() == true) {
+                    webEngine.goForward()
+                }
+            }
             Shortcut.NAVIGATE_HOME -> {
                 mainActivity.navigate(Config.HOME_URL_ALIAS)
             }
             Shortcut.REFRESH_PAGE -> {
                 mainActivity.refresh()
             }
+            Shortcut.HARD_RELOAD -> {
+                webEngine?.reload()
+            }
+            Shortcut.NEW_TAB -> {
+                mainActivity.openInNewTab(mainActivity.settingsModel.homePage, mainActivity.tabsModel.tabsStates.size, needToHideMenuOverlay = false, navigateImmediately = true)
+            }
+            Shortcut.CLOSE_TAB -> {
+                mainActivity.closeTab(mainActivity.tabsModel.currentTab.value)
+            }
+            Shortcut.NEXT_TAB -> {
+                val tabs = mainActivity.tabsModel.tabsStates
+                if (tabs.size > 1) {
+                    val currentIndex = tabs.indexOf(mainActivity.tabsModel.currentTab.value)
+                    val nextIndex = (currentIndex + 1) % tabs.size
+                    mainActivity.switchToTab(tabs[nextIndex])
+                }
+            }
+            Shortcut.PREV_TAB -> {
+                val tabs = mainActivity.tabsModel.tabsStates
+                if (tabs.size > 1) {
+                    val currentIndex = tabs.indexOf(mainActivity.tabsModel.currentTab.value)
+                    val prevIndex = if (currentIndex - 1 < 0) tabs.size - 1 else currentIndex - 1
+                    mainActivity.switchToTab(tabs[prevIndex])
+                }
+            }
+            Shortcut.TABS_OVERVIEW -> {
+                mainActivity.showTabsGrid()
+            }
+            Shortcut.FOCUS_ADDRESS_BAR -> {
+                mainActivity.showMenuOverlay()
+                mainActivity.vb.vActionBar.catchFocus()
+            }
             Shortcut.VOICE_SEARCH -> {
                 mainActivity.initiateVoiceSearch()
+            }
+            Shortcut.HISTORY -> {
+                mainActivity.showHistory()
+            }
+            Shortcut.DOWNLOADS -> {
+                mainActivity.showDownloads()
+            }
+            Shortcut.BOOKMARKS -> {
+                mainActivity.showFavorites()
+            }
+            Shortcut.ADD_BOOKMARK -> {
+                val currentTab = mainActivity.tabsModel.currentTab.value
+                val url = currentTab?.url
+                if (!url.isNullOrEmpty() && url != Config.HOME_URL_ALIAS && url != Config.HOME_PAGE_URL) {
+                    val title = currentTab.title.ifEmpty { url }
+                    val item = HomeShortcutItem(
+                        title = title,
+                        url = url,
+                        iconDrawableRes = HomeData.getIconForUrlOrTitle(url, title),
+                        isUserBookmark = true
+                    )
+                    val list = NativeHomeView.loadUserBookmarks(mainActivity).toMutableList()
+                    if (list.none { it.url.equals(url, ignoreCase = true) }) {
+                        list.add(item)
+                        val sorted = HomeData.sortShortcutsWithGoogleFirst(list)
+                        NativeHomeView.saveUserBookmarks(mainActivity, sorted)
+                        Toast.makeText(mainActivity, "⭐ Added to Bookmarks: $title", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(mainActivity, "Already in Bookmarks", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            Shortcut.NOTES -> {
+                mainActivity.showNotes()
+            }
+            Shortcut.CLIPBOARD -> {
+                mainActivity.showClipboard()
+            }
+            Shortcut.FILE_MANAGER -> {
+                mainActivity.showFileManager()
+            }
+            Shortcut.ZOOM_IN -> {
+                mainActivity.zoomWebIn()
+            }
+            Shortcut.ZOOM_OUT -> {
+                mainActivity.zoomWebOut()
+            }
+            Shortcut.ZOOM_RESET -> {
+                mainActivity.applyWebPageZoom(100)
+                Toast.makeText(mainActivity, R.string.quick_zoom_reset, Toast.LENGTH_SHORT).show()
+            }
+            Shortcut.FULLSCREEN -> {
+                mainActivity.toggleHeader()
+            }
+            Shortcut.SETTINGS -> {
+                mainActivity.showSettings()
+            }
+            Shortcut.TOGGLE_INCOGNITO -> {
+                mainActivity.toggleIncognitoMode()
+            }
+            Shortcut.SCROLL_TOP -> {
+                webEngine?.evaluateJavascript("window.scrollTo({top: 0, behavior: 'smooth'});")
+            }
+            Shortcut.SCROLL_BOTTOM -> {
+                webEngine?.evaluateJavascript("window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});")
+            }
+            Shortcut.PAGE_DOWN -> {
+                webEngine?.evaluateJavascript("window.scrollBy({top: window.innerHeight * 0.85, behavior: 'smooth'});")
+            }
+            Shortcut.PAGE_UP -> {
+                webEngine?.evaluateJavascript("window.scrollBy({top: -window.innerHeight * 0.85, behavior: 'smooth'});")
             }
             Shortcut.PLAY_PAUSE -> {
                 webEngine?.togglePlayback()

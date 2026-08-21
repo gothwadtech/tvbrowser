@@ -235,4 +235,57 @@ class NativeHomeView @JvmOverloads constructor(
     fun catchFocus() {
         rvBookmarks.requestFocus()
     }
+
+    companion object {
+        private const val PREFS_NAME = "native_home_shortcuts_v10"
+        private const val KEY_BOOKMARKS = "bookmarks_json"
+
+        fun loadUserBookmarks(context: Context): List<HomeShortcutItem> {
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val list = mutableListOf<HomeShortcutItem>()
+            val jsonStr = prefs.getString(KEY_BOOKMARKS, null)
+            if (jsonStr != null) {
+                try {
+                    val array = JSONArray(jsonStr)
+                    for (i in 0 until array.length()) {
+                        val obj = array.getJSONObject(i)
+                        val name = obj.optString("name", "Site")
+                        val url = obj.optString("url", "")
+                        if (url.isNotEmpty()) {
+                            list.add(
+                                HomeShortcutItem(
+                                    title = name,
+                                    url = url,
+                                    iconDrawableRes = HomeData.getIconForUrlOrTitle(url, name),
+                                    isUserBookmark = true
+                                )
+                            )
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            if (list.isEmpty()) {
+                val defaults = HomeData.getDefaultGoogleBookmarks()
+                list.addAll(defaults)
+                saveUserBookmarks(context, list)
+            }
+            return HomeData.sortShortcutsWithGoogleFirst(list)
+        }
+
+        fun saveUserBookmarks(context: Context, items: List<HomeShortcutItem>) {
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val array = JSONArray()
+            for (item in items) {
+                if (!item.isAddButton && !item.isActionCard) {
+                    val obj = JSONObject()
+                    obj.put("name", item.title)
+                    obj.put("url", item.url)
+                    array.put(obj)
+                }
+            }
+            prefs.edit().putString(KEY_BOOKMARKS, array.toString()).apply()
+        }
+    }
 }

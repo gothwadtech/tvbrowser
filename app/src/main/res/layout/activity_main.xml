@@ -66,7 +66,7 @@
                 android:id="@+id/ibHome"
                 android:layout_width="38dp"
                 android:layout_height="38dp"
-                android:layout_marginEnd="4dp"
+                android:layout_marginEnd="3dp"
                 android:background="@drawable/button_bg_selector"
                 android:contentDescription="@string/navigate_home"
                 android:focusable="true"
@@ -75,20 +75,60 @@
                 android:tint="@color/day_night_icon_color"
                 android:src="@drawable/ic_home_grey_900_24dp" />
 
-            <!-- 2. Search Bar (with Mic inside) -->
+            <!-- 2. Back -->
+            <ImageButton
+                android:id="@+id/ibBack"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/button_bg_selector"
+                android:contentDescription="@string/navigate_back"
+                android:focusable="true"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/back_icon_selector" />
+
+            <!-- 3. Forward -->
+            <ImageButton
+                android:id="@+id/ibForward"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/button_bg_selector"
+                android:contentDescription="@string/navigate_forward"
+                android:focusable="true"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/forward_icon_selector" />
+
+            <!-- 4. Reload -->
+            <ImageButton
+                android:id="@+id/ibRefresh"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/button_bg_selector"
+                android:contentDescription="@string/refresh_page"
+                android:focusable="true"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                android:tint="@color/day_night_icon_color"
+                android:src="@drawable/ic_refresh_grey_900_24dp" />
+
+            <!-- 5. Search Bar (with Lock & Mic inside) -->
             <com.gothwad.tvbrowser.activity.main.view.ActionBar
                 android:id="@+id/vActionBar"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:layout_marginEnd="4dp" />
+                android:layout_marginEnd="6dp" />
 
-            <!-- 3. Plus Icon (New Tab) -->
+            <!-- 6. Plus Icon (New Tab) -->
             <ImageButton
                 android:id="@+id/ibNewTab"
                 android:layout_width="38dp"
                 android:layout_height="38dp"
-                android:layout_marginEnd="4dp"
+                android:layout_marginEnd="3dp"
                 android:background="@drawable/button_bg_selector"
                 android:contentDescription="@string/open_new_tab"
                 android:focusable="true"
@@ -97,12 +137,12 @@
                 android:tint="@color/day_night_icon_color"
                 android:src="@drawable/ic_add" />
 
-            <!-- 4. Tab Icon (Chrome-style Tab Switcher Rounded Square Badge with Tab Count) -->
+            <!-- 7. Tab Icon (Chrome-style Tab Switcher Rounded Square Badge with Tab Count) -->
             <FrameLayout
                 android:id="@+id/flTabsSwitcher"
                 android:layout_width="38dp"
                 android:layout_height="38dp"
-                android:layout_marginEnd="4dp"
+                android:layout_marginEnd="3dp"
                 android:background="@drawable/button_bg_selector"
                 android:contentDescription="Tabs Overview"
                 android:focusable="true"
@@ -121,47 +161,21 @@
                     android:textStyle="bold" />
             </FrameLayout>
 
-            <!-- 5. Back -->
+            <!-- 8. TV Notes Icon (Placed right after Tab Count Box) -->
             <ImageButton
-                android:id="@+id/ibBack"
+                android:id="@+id/ibNotes"
                 android:layout_width="38dp"
                 android:layout_height="38dp"
                 android:layout_marginEnd="3dp"
                 android:background="@drawable/button_bg_selector"
-                android:contentDescription="@string/navigate_back"
+                android:contentDescription="TV Notes"
                 android:focusable="true"
-                android:padding="6dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/back_icon_selector" />
-
-            <!-- 6. Forward -->
-            <ImageButton
-                android:id="@+id/ibForward"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:layout_marginEnd="3dp"
-                android:background="@drawable/button_bg_selector"
-                android:contentDescription="@string/navigate_forward"
-                android:focusable="true"
-                android:padding="6dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/forward_icon_selector" />
-
-            <!-- 7. Reload -->
-            <ImageButton
-                android:id="@+id/ibRefresh"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/button_bg_selector"
-                android:contentDescription="@string/refresh_page"
-                android:focusable="true"
-                android:padding="6dp"
+                android:padding="7dp"
                 android:scaleType="fitCenter"
                 android:tint="@color/day_night_icon_color"
-                android:src="@drawable/ic_refresh_grey_900_24dp" />
+                android:src="@drawable/ic_nav_notes" />
 
-            <!-- 8. Download Icon -->
+            <!-- 9. Download Icon -->
             <ImageButton
                 android:id="@+id/ibDownloads"
                 android:layout_width="38dp"
@@ -175,7 +189,21 @@
                 android:tint="@color/day_night_icon_color"
                 android:src="@drawable/ic_file_download_grey_900" />
 
-            <!-- 9. Bookmark Icon -->
+            <!-- 10. File Manager Icon (Placed right after Downloads) -->
+            <ImageButton
+                android:id="@+id/ibFileManager"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/button_bg_selector"
+                android:contentDescription="File Manager"
+                android:focusable="true"
+                android:padding="7dp"
+                android:scaleType="fitCenter"
+                android:tint="@color/day_night_icon_color"
+                android:src="@drawable/ic_nav_files" />
+
+            <!-- 11. Bookmark Icon -->
             <ImageButton
                 android:id="@+id/ibBookmarks"
                 android:layout_width="38dp"
@@ -189,7 +217,7 @@
                 android:tint="@color/day_night_icon_color"
                 android:src="@drawable/ic_star_border_grey_900_36dp" />
 
-            <!-- 10. Settings Icon (3-dots) -->
+            <!-- 12. Settings Icon (3-dots) -->
             <ImageButton
                 android:id="@+id/ibSettings"
                 android:layout_width="38dp"

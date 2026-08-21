@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="ic_launcher_background">#0494F4</color>
     <color name="default_url_color">#0F172A</color>
     <color name="selected_link_bkg">#BAE6FD</color>
 

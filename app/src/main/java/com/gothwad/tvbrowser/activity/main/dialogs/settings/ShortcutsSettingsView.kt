@@ -2,92 +2,105 @@ package com.gothwad.tvbrowser.activity.main.dialogs.settings
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AbsListView
 import android.widget.AdapterView
 import android.widget.BaseAdapter
+import android.widget.Button
+import android.widget.FrameLayout
 import android.widget.ListView
 import android.widget.RelativeLayout
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
 import com.gothwad.tvbrowser.R
-import com.gothwad.tvbrowser.activity.main.SettingsModel
 import com.gothwad.tvbrowser.activity.main.dialogs.ShortcutDialog
 import com.gothwad.tvbrowser.databinding.ViewShortcutBinding
 import com.gothwad.tvbrowser.singleton.shortcuts.Shortcut
 import com.gothwad.tvbrowser.singleton.shortcuts.ShortcutMgr
-import com.gothwad.tvbrowser.utils.activemodel.ActiveModelsRepository
-import com.gothwad.tvbrowser.utils.activity
-
 
 class ShortcutsSettingsView @JvmOverloads constructor(
-        context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
-) : ListView(context, attrs, defStyleAttr), AdapterView.OnItemClickListener {
+    context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+) : FrameLayout(context, attrs, defStyleAttr), AdapterView.OnItemClickListener {
 
-    val items = Shortcut.entries.map { it.titleResId }
+    private val lvShortcuts: ListView
+    private val btnResetAllShortcuts: Button
+    private val adapter: ShortcutItemAdapter
 
     init {
-        setBackgroundColor(0xFF0B0F19.toInt())
-        val p = (16 * context.resources.displayMetrics.density).toInt()
-        setPadding(p, p, p, p * 2)
-        clipToPadding = false
-        divider = null
-        dividerHeight = (6 * context.resources.displayMetrics.density).toInt()
-        selector = ResourcesCompat.getDrawable(context.resources, R.drawable.list_item_bg_selector, null)
+        LayoutInflater.from(context).inflate(R.layout.view_settings_shortcuts, this, true)
+        lvShortcuts = findViewById(R.id.lvShortcuts)
+        btnResetAllShortcuts = findViewById(R.id.btnResetAllShortcuts)
+
+        lvShortcuts.selector = ResourcesCompat.getDrawable(context.resources, R.drawable.list_item_bg_selector, null)
         adapter = ShortcutItemAdapter()
-        onItemClickListener = this
+        lvShortcuts.adapter = adapter
+        lvShortcuts.onItemClickListener = this
+
+        btnResetAllShortcuts.setOnClickListener {
+            AlertDialog.Builder(context)
+                .setTitle(R.string.shortcut_reset_all)
+                .setMessage(R.string.shortcut_reset_all_confirm)
+                .setPositiveButton(R.string.yes) { _, _ ->
+                    ShortcutMgr.getInstance().resetAllToDefaults()
+                    adapter.notifyDataSetChanged()
+                    Toast.makeText(context, R.string.shortcut_reset_all, Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton(R.string.no, null)
+                .show()
+        }
     }
 
     override fun onItemClick(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-        val dialog = ShortcutDialog(context,
-                ShortcutMgr.getInstance()
-                        .findForId(position)
-        )
+        val shortcut = Shortcut.entries[position]
+        val dialog = ShortcutDialog(context, shortcut)
         dialog.setOnDismissListener {
-            (adapter as BaseAdapter).notifyDataSetChanged()
+            adapter.notifyDataSetChanged()
         }
         dialog.show()
     }
 
-    inner class ShortcutItemAdapter: BaseAdapter() {
+    inner class ShortcutItemAdapter : BaseAdapter() {
         override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
             val view = if (convertView != null) {
                 convertView as ShortcutItemView
             } else {
                 ShortcutItemView(context)
             }
-            view.bind(position, items[position])
+            view.bind(Shortcut.entries[position])
             return view
         }
 
-        override fun getItem(position: Int): Any {
-            return items[position]
-        }
-
-        override fun getItemId(position: Int): Long {
-            return position.toLong()
-        }
-
-        override fun getCount(): Int {
-            return items.size
-        }
+        override fun getItem(position: Int): Any = Shortcut.entries[position]
+        override fun getItemId(position: Int): Long = position.toLong()
+        override fun getCount(): Int = Shortcut.entries.size
     }
 
     inner class ShortcutItemView @JvmOverloads constructor(
-            context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
+        context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
     ) : RelativeLayout(context, attrs, defStyleAttr) {
-        private var vb: ViewShortcutBinding =
+        private val vb: ViewShortcutBinding =
             ViewShortcutBinding.inflate(LayoutInflater.from(context), this)
 
-        fun bind(position: Int, titleRes: Int) {
-            val shortcut = ShortcutMgr.getInstance().findForId(position)
+        init {
+            layoutParams = AbsListView.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            background = ResourcesCompat.getDrawable(resources, R.drawable.list_item_bg_selector, null)
+            isFocusable = true
+            isClickable = true
+        }
 
-            vb.tvTitle.setText(titleRes)
-            vb.tvKey.text = if (shortcut.keyCode == 0)
+        fun bind(shortcut: Shortcut) {
+            vb.tvTitle.setText(shortcut.titleResId)
+            vb.tvKey.text = if (shortcut.keyCode == 0) {
                 context.getString(R.string.not_set)
-            else
+            } else {
                 Shortcut.shortcutKeysToString(shortcut, context)
+            }
         }
     }
 }

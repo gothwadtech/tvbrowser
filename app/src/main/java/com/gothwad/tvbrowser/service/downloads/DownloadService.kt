@@ -106,11 +106,11 @@ class DownloadService : Service() {
             notificationBuilder = NotificationCompat.Builder(this, BrowserApp.CHANNEL_ID_DOWNLOADS)
                     .setOngoing(true)
                     .setOnlyAlertOnce(true)
-                    .setSmallIcon(R.drawable.ic_launcher)
+                    .setSmallIcon(R.mipmap.ic_launcher)
         }
         notificationBuilder!!.setContentTitle(title)
                 .setContentText(description)
-                .setSmallIcon(R.drawable.ic_launcher)
+                .setSmallIcon(R.mipmap.ic_launcher)
         if (hasUnknownSizedFiles || total == 0L) {
             notificationBuilder!!.setProgress(0, 0, true)
         } else {

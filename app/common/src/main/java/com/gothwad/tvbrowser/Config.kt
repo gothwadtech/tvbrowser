@@ -63,6 +63,8 @@ class Config(val prefs: SharedPreferences) {
         const val APP_WEB_EXTENSION_VERSION_KEY = "app_web_extension_version"
         const val NOTIFICATION_ABOUT_ENGINE_CHANGE_SHOWN_KEY = "notification_about_engine_change_shown"
         const val APP_VERSION_CODE_MARK_KEY = "app_version_code_mark"
+        const val DESKTOP_MODE_KEY = "desktop_mode"
+        const val DESKTOP_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
         const val ENGINE_WEB_VIEW = "WebView"
 
@@ -290,6 +292,7 @@ class Config(val prefs: SharedPreferences) {
         }
 
     var userAgentString = ObservableOptStringPreference(null, USER_AGENT_PREF_KEY)
+    var desktopMode = ObservableBooleanPreference(false, DESKTOP_MODE_KEY)
 
     var adBlockEnabled: Boolean = prefs.getBoolean(ADBLOCK_ENABLED_PREF_KEY, true)
         set(value) {
@@ -365,6 +368,15 @@ class Config(val prefs: SharedPreferences) {
             set(value) {
                 if (value == null) prefs.edit().remove(prefsKey).apply()
                 else prefs.edit().putString(prefsKey, value).apply()
+                field = value
+                notifyObservers()
+            }
+    }
+
+    inner class ObservableBooleanPreference(default: Boolean, private val prefsKey: String) : ObservableValue<Boolean>(default) {
+        override var value: Boolean = prefs.getBoolean(prefsKey, default)
+            set(value) {
+                prefs.edit().putBoolean(prefsKey, value).apply()
                 field = value
                 notifyObservers()
             }

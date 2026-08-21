@@ -44,9 +44,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     override var userAgentString: String? = null
         set(value) {
             field = value
-            if (value != null) {
-                webView?.settings?.userAgentString = value
-            }
+            webView?.settings?.userAgentString = value
         }
 
     override fun saveState(): Any {
@@ -83,7 +81,9 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     }
 
     override fun zoomIn() {
-        webView?.zoomIn()
+        val cfg = AppContext.provideConfig()
+        val next = (cfg.webPageZoomPercent + 10).coerceAtMost(Config.WEB_PAGE_ZOOM_PERCENT_MAX)
+        setPageZoom(next)
     }
 
     override fun canZoomOut(): Boolean {
@@ -91,7 +91,9 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     }
 
     override fun zoomOut() {
-        webView?.zoomOut()
+        val cfg = AppContext.provideConfig()
+        val next = (cfg.webPageZoomPercent - 10).coerceAtLeast(Config.WEB_PAGE_ZOOM_PERCENT_MIN)
+        setPageZoom(next)
     }
 
     override fun zoomBy(zoomBy: Float) {
@@ -99,7 +101,13 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     }
 
     override fun setPageZoom(percent: Int) {
-        webView?.settings?.textZoom = percent
+        webView?.settings?.textZoom = 100
+        val scale = percent / 100f
+        webView?.evaluateJavascript("""
+            (function() {
+                document.documentElement.style.zoom = '$scale';
+            })();
+        """.trimIndent(), null)
     }
 
     override fun evaluateJavascript(script: String) {
@@ -118,6 +126,12 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     override fun getOrCreateView(activityContext: Context): View {
         if (webView == null) {
             webView = WebViewEx(activityContext, webViewCallback, jsInterface)
+            val cfg = AppContext.provideConfig()
+            val effectiveUa = userAgentString ?: cfg.userAgentString.value ?: if (cfg.desktopMode.value) Config.DESKTOP_UA else null
+            if (effectiveUa != null) {
+                userAgentString = effectiveUa
+                webView?.settings?.userAgentString = effectiveUa
+            }
         }
         return webView!!
     }

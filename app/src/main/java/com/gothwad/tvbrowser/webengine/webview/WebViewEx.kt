@@ -22,6 +22,8 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputConnection
 import android.webkit.ConsoleMessage
 import android.webkit.GeolocationPermissions
 import android.webkit.HttpAuthHandler
@@ -127,7 +129,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             setSupportZoom(true)
             builtInZoomControls = true
             displayZoomControls = false
-            textZoom = config.webPageZoomPercent
+            textZoom = 100
             domStorageEnabled = true
             allowContentAccess = false
             cacheMode = WebSettings.LOAD_DEFAULT
@@ -136,6 +138,11 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             javaScriptCanOpenWindowsAutomatically = false
             setSupportMultipleWindows(true)
             setNeedInitialFocus(false)
+
+            val effectiveUa = config.userAgentString.value ?: if (config.desktopMode.value) Config.DESKTOP_UA else null
+            if (effectiveUa != null) {
+                userAgentString = effectiveUa
+            }
 
             domStorageEnabled = true
             if (config.webEngineDebug) {
@@ -390,6 +397,16 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 Log.d(TAG, "onPageStarted url: $url")
                 currentOriginalUrl = url.toUri()
                 callback.onPageStarted(url)
+                if (config.desktopMode.value || config.userAgentString.value?.contains("Windows") == true) {
+                    evaluateJavascript("""
+                        (function() {
+                            var metas = document.querySelectorAll('meta[name="viewport"]');
+                            for (var i = 0; i < metas.length; i++) {
+                                metas[i].parentNode.removeChild(metas[i]);
+                            }
+                        })();
+                    """.trimIndent(), null)
+                }
             }
 
             override fun onPageFinished(view: WebView, url: String?) {
@@ -397,6 +414,11 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 Log.d(TAG, "onPageFinished url: $url")
                 callback.onPageFinished(url)
                 evaluateJavascript(getGenericJSInjects(), null)
+                val zoom = config.webPageZoomPercent
+                if (zoom != 100) {
+                    val scale = zoom / 100f
+                    evaluateJavascript("document.documentElement.style.zoom = '$scale';", null)
+                }
             }
 
             override fun onLoadResource(view: WebView, url: String) {
@@ -632,5 +654,36 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
     fun setVirtualCursorMode(enabled: Boolean) {
         this.virtualCursorMode = enabled
+    }
+
+    override fun onCreateInputConnection(outAttrs: EditorInfo?): InputConnection? {
+        if (config.disableVirtualKeyboard) {
+            outAttrs?.imeOptions = EditorInfo.IME_FLAG_NO_EXTRACT_UI or EditorInfo.IME_FLAG_NO_FULLSCREEN
+            return null
+        }
+        return super.onCreateInputConnection(outAttrs)
+    }
+
+    override fun onCheckIsTextEditor(): Boolean {
+        if (config.disableVirtualKeyboard) {
+            return false
+        }
+        return super.onCheckIsTextEditor()
+    }
+
+    override fun onGenericMotionEvent(event: MotionEvent): Boolean {
+        val hwInput = com.gothwad.tvbrowser.utils.HardwareInputManager.getInstance(context)
+        if (hwInput.processHardwareMouseEvent(event, this)) {
+            return true
+        }
+        return super.onGenericMotionEvent(event)
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        val hwInput = com.gothwad.tvbrowser.utils.HardwareInputManager.getInstance(context)
+        if (hwInput.processHardwareMouseEvent(event, this)) {
+            return true
+        }
+        return super.onTouchEvent(event)
     }
 }

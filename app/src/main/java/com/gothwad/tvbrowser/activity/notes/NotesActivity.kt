@@ -2,6 +2,7 @@ package com.gothwad.tvbrowser.activity.notes
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -16,6 +17,7 @@ import android.widget.Toast
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gothwad.tvbrowser.R
+import com.gothwad.tvbrowser.activity.clipboard.ClipboardActivity
 
 class NotesActivity : Activity() {
 
@@ -24,6 +26,7 @@ class NotesActivity : Activity() {
     private lateinit var rvNotes: RecyclerView
     private lateinit var etSearchNotes: EditText
     private lateinit var btnAddNote: Button
+    private lateinit var btnClipboardHistory: Button
     private lateinit var btnBack: ImageButton
 
     private var allNotesList: MutableList<NoteItem> = mutableListOf()
@@ -36,6 +39,7 @@ class NotesActivity : Activity() {
         rvNotes = findViewById(R.id.rvNotes)
         etSearchNotes = findViewById(R.id.etSearchNotes)
         btnAddNote = findViewById(R.id.btnAddNote)
+        btnClipboardHistory = findViewById(R.id.btnClipboardHistory)
         btnBack = findViewById(R.id.btnBack)
 
         rvNotes.layoutManager = GridLayoutManager(this, 3)
@@ -48,6 +52,9 @@ class NotesActivity : Activity() {
 
         btnBack.setOnClickListener { finish() }
         btnAddNote.setOnClickListener { showEditNoteDialog(null) }
+        btnClipboardHistory.setOnClickListener {
+            startActivity(Intent(this, ClipboardActivity::class.java))
+        }
 
         etSearchNotes.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}

@@ -209,13 +209,14 @@ internal fun MainActivity.createWebView(tab: WebTabState): View? {
     }
 
     var ua = config.userAgentString.value
+    if (ua == null && config.desktopMode.value) {
+        ua = Config.DESKTOP_UA
+    }
     if (ua?.contains("Browser/1.0 ") == true) {
         config.userAgentString.value = null
-        ua = null
+        ua = if (config.desktopMode.value) Config.DESKTOP_UA else null
     }
-    if (ua != null) {
-        tab.webEngine.userAgentString = ua
-    }
+    tab.webEngine.userAgentString = ua
 
     return webView
 }

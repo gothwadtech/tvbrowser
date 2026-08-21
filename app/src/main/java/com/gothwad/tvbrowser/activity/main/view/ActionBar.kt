@@ -52,11 +52,17 @@ class ActionBar @JvmOverloads constructor(
             if (!AppContext.provideConfig().disableVirtualKeyboard) {
                 imm.showSoftInput(vb.etUrl, InputMethodManager.SHOW_IMPLICIT)
             } else {
+                vb.etUrl.showSoftInputOnFocus = false
                 imm.hideSoftInputFromWindow(vb.etUrl.windowToken, 0)
             }
             postDelayed(//workaround an android TV bug
                 {
                     vb.etUrl.selectAll()
+                    if (AppContext.provideConfig().disableVirtualKeyboard) {
+                        vb.etUrl.showSoftInputOnFocus = false
+                        val imm2 = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                        imm2?.hideSoftInputFromWindow(vb.etUrl.windowToken, 0)
+                    }
                 }, 500)
         } else {
             dismissExtendedAddressBarMode()

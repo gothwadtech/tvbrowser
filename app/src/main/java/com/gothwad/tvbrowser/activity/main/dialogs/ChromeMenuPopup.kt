@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,28 +17,27 @@ import com.gothwad.tvbrowser.Config
 import com.gothwad.tvbrowser.R
 import com.gothwad.tvbrowser.activity.clipboard.ClipboardActivity
 import com.gothwad.tvbrowser.activity.downloads.DownloadsActivity
-import com.gothwad.tvbrowser.activity.filemanager.FileManagerActivity
 import com.gothwad.tvbrowser.activity.lock.AppLockActivity
 import com.gothwad.tvbrowser.activity.main.MainActivity
 import com.gothwad.tvbrowser.activity.main.openInNewTab
 import com.gothwad.tvbrowser.activity.main.showClipboardActivity
-import com.gothwad.tvbrowser.activity.main.showFavoritesDialog
 import com.gothwad.tvbrowser.activity.main.showHistoryActivity
 import com.gothwad.tvbrowser.activity.main.showSettingsDialog
 import com.gothwad.tvbrowser.activity.main.toggleIncognitoMode
-import com.gothwad.tvbrowser.activity.notes.NotesActivity
 import com.gothwad.tvbrowser.singleton.AppLockManager
 
 class ChromeMenuPopup(private val activity: MainActivity) {
 
     private val popupWindow: PopupWindow
     private val contentView: View
+    private val popupWidth: Int
 
     init {
         contentView = LayoutInflater.from(activity).inflate(R.layout.popup_chrome_menu, null)
+        popupWidth = (185 * activity.resources.displayMetrics.density).toInt()
         popupWindow = PopupWindow(
             contentView,
-            (230 * activity.resources.displayMetrics.density).toInt(),
+            popupWidth,
             ViewGroup.LayoutParams.WRAP_CONTENT,
             true
         ).apply {
@@ -45,9 +45,39 @@ class ChromeMenuPopup(private val activity: MainActivity) {
             isFocusable = true
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             elevation = 24f
+            setOnDismissListener {
+                // Focus back to anchor or webview
+            }
         }
 
         setupViews()
+    }
+
+    private fun bindMenuItem(view: View, action: () -> Unit) {
+        view.setOnClickListener {
+            dismiss()
+            action()
+        }
+        view.setOnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN) {
+                when (keyCode) {
+                    KeyEvent.KEYCODE_DPAD_CENTER,
+                    KeyEvent.KEYCODE_ENTER,
+                    KeyEvent.KEYCODE_NUMPAD_ENTER,
+                    KeyEvent.KEYCODE_BUTTON_A -> {
+                        view.performClick()
+                        true
+                    }
+                    KeyEvent.KEYCODE_BACK,
+                    KeyEvent.KEYCODE_ESCAPE,
+                    KeyEvent.KEYCODE_BUTTON_B -> {
+                        dismiss()
+                        true
+                    }
+                    else -> false
+                }
+            } else false
+        }
     }
 
     private fun setupViews() {
@@ -59,8 +89,7 @@ class ChromeMenuPopup(private val activity: MainActivity) {
         val btnPageInfo: ImageButton = contentView.findViewById(R.id.btnMenuPageInfo)
         val btnRefresh: ImageButton = contentView.findViewById(R.id.btnMenuRefresh)
 
-        btnAppLock.setOnClickListener {
-            dismiss()
+        bindMenuItem(btnAppLock) {
             if (AppLockManager.isLockEnabled(activity)) {
                 AppLockManager.setSessionUnlocked(false)
                 activity.startActivity(Intent(activity, AppLockActivity::class.java))
@@ -70,8 +99,7 @@ class ChromeMenuPopup(private val activity: MainActivity) {
             }
         }
 
-        btnPageInfo.setOnClickListener {
-            dismiss()
+        bindMenuItem(btnPageInfo) {
             val url = currentTab?.url ?: ""
             val isSecure = url.startsWith("https://")
             AlertDialog.Builder(activity)
@@ -81,51 +109,28 @@ class ChromeMenuPopup(private val activity: MainActivity) {
                 .show()
         }
 
-        btnRefresh.setOnClickListener {
-            dismiss()
+        bindMenuItem(btnRefresh) {
             currentTab?.webEngine?.reload()
         }
 
         // List Actions
         // 1. New Tab
-        contentView.findViewById<View>(R.id.btnMenuNewTab).setOnClickListener {
-            dismiss()
+        bindMenuItem(contentView.findViewById(R.id.btnMenuNewTab)) {
             activity.openInNewTab(Config.HOME_PAGE_URL, needToHideMenuOverlay = true)
         }
 
         // 2. New Incognito Tab
-        contentView.findViewById<View>(R.id.btnMenuIncognito).setOnClickListener {
-            dismiss()
+        bindMenuItem(contentView.findViewById(R.id.btnMenuIncognito)) {
             activity.toggleIncognitoMode(andSwitchProcess = true)
         }
 
-        // 3. TV Notes
-        contentView.findViewById<View>(R.id.btnMenuNotes).setOnClickListener {
-            dismiss()
-            activity.startActivity(Intent(activity, NotesActivity::class.java))
-        }
-
-        // 4. Clipboard Manager
-        contentView.findViewById<View>(R.id.btnMenuClipboard).setOnClickListener {
-            dismiss()
-            activity.showClipboardActivity()
-        }
-
-        // 5. File Manager
-        contentView.findViewById<View>(R.id.btnMenuFileManager).setOnClickListener {
-            dismiss()
-            activity.startActivity(Intent(activity, FileManagerActivity::class.java))
-        }
-
-        // 6. History
-        contentView.findViewById<View>(R.id.btnMenuHistory).setOnClickListener {
-            dismiss()
+        // 3. History
+        bindMenuItem(contentView.findViewById(R.id.btnMenuHistory)) {
             activity.showHistoryActivity()
         }
 
         // 7. Share...
-        contentView.findViewById<View>(R.id.btnMenuShare).setOnClickListener {
-            dismiss()
+        bindMenuItem(contentView.findViewById(R.id.btnMenuShare)) {
             val url = currentTab?.url
             if (!url.isNullOrEmpty() && url != Config.HOME_PAGE_URL) {
                 val sendIntent = Intent().apply {
@@ -142,28 +147,28 @@ class ChromeMenuPopup(private val activity: MainActivity) {
         // 8. Desktop Site Checkbox
         val btnDesktop: View = contentView.findViewById(R.id.btnMenuDesktop)
         val cbDesktop: CheckBox = contentView.findViewById(R.id.cbDesktopSite)
-        val isDesktop = config.userAgentString.value?.contains("Windows") == true
+        val isDesktop = config.desktopMode.value || config.userAgentString.value?.contains("Windows") == true
         cbDesktop.isChecked = isDesktop
 
-        btnDesktop.setOnClickListener {
+        bindMenuItem(btnDesktop) {
             val willBeDesktop = !cbDesktop.isChecked
             cbDesktop.isChecked = willBeDesktop
-            val desktopUa = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-            config.userAgentString.value = if (willBeDesktop) desktopUa else null
+            config.desktopMode.value = willBeDesktop
+            config.userAgentString.value = if (willBeDesktop) Config.DESKTOP_UA else null
+            for (tab in activity.tabsModel.tabsStates) {
+                tab.webEngine.userAgentString = if (willBeDesktop) Config.DESKTOP_UA else null
+            }
             currentTab?.webEngine?.reload()
-            dismiss()
-            Toast.makeText(activity, if (willBeDesktop) "Desktop mode enabled" else "Mobile mode enabled", Toast.LENGTH_SHORT).show()
+            Toast.makeText(activity, if (willBeDesktop) "Desktop mode enabled for all websites" else "Mobile mode enabled", Toast.LENGTH_SHORT).show()
         }
 
         // 9. Settings
-        contentView.findViewById<View>(R.id.btnMenuSettings).setOnClickListener {
-            dismiss()
+        bindMenuItem(contentView.findViewById(R.id.btnMenuSettings)) {
             activity.showSettingsDialog()
         }
 
         // 10. Help & feedback
-        contentView.findViewById<View>(R.id.btnMenuHelp).setOnClickListener {
-            dismiss()
+        bindMenuItem(contentView.findViewById(R.id.btnMenuHelp)) {
             AlertDialog.Builder(activity)
                 .setTitle("Gothwad TV Browser")
                 .setMessage("Modern Fast TV Web Browser with Native Clipboard, File Manager & Notes.\n\nVersion: ${BuildConfig.VERSION_NAME}\nDeveloper: gothwadtech@gmail.com")
@@ -174,11 +179,15 @@ class ChromeMenuPopup(private val activity: MainActivity) {
 
     fun show(anchorView: View) {
         val density = activity.resources.displayMetrics.density
-        val xOffset = (-200 * density).toInt()
-        val yOffset = (4 * density).toInt()
+        val anchorWidth = if (anchorView.width > 0) anchorView.width else (38 * density).toInt()
+        val xOffset = anchorWidth - popupWidth
+        val yOffset = (2 * density).toInt()
+
         popupWindow.showAsDropDown(anchorView, xOffset, yOffset)
 
-        contentView.findViewById<View>(R.id.btnMenuNewTab).requestFocus()
+        contentView.post {
+            contentView.findViewById<View>(R.id.btnMenuNewTab)?.requestFocus()
+        }
     }
 
     fun dismiss() {

@@ -10,86 +10,152 @@
     android:paddingBottom="40dp"
     android:background="@color/day_night_background_color">
 
-    <!-- Card 1: App Info & Version -->
+    <!-- Card 1: App Brand & Identity -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:background="@drawable/settings_card_bg"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="20dp">
 
-        <TextView
-            android:id="@+id/tvTitle"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/app_name_short"
-            android:textColor="@color/progressbar_tint"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_gothwad_logo"
+                android:contentDescription="@null" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Gothwad TV Browser"
+                    android:textColor="@color/progressbar_tint"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvTagline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/about_tagline"
+                    android:textColor="@color/day_night_text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tvDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="@string/web_browser_optimized_for_tvs"
-            android:textColor="@color/day_night_text_secondary"
+            android:layout_marginTop="12dp"
+            android:lineSpacingExtra="3dp"
+            android:text="@string/gothwad_tech_desc"
+            android:textColor="@color/day_night_text_color_contrast"
             android:textSize="13sp" />
 
-        <TextView
-            android:id="@+id/tvLink"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/button_bg_selector"
-            android:clickable="true"
-            android:focusable="true"
-            android:lines="1"
-            android:paddingStart="12dp"
-            android:paddingTop="6dp"
-            android:paddingEnd="12dp"
-            android:paddingBottom="6dp"
-            android:textColor="@color/progressbar_tint"
-            android:textSize="13sp"
-            tools:text="https://github.com/truefedex/tvbrowser" />
+            android:layout_marginTop="14dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvGithubLink"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:background="@drawable/button_bg_selector"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:text="🐙 github.com/gothwadtech/tvbrowser"
+                android:textColor="@color/progressbar_tint"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvWebsiteLink"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/button_bg_selector"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:text="🌐 gothwadtech.com"
+                android:textColor="@color/progressbar_tint"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="16dp"
             android:layout_marginBottom="14dp"
             android:background="@color/day_night_divider" />
 
-        <TextView
-            android:id="@+id/tvVersion"
-            android:layout_width="wrap_content"
+        <!-- Version & Engine Specs -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/version_s"
-            android:textColor="@color/day_night_text_color_contrast"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tvBuildFlavor"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="@color/day_night_text_secondary"
-            android:textSize="13sp"
-            tools:text="Build flavor: generic · standard" />
+            <TextView
+                android:id="@+id/tvVersion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/key_badge_bg"
+                android:paddingStart="10dp"
+                android:paddingTop="3dp"
+                android:paddingEnd="10dp"
+                android:paddingBottom="3dp"
+                android:textColor="@color/progressbar_tint"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                tools:text="Version: 1.0.0" />
 
-        <TextView
-            android:id="@+id/tvWebViewVersion"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="@color/day_night_text_secondary"
-            android:textSize="13sp"
-            tools:text="WebView Version: 10.0.1" />
+            <TextView
+                android:id="@+id/tvBuildFlavor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:textColor="@color/day_night_text_secondary"
+                android:textSize="12sp"
+                tools:text="Build: generic · standard" />
+
+            <TextView
+                android:id="@+id/tvWebViewVersion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:textColor="@color/day_night_text_secondary"
+                android:textSize="12sp"
+                tools:text="Engine: Android System WebView" />
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- Card 2: Support, License & Privacy -->
+    <!-- Card 2: Privacy & Local Architecture Guarantees -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -101,92 +167,22 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:text="📜 Legal &amp; Author"
+            android:layout_marginBottom="10dp"
+            android:text="🛡️ 100% Local &amp; Privacy First"
             android:textColor="@color/progressbar_tint"
-            android:textSize="16sp"
+            android:textSize="15sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/tvSupportAuthor"
             android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/button_bg_selector"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:lines="1"
-            android:paddingStart="14dp"
-            android:paddingEnd="14dp"
+            android:layout_height="wrap_content"
+            android:lineSpacingExtra="3dp"
+            android:text="• Zero Tracking: No telemetry, no background analytics, and no remote data harvesting.\n• 100% Client-Side Local: All history, bookmarks, notes, and preferences remain solely on this device.\n• Open Source: Fully transparent architecture crafted by Gothwad Tech with zero server dependencies."
             android:textColor="@color/day_night_text_color_contrast"
-            android:textSize="14sp"
-            tools:text="Support the author" />
-
-        <TextView
-            android:id="@+id/tvLicense"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/button_bg_selector"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:lines="1"
-            android:paddingStart="14dp"
-            android:paddingEnd="14dp"
-            android:textColor="@color/day_night_text_color_contrast"
-            android:textSize="14sp"
-            tools:text="License" />
-
-        <TextView
-            android:id="@+id/tvPrivacy"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/button_bg_selector"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center_vertical"
-            android:lines="1"
-            android:paddingStart="14dp"
-            android:paddingEnd="14dp"
-            android:textColor="@color/day_night_text_color_contrast"
-            android:textSize="14sp"
-            tools:text="Privacy policy" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/tvUkraine"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/button_bg_selector"
-                android:clickable="true"
-                android:ellipsize="end"
-                android:focusable="true"
-                android:gravity="center_vertical"
-                android:lines="1"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp"
-                android:text="@string/why_icon_changed"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="14sp" />
-
-            <ImageView
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginStart="10dp"
-                android:src="@drawable/banner" />
-        </LinearLayout>
+            android:textSize="13sp" />
     </LinearLayout>
 
-    <!-- Card 3: Updates -->
+    <!-- Card 3: Legal & Gothwad Tech In-App Docs -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -198,73 +194,130 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:text="🔄 Software Updates"
+            android:text="📜 Legal, Author &amp; Organization"
             android:textColor="@color/progressbar_tint"
-            android:textSize="16sp"
+            android:textSize="15sp"
             android:textStyle="bold" />
 
-        <CheckBox
-            android:id="@+id/chkAutoCheckUpdates"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/auto_check_for_updates"
-            android:textColor="@color/day_night_text_color_contrast"
-            android:textSize="14sp" />
-
+        <!-- Row 1: About Gothwad Tech & Privacy Policy (In-Built Native) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:gravity="center_vertical"
+            android:layout_marginBottom="10dp"
             android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/tvUpdateChannel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/update_channel"
-                android:textColor="@color/day_night_text_secondary"
-                android:textSize="14sp"
-                android:visibility="invisible" />
-
-            <Spinner
-                android:id="@+id/spUpdateChannel"
-                android:layout_width="wrap_content"
-                android:layout_height="42dp"
-                android:layout_marginStart="16dp"
-                android:visibility="invisible" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/tvNewVersion"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/new_version_available_s"
-                android:textColor="#22C55E"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:visibility="invisible" />
 
             <Button
-                android:id="@+id/btnUpdate"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
+                android:id="@+id/btnAboutGothwadTech"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
                 android:background="@drawable/button_bg_selector"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:text="@string/update"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical|start"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:text="🏢 About Gothwad Tech"
                 android:textColor="@color/progressbar_tint"
                 android:textSize="13sp"
-                android:textStyle="bold"
-                android:visibility="invisible" />
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnPrivacyPolicy"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical|start"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:text="🔒 Privacy Policy (In-Built)"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- Row 2: Terms & Conditions & License (In-Built Native) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnTermsConditions"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical|start"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:text="📜 Terms &amp; Conditions"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/btnLicense"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical|start"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:text="📃 Open Source License (MIT)"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- Row 3: Support Author & Official Website -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnSupportAuthor"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical|start"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:text="☕ Support Gothwad Tech"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/btnOpenWebsite"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical|start"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:text="🌐 Visit gothwadtech.com"
+                android:textColor="@color/progressbar_tint"
+                android:textSize="13sp"
+                android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
 

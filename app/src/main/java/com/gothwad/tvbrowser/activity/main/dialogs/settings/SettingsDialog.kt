@@ -20,6 +20,7 @@ class SettingsDialog(context: Context, val model: SettingsModel) :
 
     private var mainView: MainSettingsView? = null
     private var versionView: VersionSettingsView? = null
+    private var shortcutsView: ShortcutsSettingsView? = null
     private var flTabsContent: FrameLayout? = null
 
     private lateinit var btnTabGeneral: Button
@@ -27,10 +28,21 @@ class SettingsDialog(context: Context, val model: SettingsModel) :
     private lateinit var btnTabBrowser: Button
     private lateinit var btnTabTools: Button
     private lateinit var btnTabRemote: Button
+    private lateinit var btnTabKeyboardMouse: Button
+    private lateinit var btnTabShortcuts: Button
     private lateinit var btnTabAbout: Button
 
     private val allButtons by lazy {
-        listOf(btnTabGeneral, btnTabPrivacy, btnTabBrowser, btnTabTools, btnTabRemote, btnTabAbout)
+        listOf(
+            btnTabGeneral,
+            btnTabPrivacy,
+            btnTabBrowser,
+            btnTabTools,
+            btnTabRemote,
+            btnTabKeyboardMouse,
+            btnTabShortcuts,
+            btnTabAbout
+        )
     }
 
     init {
@@ -45,6 +57,8 @@ class SettingsDialog(context: Context, val model: SettingsModel) :
         btnTabBrowser = findViewById(R.id.btnTabBrowser)
         btnTabTools = findViewById(R.id.btnTabTools)
         btnTabRemote = findViewById(R.id.btnTabRemote)
+        btnTabKeyboardMouse = findViewById(R.id.btnTabKeyboardMouse)
+        btnTabShortcuts = findViewById(R.id.btnTabShortcuts)
         btnTabAbout = findViewById(R.id.btnTabAbout)
 
         mainView = MainSettingsView(context).apply {
@@ -54,6 +68,8 @@ class SettingsDialog(context: Context, val model: SettingsModel) :
         versionView = VersionSettingsView(context).apply {
             callback = this@SettingsDialog
         }
+
+        shortcutsView = ShortcutsSettingsView(context)
 
         setupTabButtons()
         selectCategory(btnTabGeneral, SettingsCategory.GENERAL)
@@ -67,6 +83,8 @@ class SettingsDialog(context: Context, val model: SettingsModel) :
         btnTabBrowser.setOnClickListener { selectCategory(btnTabBrowser, SettingsCategory.BROWSER) }
         btnTabTools.setOnClickListener { selectCategory(btnTabTools, SettingsCategory.TOOLS) }
         btnTabRemote.setOnClickListener { selectCategory(btnTabRemote, SettingsCategory.REMOTE) }
+        btnTabKeyboardMouse.setOnClickListener { selectCategory(btnTabKeyboardMouse, SettingsCategory.KEYBOARD_MOUSE) }
+        btnTabShortcuts.setOnClickListener { selectShortcutsTab(btnTabShortcuts) }
         btnTabAbout.setOnClickListener { selectAboutTab(btnTabAbout) }
 
         btnTabGeneral.setOnFocusChangeListener { _, hasFocus ->
@@ -84,6 +102,12 @@ class SettingsDialog(context: Context, val model: SettingsModel) :
         btnTabRemote.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) selectCategory(btnTabRemote, SettingsCategory.REMOTE)
         }
+        btnTabKeyboardMouse.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) selectCategory(btnTabKeyboardMouse, SettingsCategory.KEYBOARD_MOUSE)
+        }
+        btnTabShortcuts.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) selectShortcutsTab(btnTabShortcuts)
+        }
         btnTabAbout.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus) selectAboutTab(btnTabAbout)
         }
@@ -93,10 +117,12 @@ class SettingsDialog(context: Context, val model: SettingsModel) :
         val activeColor = ContextCompat.getColor(context, R.color.day_night_text_color_contrast)
         val inactiveColor = ContextCompat.getColor(context, R.color.day_night_text_secondary)
         val activeTint = ContextCompat.getColor(context, R.color.progressbar_tint)
-        val defaultTint = ContextCompat.getColor(context, R.color.day_night_icon_color)
+        val defaultTint = ContextCompat.getColor(context, R.color.day_night_text_secondary)
 
         allButtons.forEach { btn ->
-            if (btn == activeButton) {
+            val isActive = (btn == activeButton)
+            btn.isActivated = isActive
+            if (isActive) {
                 btn.setTextColor(activeColor)
                 btn.setTypeface(null, Typeface.BOLD)
                 btn.compoundDrawableTintList = ColorStateList.valueOf(activeTint)
@@ -118,6 +144,15 @@ class SettingsDialog(context: Context, val model: SettingsModel) :
             container.addView(mv)
         }
         mv.showCategory(category)
+    }
+
+    private fun selectShortcutsTab(button: Button) {
+        updateHighlight(button)
+        val container = flTabsContent ?: return
+        val sv = shortcutsView ?: return
+
+        container.removeAllViews()
+        container.addView(sv)
     }
 
     private fun selectAboutTab(button: Button) {
