@@ -26,13 +26,14 @@ jobs:
       - name: Make Gradle Executable
         run: chmod +x ./gradlew
 
-      - name: Build Release APK
-        run: ./gradlew assembleRelease --no-daemon
+      - name: Build Release APK and AAB
+        run: ./gradlew assembleRelease bundleRelease --no-daemon
 
-      - name: Sign Release APK
+      - name: Sign Release APK & AAB
         run: |
           mkdir -p release_out
           APK=$(find app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
+          AAB=$(find app/build/outputs/bundle/release/ -name "*.aab" | head -n 1)
           
           keytool -genkey -v \
             -keystore release_out/release_key.jks \
@@ -42,13 +43,24 @@ jobs:
             -storepass android123 -keypass android123
 
           APKSIGNER=$(find $ANDROID_HOME/build-tools/ -name "apksigner" | sort -V | tail -n 1)
-          $APKSIGNER sign \
-            --ks release_out/release_key.jks \
-            --ks-key-alias gothwad_key \
-            --ks-pass pass:android123 \
-            --key-pass pass:android123 \
-            --out release_out/GothwadTVBrowser-v${{ inputs.version }}-Release.apk \
-            "$APK"
+          if [ -n "$APK" ]; then
+            $APKSIGNER sign \
+              --ks release_out/release_key.jks \
+              --ks-key-alias gothwad_key \
+              --ks-pass pass:android123 \
+              --key-pass pass:android123 \
+              --out release_out/GothwadTVBrowser-v${{ inputs.version }}-Release.apk \
+              "$APK"
+          fi
+
+          if [ -n "$AAB" ]; then
+            cp "$AAB" release_out/GothwadTVBrowser-v${{ inputs.version }}-PlayStore.aab
+            jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+              -keystore release_out/release_key.jks \
+              -storepass android123 -keypass android123 \
+              release_out/GothwadTVBrowser-v${{ inputs.version }}-PlayStore.aab \
+              gothwad_key
+          fi
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -57,5 +69,7 @@ jobs:
           name: Gothwad TV Browser v${{ inputs.version }}
           draft: false
           prerelease: false
-          files: release_out/GothwadTVBrowser-v${{ inputs.version }}-Release.apk
-
+          files: |
+            release_out/GothwadTVBrowser-v${{ inputs.version }}-Release.apk
+            release_out/GothwadTVBrowser-v${{ inputs.version }}-PlayStore.aab
+            release_out/release_key.jks
