@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import com.gothwad.tvbrowser.Config
 import com.gothwad.tvbrowser.R
 import com.gothwad.tvbrowser.model.Download
 import com.gothwad.tvbrowser.utils.Utils
@@ -93,21 +94,50 @@ internal fun MainActivity.handleBackNavigation() {
 
     if (vb.vCursorMenu.isVisible) {
         vb.vCursorMenu.close(CursorMenuView.CloseAnimation.ROTATE_OUT)
-    } else if (vb.flWebViewContainer.cursorDrawerDelegate.canHandleBackNavigation()) {
+        return
+    }
+    if (vb.flWebViewContainer.cursorDrawerDelegate.canHandleBackNavigation()) {
         vb.flWebViewContainer.cursorDrawerDelegate.handleBackNavigation()
-    } else if (isFullscreen) {
+        return
+    }
+    if (isFullscreen) {
         tabsModel.currentTab.value?.webEngine?.hideFullscreenView()
-    } else if (vb.llBottomPanel.isVisible && !vb.rlActionBar.isVisible) {
+        return
+    }
+    if (tabsGridDialog?.isShowing == true) {
+        tabsGridDialog?.dismiss()
+        return
+    }
+    if (vb.llBottomPanel.isVisible && !vb.rlActionBar.isVisible) {
         hideBottomPanel()
-    } else {
-        if (vb.rlActionBar.visibility != View.VISIBLE) {
-            showMenuOverlay()
+        return
+    }
+
+    val isNativeHomeVisible = vb.vNativeHome.isVisible
+    val currentTab = tabsModel.currentTab.value
+    val currentUrl = currentTab?.url ?: ""
+    val isHome = isNativeHomeVisible || currentTab == null ||
+            currentUrl.isEmpty() ||
+            currentUrl == settingsModel.homePage ||
+            currentUrl == Config.HOME_PAGE_URL ||
+            currentUrl == Config.HOME_URL_ALIAS
+
+    if (isHome) {
+        val now = System.currentTimeMillis()
+        if (now - lastBackPressTime < 2500L) {
+            closeWindow()
         } else {
+            lastBackPressTime = now
+            Utils.showToast(this, R.string.press_back_again_to_exit)
+        }
+    } else {
+        if (vb.rlActionBar.isVisible) {
             hideMenuOverlay()
-            val currentTab = tabsModel.currentTab.value
-            if (currentTab != null && currentTab.webEngine.canGoBack()) {
-                currentTab.webEngine.goBack()
-            }
+        }
+        if (currentTab != null && currentTab.webEngine.canGoBack()) {
+            currentTab.webEngine.goBack()
+        } else {
+            showHomeScreen()
         }
     }
 }

@@ -178,6 +178,12 @@ internal class WebEngineCallback(val activity: MainActivity, val tab: WebTabStat
     }
 
     override fun onPageStarted(url: String?) {
+        activity.vb.progressBar.visibility = View.VISIBLE
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            activity.vb.progressBar.setProgress(15, true)
+        } else {
+            activity.vb.progressBar.progress = 15
+        }
         activity.onWebViewUpdated(tab)
         val webViewUrl = tab.webEngine.url
         if (webViewUrl != null) {

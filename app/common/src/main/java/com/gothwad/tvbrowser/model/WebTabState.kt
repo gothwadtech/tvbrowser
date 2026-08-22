@@ -59,6 +59,8 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
     @Ignore
     var lastLoadingUrl: String? = null //this is last url appeared in WebViewClient.shouldOverrideUrlLoading callback
     @Ignore
+    var lastUrlBeforeHome: String? = null
+    @Ignore
     var blockedAds = 0
     @Ignore
     var blockedPopups = 0

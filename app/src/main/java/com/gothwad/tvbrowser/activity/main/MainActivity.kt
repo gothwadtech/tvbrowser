@@ -29,6 +29,7 @@ import android.widget.PopupMenu
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.gothwad.tvbrowser.AppContext
 import com.gothwad.tvbrowser.BrowserApp
@@ -123,6 +124,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         }
     }
 
+    var lastBackPressTime: Long = 0L
+
     internal val backNavigationEventsAdapter = BackNavigationEventsAdapter(
         onEmulatedBackEvent = {
             if (!hideSoftwareKeyboardIfVisible()) {
@@ -212,7 +215,12 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.ibBack.setOnClickListener { navigateBack() }
         vb.ibForward.setOnClickListener {
             val tab = tabsModel.currentTab.value ?: return@setOnClickListener
-            if (tab.webEngine.canGoForward()) {
+            val isHome = vb.vNativeHome.isVisible || tab.url == Config.HOME_URL_ALIAS || tab.url.isEmpty()
+            if (isHome && !tab.lastUrlBeforeHome.isNullOrEmpty()) {
+                val restoreUrl = tab.lastUrlBeforeHome!!
+                tab.lastUrlBeforeHome = null
+                navigate(restoreUrl)
+            } else if (tab.webEngine.canGoForward()) {
                 tab.webEngine.goForward()
             }
         }

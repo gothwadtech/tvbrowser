@@ -8,6 +8,7 @@ import android.net.Uri
 import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.gothwad.tvbrowser.Config
 import com.gothwad.tvbrowser.R
@@ -101,10 +102,30 @@ internal fun MainActivity.handleIntent(intent: Intent) {
 }
 
 internal fun MainActivity.showHomeScreen() {
+    val currentTab = tabsModel.currentTab.value
+    if (currentTab != null) {
+        val currentUrl = currentTab.url
+        val isAlreadyHome = currentUrl.isEmpty() ||
+                currentUrl == settingsModel.homePage ||
+                currentUrl == Config.HOME_PAGE_URL ||
+                currentUrl == Config.HOME_URL_ALIAS
+
+        if (!isAlreadyHome) {
+            currentTab.lastUrlBeforeHome = currentUrl
+        }
+        currentTab.url = Config.HOME_URL_ALIAS
+        currentTab.title = getString(R.string.home_screen)
+        currentTab.thumbnail = null
+        lifecycleScope.launch(Dispatchers.IO) {
+            tabsModel.saveTab(currentTab)
+        }
+    }
     vb.vNativeHome.visibility = View.VISIBLE
     vb.vNativeHome.bringToFront()
     vb.rlActionBar.bringToFront()
     vb.vActionBar.setAddressBoxText("")
+    vb.ibBack.isEnabled = false
+    vb.ibForward.isEnabled = !currentTab?.lastUrlBeforeHome.isNullOrEmpty()
     showMenuOverlay()
     vb.vNativeHome.catchFocus()
 }
@@ -117,12 +138,16 @@ internal fun MainActivity.switchToTab(newTab: WebTabState) {
         vb.vNativeHome.bringToFront()
         vb.rlActionBar.bringToFront()
         vb.vActionBar.setAddressBoxText("")
+        vb.ibBack.isEnabled = false
+        vb.ibForward.isEnabled = !newTab.lastUrlBeforeHome.isNullOrEmpty()
         showMenuOverlay()
         vb.vNativeHome.catchFocus()
     } else {
         vb.vNativeHome.visibility = View.GONE
         vb.flWebViewContainer.visibility = View.VISIBLE
         vb.vActionBar.setAddressBoxText(newTab.url)
+        vb.ibBack.isEnabled = newTab.webEngine.canGoBack() == true
+        vb.ibForward.isEnabled = newTab.webEngine.canGoForward() == true
         hideMenuOverlay(true)
         newTab.webEngine.getView()?.requestFocus()
     }
@@ -222,10 +247,10 @@ internal fun MainActivity.createWebView(tab: WebTabState): View? {
 }
 
 internal fun MainActivity.onWebViewUpdated(tab: WebTabState) {
-    vb.ibBack.isEnabled = tab.webEngine.canGoBack() == true
-    vb.ibForward.isEnabled = tab.webEngine.canGoForward() == true
-    val isHome = tab.url == settingsModel.homePage || tab.url == Config.HOME_PAGE_URL || tab.url == Config.HOME_URL_ALIAS || tab.url.isEmpty()
+    val isHome = vb.vNativeHome.isVisible || tab.url == settingsModel.homePage || tab.url == Config.HOME_PAGE_URL || tab.url == Config.HOME_URL_ALIAS || tab.url.isEmpty()
     if (isHome) {
+        vb.ibBack.isEnabled = false
+        vb.ibForward.isEnabled = !tab.lastUrlBeforeHome.isNullOrEmpty()
         vb.vNativeHome.visibility = View.VISIBLE
         vb.vNativeHome.bringToFront()
         vb.rlActionBar.bringToFront()
@@ -233,6 +258,8 @@ internal fun MainActivity.onWebViewUpdated(tab: WebTabState) {
         showMenuOverlay()
         vb.ibHome.post { vb.ibHome.requestFocus() }
     } else {
+        vb.ibBack.isEnabled = tab.webEngine.canGoBack() == true
+        vb.ibForward.isEnabled = tab.webEngine.canGoForward() == true
         vb.vNativeHome.visibility = View.GONE
         vb.flWebViewContainer.visibility = View.VISIBLE
     }
@@ -260,6 +287,7 @@ internal fun MainActivity.navigateInternal(url: String) {
     }
     val tab = tabsModel.currentTab.value
     if (tab != null) {
+        tab.lastUrlBeforeHome = null
         tab.url = url
         tab.webEngine.loadUrl(url)
         switchToTab(tab)
@@ -273,12 +301,8 @@ internal fun MainActivity.navigateBackInternal(goHomeIfNoHistory: Boolean = fals
     if (currentTab != null && currentTab.webEngine.canGoBack()) {
         currentTab.webEngine.goBack()
         hideMenuOverlay()
-    } else if (goHomeIfNoHistory) {
-        navigate(settingsModel.homePage)
-    } else if (vb.rlActionBar.visibility != View.VISIBLE) {
-        showMenuOverlay()
     } else {
-        hideMenuOverlay()
+        showHomeScreen()
     }
 }
 

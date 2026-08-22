@@ -119,6 +119,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     }
 
     init {
+        setLayerType(View.LAYER_TYPE_HARDWARE, null)
         with(settings) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 safeBrowsingEnabled = callback.isAdBlockingEnabled()
@@ -131,8 +132,22 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             displayZoomControls = false
             textZoom = 100
             domStorageEnabled = true
-            allowContentAccess = false
+            databaseEnabled = true
+            allowFileAccess = true
+            allowContentAccess = true
             cacheMode = WebSettings.LOAD_DEFAULT
+            setRenderPriority(WebSettings.RenderPriority.HIGH)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                offscreenPreRaster = true
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+                try {
+                    android.webkit.CookieManager.getInstance().setAcceptThirdPartyCookies(this@WebViewEx, true)
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to set third party cookies: ", e)
+                }
+            }
             mediaPlaybackRequiresUserGesture = !config.allowAutoplayMedia
             setGeolocationEnabled(true)
             javaScriptCanOpenWindowsAutomatically = false
@@ -144,7 +159,6 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 userAgentString = effectiveUa
             }
 
-            domStorageEnabled = true
             if (config.webEngineDebug) {
                 setWebContentsDebuggingEnabled(true)
             }
