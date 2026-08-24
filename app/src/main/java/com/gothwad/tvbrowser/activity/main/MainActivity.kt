@@ -176,7 +176,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.vNativeHome.onNavigateUrl = { url -> navigate(url) }
         vb.vNativeHome.updateIncognitoState(incognitoMode, this)
         vb.progressBar.visibility = View.GONE
-        updateVirtualDpadVisibility()
 
         setupHeaderClickListeners(incognitoMode)
         setupSettingsSubscriptions()
@@ -214,8 +213,11 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             val currentFocusView = currentFocus ?: vb.flWebViewContainer
             val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
             imm?.hideSoftInputFromWindow(currentFocusView.windowToken, 0)
+            imm?.hideSoftInputFromWindow(window.decorView.windowToken, 0)
+            vb.vActionBar.updateVirtualKeyboardPolicy()
         } else {
             window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFIED)
+            vb.vActionBar.updateVirtualKeyboardPolicy()
         }
     }
 
@@ -360,14 +362,6 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             }
         }
         super.attachBaseContext(newBase)
-    }
-
-    fun updateVirtualDpadVisibility() {
-        val isEnabled = config.enableVirtualDpad
-        vb.vVirtualRemote.visibility = if (isEnabled) View.VISIBLE else View.GONE
-        if (isEnabled) {
-            vb.vVirtualRemote.bringToFront()
-        }
     }
 
     fun focusDefaultNavigationElement() { vb.ibMenu.requestFocus() }

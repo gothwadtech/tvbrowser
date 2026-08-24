@@ -939,39 +939,6 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/enable_virtual_dpad_title"
-                    android:textColor="@color/day_night_text_color_contrast"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/enable_virtual_dpad_desc"
-                    android:textColor="@color/day_night_text_secondary"
-                    android:textSize="11sp" />
-            </LinearLayout>
-
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/scEnableVirtualDpad"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"

@@ -47,23 +47,28 @@ class ActionBar @JvmOverloads constructor(
         if (focused) {
             enterExtendedAddressBarMode()
 
-            val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            val isVkDisabled = AppContext.provideConfig().disableVirtualKeyboard
+            vb.etUrl.applyVirtualKeyboardPolicy()
 
-            if (!AppContext.provideConfig().disableVirtualKeyboard) {
-                imm.showSoftInput(vb.etUrl, InputMethodManager.SHOW_IMPLICIT)
+            if (!isVkDisabled) {
+                val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                imm?.showSoftInput(vb.etUrl, InputMethodManager.SHOW_IMPLICIT)
             } else {
                 vb.etUrl.showSoftInputOnFocus = false
-                imm.hideSoftInputFromWindow(vb.etUrl.windowToken, 0)
+                val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                imm?.hideSoftInputFromWindow(vb.etUrl.windowToken, 0)
+                imm?.hideSoftInputFromWindow(windowToken, 0)
             }
             postDelayed(//workaround an android TV bug
                 {
                     vb.etUrl.selectAll()
                     if (AppContext.provideConfig().disableVirtualKeyboard) {
-                        vb.etUrl.showSoftInputOnFocus = false
+                        vb.etUrl.applyVirtualKeyboardPolicy()
                         val imm2 = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
                         imm2?.hideSoftInputFromWindow(vb.etUrl.windowToken, 0)
+                        imm2?.hideSoftInputFromWindow(windowToken, 0)
                     }
-                }, 500)
+                }, 300)
         } else {
             dismissExtendedAddressBarMode()
         }
@@ -143,6 +148,10 @@ class ActionBar @JvmOverloads constructor(
         if (!extendedAddressBarMode) return
         extendedAddressBarMode = false
         TransitionManager.beginDelayedTransition(this)
+    }
+
+    fun updateVirtualKeyboardPolicy() {
+        vb.etUrl.applyVirtualKeyboardPolicy()
     }
 
     fun catchFocus() {

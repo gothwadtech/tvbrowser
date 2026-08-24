@@ -71,12 +71,6 @@ class MainSettingsView @JvmOverloads constructor(
             (activity as? MainActivity)?.applySoftInputMode()
         }
 
-        vb.scEnableVirtualDpad.isChecked = config.enableVirtualDpad
-        vb.scEnableVirtualDpad.setOnCheckedChangeListener { _, isChecked ->
-            config.enableVirtualDpad = isChecked
-            (activity as? MainActivity)?.updateVirtualDpadVisibility()
-        }
-
         vb.scNavigateWithJoystickAxes.isChecked = !config.disableMotionAxesDpadNavigation
         vb.scNavigateWithJoystickAxes.setOnCheckedChangeListener { _, isChecked ->
             config.disableMotionAxesDpadNavigation = !isChecked

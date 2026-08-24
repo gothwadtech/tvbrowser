@@ -344,16 +344,4 @@
         android:focusableInTouchMode="false"
         />
 
-    <com.gothwad.tvbrowser.activity.main.view.VirtualRemoteView
-        android:id="@+id/vVirtualRemote"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="24dp"
-        android:elevation="30dp"
-        android:translationZ="30dp"
-        android:visibility="gone" />
-
 </RelativeLayout>

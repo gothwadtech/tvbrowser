@@ -25,7 +25,6 @@ class Config(val prefs: SharedPreferences) {
         const val ORIENTATION_AUTO = 2
         const val DISABLE_VIRTUAL_KEYBOARD_KEY = "disable_virtual_keyboard"
         const val ENABLE_VIRTUAL_CURSOR_KEY = "enable_virtual_cursor"
-        const val ENABLE_VIRTUAL_DPAD_KEY = "enable_virtual_dpad"
         const val CURSOR_SIZE_PERCENT_KEY = "cursor_size_percent"
         const val CURSOR_STYLE_KEY = "cursor_style"
 
@@ -142,12 +141,6 @@ class Config(val prefs: SharedPreferences) {
         get() = prefs.getBoolean(ENABLE_VIRTUAL_CURSOR_KEY, true)
         set(value) {
             prefs.edit().putBoolean(ENABLE_VIRTUAL_CURSOR_KEY, value).apply()
-        }
-
-    var enableVirtualDpad: Boolean
-        get() = prefs.getBoolean(ENABLE_VIRTUAL_DPAD_KEY, false)
-        set(value) {
-            prefs.edit().putBoolean(ENABLE_VIRTUAL_DPAD_KEY, value).apply()
         }
 
     var cursorSizePercent: Int
