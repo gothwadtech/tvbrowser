@@ -28,6 +28,11 @@ jobs:
           ./gradlew assembleRelease bundleRelease --no-daemon
 
       - name: Sign Release APK & AAB
+        env:
+          KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASSWORD || 'android123' }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS || 'gothwad_key' }}
+          KEY_PASS: ${{ secrets.KEY_PASSWORD || 'android123' }}
         run: |
           echo "Locating generated Release APK and AAB..."
           UNSIGNED_APK=$(find app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
@@ -35,13 +40,18 @@ jobs:
           
           mkdir -p output_release
           
-          # Generate permanent release keystore
-          keytool -genkey -v \
-            -keystore output_release/gothwad_release_key.jks \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -alias gothwad_tv_key \
-            -dname "CN=Gothwad TV Browser, OU=AppDev, O=Gothwad, C=IN" \
-            -storepass android123 -keypass android123
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Using Permanent Keystore from GitHub Secrets..."
+            echo "$KEYSTORE_BASE64" | base64 -d > output_release/gothwad_release_key.jks
+          else
+            echo "⚠️ No GitHub Secret found! Generating temporary keystore (Warning: will mismatch across builds)..."
+            keytool -genkey -v \
+              -keystore output_release/gothwad_release_key.jks \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -alias "$KEY_ALIAS" \
+              -dname "CN=Gothwad TV Browser, OU=AppDev, O=Gothwad, C=IN" \
+              -storepass "$KEYSTORE_PASS" -keypass "$KEY_PASS"
+          fi
           
           # Find latest zipalign and apksigner dynamically
           ZIPALIGN=$(find $ANDROID_HOME/build-tools/ -name "zipalign" | sort -V | tail -n 1)
@@ -57,9 +67,9 @@ jobs:
             
             $APKSIGNER sign \
               --ks output_release/gothwad_release_key.jks \
-              --ks-key-alias gothwad_tv_key \
-              --ks-pass pass:android123 \
-              --key-pass pass:android123 \
+              --ks-key-alias "$KEY_ALIAS" \
+              --ks-pass "pass:$KEYSTORE_PASS" \
+              --key-pass "pass:$KEY_PASS" \
               --out output_release/GothwadTVBrowser-v1.0.0-Release.apk \
               output_release/GothwadTVBrowser-v1.0.0-unaligned.apk
               
@@ -72,9 +82,9 @@ jobs:
             cp "$UNSIGNED_AAB" output_release/GothwadTVBrowser-v1.0.0-PlayStore.aab
             jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
               -keystore output_release/gothwad_release_key.jks \
-              -storepass android123 -keypass android123 \
+              -storepass "$KEYSTORE_PASS" -keypass "$KEY_PASS" \
               output_release/GothwadTVBrowser-v1.0.0-PlayStore.aab \
-              gothwad_tv_key
+              "$KEY_ALIAS"
             echo "Successfully signed Play Store AAB!"
           fi
 
@@ -83,4 +93,3 @@ jobs:
         with:
           name: Gothwad-TV-Browser-v1.0.0-Production-Binaries
           path: output_release/
-

@@ -30,25 +30,36 @@ jobs:
         run: ./gradlew assembleRelease bundleRelease --no-daemon
 
       - name: Sign Release APK & AAB
+        env:
+          KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASSWORD || 'android123' }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS || 'gothwad_key' }}
+          KEY_PASS: ${{ secrets.KEY_PASSWORD || 'android123' }}
         run: |
           mkdir -p release_out
           APK=$(find app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
           AAB=$(find app/build/outputs/bundle/release/ -name "*.aab" | head -n 1)
           
-          keytool -genkey -v \
-            -keystore release_out/release_key.jks \
-            -keyalg RSA -keysize 2048 -validity 10000 \
-            -alias gothwad_key \
-            -dname "CN=Gothwad TV Browser, O=Gothwad, C=IN" \
-            -storepass android123 -keypass android123
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Using Permanent Keystore from GitHub Secrets..."
+            echo "$KEYSTORE_BASE64" | base64 -d > release_out/release_key.jks
+          else
+            echo "⚠️ No GitHub Secret found! Generating temporary keystore (Warning: will mismatch across builds)..."
+            keytool -genkey -v \
+              -keystore release_out/release_key.jks \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -alias "$KEY_ALIAS" \
+              -dname "CN=Gothwad TV Browser, O=Gothwad, C=IN" \
+              -storepass "$KEYSTORE_PASS" -keypass "$KEY_PASS"
+          fi
 
           APKSIGNER=$(find $ANDROID_HOME/build-tools/ -name "apksigner" | sort -V | tail -n 1)
           if [ -n "$APK" ]; then
             $APKSIGNER sign \
               --ks release_out/release_key.jks \
-              --ks-key-alias gothwad_key \
-              --ks-pass pass:android123 \
-              --key-pass pass:android123 \
+              --ks-key-alias "$KEY_ALIAS" \
+              --ks-pass "pass:$KEYSTORE_PASS" \
+              --key-pass "pass:$KEY_PASS" \
               --out release_out/GothwadTVBrowser-v${{ inputs.version }}-Release.apk \
               "$APK"
           fi
@@ -57,9 +68,9 @@ jobs:
             cp "$AAB" release_out/GothwadTVBrowser-v${{ inputs.version }}-PlayStore.aab
             jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
               -keystore release_out/release_key.jks \
-              -storepass android123 -keypass android123 \
+              -storepass "$KEYSTORE_PASS" -keypass "$KEY_PASS" \
               release_out/GothwadTVBrowser-v${{ inputs.version }}-PlayStore.aab \
-              gothwad_key
+              "$KEY_ALIAS"
           fi
 
       - name: Create GitHub Release
