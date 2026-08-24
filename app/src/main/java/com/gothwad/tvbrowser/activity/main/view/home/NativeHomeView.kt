@@ -266,11 +266,15 @@ class NativeHomeView @JvmOverloads constructor(
             btnExitIncognito.requestFocus()
             return
         }
+        if (hasFocus()) return
         val firstChild = rvBookmarks.layoutManager?.findViewByPosition(0)
         if (firstChild != null) {
             firstChild.requestFocus()
         } else {
-            rvBookmarks.requestFocus()
+            rvBookmarks.post {
+                val child = rvBookmarks.layoutManager?.findViewByPosition(0)
+                child?.requestFocus() ?: rvBookmarks.requestFocus()
+            }
         }
     }
 

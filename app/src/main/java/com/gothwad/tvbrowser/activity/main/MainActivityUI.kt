@@ -42,18 +42,18 @@ internal fun MainActivity.showMenuOverlay() {
 }
 
 internal fun MainActivity.hideMenuOverlay(hideBottomButtons: Boolean = true) {
-    if (isFullscreen || vb.vNativeHome.isVisible || vb.rlActionBar.visibility != View.VISIBLE) return
-    val hideHeight = if (vb.rlActionBar.height > 0) vb.rlActionBar.height.toFloat() else Utils.D2P(this, 50f)
+    if (isFullscreen || vb.vNativeHome.isVisible) return
+    val hideHeight = if (vb.rlActionBar.height > 0) vb.rlActionBar.height.toFloat() else Utils.D2P(this, 70f)
     vb.rlActionBar.animate()
         .translationY(-hideHeight)
-        .setDuration(220)
+        .setDuration(200)
         .setInterpolator(AccelerateInterpolator())
         .start()
 }
 
 internal fun MainActivity.toggleMenu() {
     if (isFullscreen) return
-    if (vb.rlActionBar.translationY < 0f) {
+    if (vb.rlActionBar.translationY < 0f || vb.rlActionBar.visibility != View.VISIBLE) {
         showMenuOverlay()
     } else {
         hideMenuOverlay()

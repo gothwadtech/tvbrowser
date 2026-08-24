@@ -151,7 +151,7 @@ internal fun MainActivity.switchToTab(newTab: WebTabState) {
         vb.vActionBar.setAddressBoxText(newTab.url)
         vb.ibBack.isEnabled = newTab.webEngine.canGoBack() == true
         vb.ibForward.isEnabled = newTab.webEngine.canGoForward() == true
-        showMenuOverlay()
+        hideMenuOverlay(false)
         newTab.webEngine.getView()?.requestFocus()
     }
     updateTabCountBadge()
@@ -263,6 +263,7 @@ internal fun MainActivity.onWebViewUpdated(tab: WebTabState) {
         vb.ibForward.isEnabled = tab.webEngine.canGoForward() == true
         vb.vNativeHome.visibility = View.GONE
         vb.flWebViewContainer.visibility = View.VISIBLE
+        hideMenuOverlay(false)
     }
 }
 

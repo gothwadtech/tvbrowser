@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Environment
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -135,6 +136,16 @@ internal fun MainActivity.handleBackNavigation() {
             Utils.showToast(this, R.string.press_back_again_to_exit)
         }
     } else {
+        // Website is showing
+        val isHeaderVisible = vb.rlActionBar.visibility == View.VISIBLE && vb.rlActionBar.translationY >= 0f
+        if (!isHeaderVisible) {
+            // First press: open header in fullscreen website and focus header
+            showMenuOverlay()
+            vb.ibBack.requestFocus()
+            return
+        }
+
+        // Second press: Header is already visible -> navigate back or return to Home
         if (currentTab != null && currentTab.webEngine.canGoBack()) {
             currentTab.webEngine.goBack()
         } else {

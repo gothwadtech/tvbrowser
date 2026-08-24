@@ -354,10 +354,9 @@ internal class WebEngineCallback(val activity: MainActivity, val tab: WebTabStat
     override fun onScrollChange(scrollY: Int, oldScrollY: Int, dy: Int) {
         if (activity.tabsModel.currentTab.value != tab) return
         if (activity.vb.vNativeHome.isVisible || activity.isFullscreen) return
-        if (dy > 8) {
+        // Do not automatically show header on scroll; website stays fullscreen unless explicitly summoned via Back/Escape
+        if (dy > 12) {
             activity.hideMenuOverlay()
-        } else if (dy < -8 || scrollY <= 10) {
-            activity.showMenuOverlay()
         }
     }
 }

@@ -15,60 +15,43 @@ fun MainActivity.handleDpadKey(keyCode: Int): Boolean {
 
     if (isNativeHomeVisible) {
         val focus = currentFocus
+        val inToolbar = focus != null && isToolbarView(focus)
+
         when (keyCode) {
             KeyEvent.KEYCODE_DPAD_UP -> {
-                if (focus != null) {
-                    val next = focus.focusSearch(View.FOCUS_UP)
-                    if (next != null && next != focus && isDescendantOrSelf(next, vb.rlRoot)) {
-                        next.requestFocus()
-                    } else {
-                        vb.ibMenu.requestFocus()
-                    }
-                } else {
-                    vb.ibMenu.requestFocus()
+                if (focus == null) {
+                    vb.vNativeHome.catchFocus()
+                    return true
                 }
-                return true
+                if (!inToolbar) {
+                    val next = focus.focusSearch(View.FOCUS_UP)
+                    if (next == null || isToolbarView(next)) {
+                        vb.ibHome.requestFocus()
+                        return true
+                    }
+                }
+                return false
             }
             KeyEvent.KEYCODE_DPAD_DOWN -> {
-                if (focus == null || isToolbarView(focus)) {
+                if (focus == null || inToolbar) {
                     vb.vNativeHome.catchFocus()
-                } else {
-                    val next = focus.focusSearch(View.FOCUS_DOWN)
-                    if (next != null && next != focus && isDescendantOrSelf(next, vb.rlRoot)) {
-                        next.requestFocus()
-                    }
+                    return true
                 }
-                return true
+                return false
             }
-            KeyEvent.KEYCODE_DPAD_LEFT -> {
-                if (focus != null) {
-                    val next = focus.focusSearch(View.FOCUS_LEFT)
-                    if (next != null && next != focus && isDescendantOrSelf(next, vb.rlRoot)) {
-                        next.requestFocus()
-                    }
-                } else {
-                    vb.ibMenu.requestFocus()
+            KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                if (focus == null) {
+                    vb.vNativeHome.catchFocus()
+                    return true
                 }
-                return true
-            }
-            KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                if (focus != null) {
-                    val next = focus.focusSearch(View.FOCUS_RIGHT)
-                    if (next != null && next != focus && isDescendantOrSelf(next, vb.rlRoot)) {
-                        next.requestFocus()
-                    }
-                } else {
-                    vb.ibMenu.requestFocus()
-                }
-                return true
+                return false
             }
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
                 if (focus != null) {
                     focus.performClick()
-                } else {
-                    vb.ibMenu.performClick()
+                    return true
                 }
-                return true
+                return false
             }
         }
     } else {
@@ -83,19 +66,21 @@ fun MainActivity.handleDpadKey(keyCode: Int): Boolean {
                     if (next != null && next != focus) {
                         next.requestFocus()
                     }
+                    return true
                 } else {
                     sendDpadToCursor(keyCode)
+                    return true
                 }
-                return true
             }
             KeyEvent.KEYCODE_DPAD_DOWN -> {
                 if (inToolbar) {
                     hideMenuOverlay(false)
                     vb.flWebViewContainer.requestFocus()
+                    return true
                 } else {
                     sendDpadToCursor(keyCode)
+                    return true
                 }
-                return true
             }
             KeyEvent.KEYCODE_DPAD_LEFT -> {
                 if (inToolbar) {
@@ -103,10 +88,11 @@ fun MainActivity.handleDpadKey(keyCode: Int): Boolean {
                     if (next != null && next != focus) {
                         next.requestFocus()
                     }
+                    return true
                 } else {
                     sendDpadToCursor(keyCode)
+                    return true
                 }
-                return true
             }
             KeyEvent.KEYCODE_DPAD_RIGHT -> {
                 if (inToolbar) {
@@ -114,18 +100,20 @@ fun MainActivity.handleDpadKey(keyCode: Int): Boolean {
                     if (next != null && next != focus) {
                         next.requestFocus()
                     }
+                    return true
                 } else {
                     sendDpadToCursor(keyCode)
+                    return true
                 }
-                return true
             }
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
                 if (inToolbar) {
                     focus?.performClick()
+                    return true
                 } else {
                     sendDpadToCursor(keyCode)
+                    return true
                 }
-                return true
             }
         }
     }
