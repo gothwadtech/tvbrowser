@@ -8,8 +8,10 @@ android {
 
     defaultConfig {
         applicationId = "com.gothwad.tvbrowser"
-        versionCode = 1
-        versionName = "1.0.0"
+        val vCode = (project.findProperty("versionCode") as? String)?.toIntOrNull() ?: 2
+        val vName = (project.findProperty("versionName") as? String) ?: "1.0.1"
+        versionCode = vCode
+        versionName = vName
 
         ndk {
             abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a"))
