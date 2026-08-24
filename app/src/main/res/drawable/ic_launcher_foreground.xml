@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- TV Outer Monitor Base -->
+    <path
+        android:fillColor="#1E293B"
+        android:pathData="M30,28 L78,28 A6,6 0 0,1 84,34 L84,68 A6,6 0 0,1 78,74 L30,74 A6,6 0 0,1 24,68 L24,34 A6,6 0 0,1 30,28 Z" />
+
+    <!-- TV Screen Inner Bezel -->
+    <path
+        android:fillColor="#0284C7"
+        android:pathData="M32,31 L76,31 A4,4 0 0,1 80,35 L80,65 A4,4 0 0,1 76,69 L32,69 A4,4 0 0,1 28,35 L28,31 A4,4 0 0,1 32,31 Z" />
+
+    <!-- TV Stand -->
+    <path
+        android:fillColor="#CBD5E1"
+        android:pathData="M51,74 L57,74 L59,81 L49,81 Z" />
+    <path
+        android:fillColor="#94A3B8"
+        android:pathData="M44,81 L64,81 A2,2 0 0,1 66,83 L42,83 A2,2 0 0,1 44,81 Z" />
+
+    <!-- Web Globe inside Screen -->
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M54,35 A15,15 0 1,1 53.9,35 Z" />
+
+    <!-- Globe Grid Lines -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.8"
+        android:fillColor="#00000000"
+        android:pathData="M54,35 A15,15 0 1,1 53.9,35 Z" />
+
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.8"
+        android:fillColor="#00000000"
+        android:pathData="M39,50 L69,50" />
+
+    <path
+        android:strokeColor="#E0F2FE"
+        android:strokeWidth="1.4"
+        android:fillColor="#00000000"
+        android:pathData="M43,43 C49,46 59,46 65,43" />
+    <path
+        android:strokeColor="#E0F2FE"
+        android:strokeWidth="1.4"
+        android:fillColor="#00000000"
+        android:pathData="M43,57 C49,54 59,54 65,57" />
+
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.8"
+        android:fillColor="#00000000"
+        android:pathData="M54,35 C46,42 46,58 54,65 C62,58 62,42 54,35 Z" />
+
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.8"
+        android:fillColor="#00000000"
+        android:pathData="M54,35 L54,65" />
+
+    <!-- Orbit Swoop / Navigation Accent -->
+    <path
+        android:strokeColor="#F59E0B"
+        android:strokeWidth="2.2"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"
+        android:pathData="M34,60 C40,68 68,68 76,46 C78,41 77,36 74,34" />
+
+    <!-- Speed Sparkle -->
+    <path
+        android:fillColor="#FBBF24"
+        android:pathData="M76,34 L77.5,30 L79,34 L83,35.5 L79,37 L77.5,41 L76,37 L72,35.5 Z" />
+
+</vector>
