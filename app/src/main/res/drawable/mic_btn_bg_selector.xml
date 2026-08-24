@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Focused -->
+    <item android:state_focused="true">
+        <shape android:shape="oval">
+            <solid android:color="#0494F4" />
+        </shape>
+    </item>
+
+    <!-- Pressed -->
+    <item android:state_pressed="true">
+        <shape android:shape="oval">
+            <solid android:color="#0494F4" />
+        </shape>
+    </item>
+
+    <!-- Normal / Unfocused state -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/day_night_surface_subtle" />
+            <stroke android:width="1dp" android:color="@color/day_night_card_stroke" />
+        </shape>
+    </item>
+</selector>
