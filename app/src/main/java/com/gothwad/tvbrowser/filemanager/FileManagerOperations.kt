@@ -1,0 +1,172 @@
+package com.gothwad.tvbrowser.filemanager
+
+import android.app.AlertDialog
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.webkit.MimeTypeMap
+import android.widget.EditText
+import android.widget.Toast
+import androidx.core.content.FileProvider
+import com.gothwad.tvbrowser.BuildConfig
+import java.io.File
+import java.util.Locale
+
+object FileManagerOperations {
+
+    fun getMimeType(file: File): String {
+        val ext = file.extension.lowercase(Locale.ROOT)
+        if (ext == "apk") return "application/vnd.android.package-archive"
+        val mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext)
+        return mime ?: "*/*"
+    }
+
+    fun openFile(context: Context, file: File) {
+        try {
+            val uri: Uri = FileProvider.getUriForFile(context, "${BuildConfig.APPLICATION_ID}.provider", file)
+            val mimeType = getMimeType(file)
+
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, mimeType)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        } catch (_: ActivityNotFoundException) {
+            Toast.makeText(context, "No app found to open this file", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(context, "Cannot open file: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun shareFile(context: Context, file: File) {
+        try {
+            val uri: Uri = FileProvider.getUriForFile(context, "${BuildConfig.APPLICATION_ID}.provider", file)
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = getMimeType(file)
+                putExtra(Intent.EXTRA_STREAM, uri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            context.startActivity(Intent.createChooser(intent, "Share via"))
+        } catch (e: Exception) {
+            Toast.makeText(context, "Cannot share file: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun showFileOptionsDialog(
+        context: Context,
+        item: FileItem,
+        onOpen: (FileItem) -> Unit,
+        onRefresh: () -> Unit
+    ) {
+        val options = mutableListOf<String>()
+        options.add(if (item.extension == "apk") "Install APK" else if (item.isDirectory) "Open Folder" else "Open File")
+        options.add("Rename")
+        options.add("Delete")
+        options.add("Details")
+        if (!item.isDirectory) options.add("Share")
+
+        AlertDialog.Builder(context)
+            .setTitle(item.name)
+            .setItems(options.toTypedArray()) { _, which ->
+                when (options[which]) {
+                    "Install APK", "Open File", "Open Folder" -> onOpen(item)
+                    "Rename" -> showRenameDialog(context, item, onRefresh)
+                    "Delete" -> showDeleteDialog(context, item, onRefresh)
+                    "Details" -> showDetailsDialog(context, item)
+                    "Share" -> shareFile(context, item.file)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    fun showRenameDialog(context: Context, item: FileItem, onRefresh: () -> Unit) {
+        val etInput = EditText(context).apply {
+            setText(item.name)
+            setSelection(item.name.length)
+        }
+
+        AlertDialog.Builder(context)
+            .setTitle("Rename")
+            .setView(etInput)
+            .setPositiveButton("Rename") { _, _ ->
+                val newName = etInput.text.toString().trim()
+                if (newName.isNotEmpty() && newName != item.name) {
+                    val target = File(item.file.parentFile, newName)
+                    if (item.file.renameTo(target)) {
+                        Toast.makeText(context, "Renamed successfully", Toast.LENGTH_SHORT).show()
+                        onRefresh()
+                    } else {
+                        Toast.makeText(context, "Failed to rename", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    fun showDeleteDialog(context: Context, item: FileItem, onRefresh: () -> Unit) {
+        AlertDialog.Builder(context)
+            .setTitle("Delete")
+            .setMessage("Are you sure you want to delete '${item.name}'?")
+            .setPositiveButton("Delete") { _, _ ->
+                if (deleteRecursive(item.file)) {
+                    Toast.makeText(context, "Deleted successfully", Toast.LENGTH_SHORT).show()
+                    onRefresh()
+                } else {
+                    Toast.makeText(context, "Failed to delete", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    fun deleteRecursive(file: File): Boolean {
+        if (file.isDirectory) {
+            file.listFiles()?.forEach { deleteRecursive(it) }
+        }
+        return file.delete()
+    }
+
+    fun showDetailsDialog(context: Context, item: FileItem) {
+        val details = """
+            Name: ${item.name}
+            Path: ${item.file.absolutePath}
+            Size: ${item.formattedSize}
+            Last Modified: ${item.formattedDate}
+            Type: ${if (item.isDirectory) "Folder" else item.extension.uppercase(Locale.ROOT)}
+        """.trimIndent()
+
+        AlertDialog.Builder(context)
+            .setTitle("File Details")
+            .setMessage(details)
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    fun showNewFolderDialog(context: Context, currentDirectory: File, onRefresh: () -> Unit) {
+        val etInput = EditText(context).apply {
+            hint = "Folder Name"
+        }
+
+        AlertDialog.Builder(context)
+            .setTitle("New Folder")
+            .setView(etInput)
+            .setPositiveButton("Create") { _, _ ->
+                val folderName = etInput.text.toString().trim()
+                if (folderName.isNotEmpty()) {
+                    val newDir = File(currentDirectory, folderName)
+                    if (newDir.mkdir()) {
+                        Toast.makeText(context, "Folder created", Toast.LENGTH_SHORT).show()
+                        onRefresh()
+                    } else {
+                        Toast.makeText(context, "Failed to create folder", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+}
