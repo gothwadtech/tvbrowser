@@ -1,6 +1,7 @@
 {
   "name": "Gothwad TV Browser",
-  "description": "Imported from GitHub: gothwadtech/tv-bro",
+  "description": "Android TV Web Browser featuring Clipboard Manager & Quick Snippets, Downloads, TV Notes, and native D-Pad controls",
+  "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]
