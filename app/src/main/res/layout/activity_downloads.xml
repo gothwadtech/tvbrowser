@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_downloads"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    android:background="#0D111A"
+    tools:context="com.gothwad.tvbrowser.activity.downloads.DownloadsActivity">
+
+    <!-- Top Header Area -->
+    <LinearLayout
+        android:id="@+id/llDownloadsHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="12dp"
+        android:gravity="center_vertical">
+
+        <!-- Title & Subtitle Column -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvDownloadsTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Downloads"
+                android:textColor="#FFFFFF"
+                android:textSize="32sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvDownloadsSubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Nothing in progress · 17.73 GB free"
+                android:textColor="#94A3B8"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- Close Button (X) -->
+        <ImageButton
+            android:id="@+id/ibCloseDownloads"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_round_close_btn"
+            android:contentDescription="@string/close"
+            android:focusable="true"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_close_grey_900_24dp"
+            android:tint="#FFFFFF" />
+    </LinearLayout>
+
+    <!-- Filter Pill Chips Row -->
+    <LinearLayout
+        android:id="@+id/llFilterPills"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="14dp">
+
+        <Button
+            android:id="@+id/btnFilterAll"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/bg_pill_button"
+            android:focusable="true"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:text="All"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnFilterActive"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/bg_pill_button"
+            android:focusable="true"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:text="Active"
+            android:textAllCaps="false"
+            android:textColor="#94A3B8"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btnFilterCompleted"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/bg_pill_button"
+            android:focusable="true"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:text="Completed"
+            android:textAllCaps="false"
+            android:textColor="#94A3B8"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btnFilterFailed"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_pill_button"
+            android:focusable="true"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:text="Failed"
+            android:textAllCaps="false"
+            android:textColor="#94A3B8"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#1E2638" />
+
+    <!-- Content Area: ListView or Modern Empty State -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="8dp">
+
+        <de.halfbit.pinnedsection.PinnedSectionListView
+            android:id="@+id/listView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="6dp"
+            android:listSelector="@drawable/list_item_bg_selector"/>
+
+        <!-- Center Empty State (from Image 1) -->
+        <LinearLayout
+            android:id="@+id/llEmptyState"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:src="@drawable/ic_download_badge"
+                android:contentDescription="@null" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="No downloads"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Files you download from a page will appear here."
+                android:textColor="#94A3B8"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>
