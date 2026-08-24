@@ -31,7 +31,7 @@ jobs:
         env:
           KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
           KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASSWORD || 'android123' }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS || 'gothwad_key' }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS || '' }}
           KEY_PASS: ${{ secrets.KEY_PASSWORD || 'android123' }}
         run: |
           echo "Locating generated Release APK and AAB..."
@@ -39,19 +39,34 @@ jobs:
           UNSIGNED_AAB=$(find app/build/outputs/bundle/release/ -name "*.aab" | head -n 1)
           
           mkdir -p output_release
+          KS_PATH="output_release/gothwad_release_key.jks"
           
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "Using Permanent Keystore from GitHub Secrets..."
-            echo "$KEYSTORE_BASE64" | base64 -d > output_release/gothwad_release_key.jks
+            echo "$KEYSTORE_BASE64" | base64 -d > "$KS_PATH"
           else
-            echo "⚠️ No GitHub Secret found! Generating temporary keystore (Warning: will mismatch across builds)..."
+            echo "⚠️ No GitHub Secret found! Generating temporary keystore..."
+            DEFAULT_ALIAS="${KEY_ALIAS:-gothwad_tv_key}"
             keytool -genkey -v \
-              -keystore output_release/gothwad_release_key.jks \
+              -keystore "$KS_PATH" \
               -keyalg RSA -keysize 2048 -validity 10000 \
-              -alias "$KEY_ALIAS" \
+              -alias "$DEFAULT_ALIAS" \
               -dname "CN=Gothwad TV Browser, OU=AppDev, O=Gothwad, C=IN" \
               -storepass "$KEYSTORE_PASS" -keypass "$KEY_PASS"
           fi
+
+          # Dynamically detect exact Alias name from the keystore
+          DETECTED_ALIAS=$(keytool -list -v -keystore "$KS_PATH" -storepass "$KEYSTORE_PASS" 2>/dev/null | grep -i "Alias name:" | head -n 1 | sed 's/.*Alias name: //I' | tr -d '\r' | xargs)
+          
+          if [ -n "$KEY_ALIAS" ]; then
+            ACTUAL_ALIAS="$KEY_ALIAS"
+          elif [ -n "$DETECTED_ALIAS" ]; then
+            ACTUAL_ALIAS="$DETECTED_ALIAS"
+          else
+            ACTUAL_ALIAS="gothwad_tv_key"
+          fi
+          
+          echo "Using Keystore Alias: $ACTUAL_ALIAS"
           
           # Find latest zipalign and apksigner dynamically
           ZIPALIGN=$(find $ANDROID_HOME/build-tools/ -name "zipalign" | sort -V | tail -n 1)
@@ -66,8 +81,8 @@ jobs:
             fi
             
             $APKSIGNER sign \
-              --ks output_release/gothwad_release_key.jks \
-              --ks-key-alias "$KEY_ALIAS" \
+              --ks "$KS_PATH" \
+              --ks-key-alias "$ACTUAL_ALIAS" \
               --ks-pass "pass:$KEYSTORE_PASS" \
               --key-pass "pass:$KEY_PASS" \
               --out output_release/GothwadTVBrowser-v1.0.0-Release.apk \
@@ -81,10 +96,10 @@ jobs:
           if [ -n "$UNSIGNED_AAB" ]; then
             cp "$UNSIGNED_AAB" output_release/GothwadTVBrowser-v1.0.0-PlayStore.aab
             jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
-              -keystore output_release/gothwad_release_key.jks \
+              -keystore "$KS_PATH" \
               -storepass "$KEYSTORE_PASS" -keypass "$KEY_PASS" \
               output_release/GothwadTVBrowser-v1.0.0-PlayStore.aab \
-              "$KEY_ALIAS"
+              "$ACTUAL_ALIAS"
             echo "Successfully signed Play Store AAB!"
           fi
 
