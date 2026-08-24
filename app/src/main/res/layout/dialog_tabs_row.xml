@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/flTabsRowContainer"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#D90B0E17"
+    android:paddingTop="14dp"
+    android:paddingBottom="18dp"
+    android:elevation="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Top Header Bar for Tabs -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="28dp"
+            android:paddingEnd="28dp"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:id="@+id/tvTabsHeaderTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Tabs"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <!-- New Tab Action Button -->
+            <Button
+                android:id="@+id/btnNewTabAction"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/bg_pill_button"
+                android:focusable="true"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:text="+ New Tab"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <!-- Close All Action Button -->
+            <Button
+                android:id="@+id/btnCloseAllTabs"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/bg_pill_button"
+                android:focusable="true"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:text="Close All"
+                android:textAllCaps="false"
+                android:textColor="#94A3B8"
+                android:textSize="12sp" />
+
+            <!-- Close Dialog (X) -->
+            <ImageButton
+                android:id="@+id/btnDoneTabs"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_round_close_btn"
+                android:contentDescription="@string/close"
+                android:focusable="true"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_close_grey_900_24dp"
+                android:tint="#FFFFFF" />
+        </LinearLayout>
+
+        <!-- Horizontal RecyclerView for Open Tabs -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvTabsRow"
+            android:layout_width="match_parent"
+            android:layout_height="170dp"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:focusable="true"
+            android:orientation="horizontal"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:scrollbars="none" />
+
+        <!-- Floating Quick Action Controls centered below carousel (Image 3) -->
+        <LinearLayout
+            android:id="@+id/llTabBottomControls"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/ibCloseSelectedTab"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/bg_round_fab_btn"
+                android:contentDescription="Close active tab"
+                android:focusable="true"
+                android:padding="11dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_close_grey_900_24dp"
+                android:tint="#FFFFFF" />
+
+            <ImageButton
+                android:id="@+id/ibAddNewTabFab"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_round_fab_btn"
+                android:contentDescription="New tab"
+                android:focusable="true"
+                android:padding="11dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_add"
+                android:tint="#FFFFFF" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>
