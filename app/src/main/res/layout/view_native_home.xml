@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/llNativeHomeRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/day_night_background_color"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:paddingTop="12dp"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <!-- Main Content Area: 4-Column Grid with infinite vertical scrolling, full width without sidebar -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvBookmarks"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:focusable="true"
+        android:descendantFocusability="afterDescendants"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:paddingBottom="140dp"
+        android:scrollbars="vertical" />
+
+    <!-- Chrome Incognito Landing View -->
+    <ScrollView
+        android:id="@+id/svIncognitoHome"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/llIncognitoHome"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingTop="28dp"
+            android:paddingBottom="48dp"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp">
+
+            <!-- Big Circular Icon with Spy Glasses -->
+            <FrameLayout
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:background="@drawable/bg_incognito_circle">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_incognito"
+                    android:tint="#E8EAED"
+                    android:contentDescription="@null" />
+            </FrameLayout>
+
+            <!-- Main Heading -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="You've gone Incognito"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <!-- Subtitle -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:maxWidth="700dp"
+                android:gravity="center"
+                android:text="Now you can browse privately, and other people who use this device won't see your activity. However, downloads and bookmarks will be saved."
+                android:textColor="#9AA0A6"
+                android:textSize="13sp"
+                android:lineSpacingExtra="3dp" />
+
+            <!-- Chrome Details 2-Column Info Cards -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:maxWidth="750dp"
+                android:orientation="horizontal"
+                android:baselineAligned="false">
+
+                <!-- Left Card: Chrome won't save -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/bg_incognito_card"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Chrome won't save:"
+                        android:textColor="#E8EAED"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="• Your browsing history"
+                        android:textColor="#BDC1C6"
+                        android:textSize="12.5sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="• Cookies and site data"
+                        android:textColor="#BDC1C6"
+                        android:textSize="12.5sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="• Information entered in forms"
+                        android:textColor="#BDC1C6"
+                        android:textSize="12.5sp" />
+                </LinearLayout>
+
+                <!-- Right Card: Activity might still be visible to -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="12dp"
+                    android:background="@drawable/bg_incognito_card"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Your activity might still be visible to:"
+                        android:textColor="#E8EAED"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="• Websites you visit"
+                        android:textColor="#BDC1C6"
+                        android:textSize="12.5sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="• Your employer or school"
+                        android:textColor="#BDC1C6"
+                        android:textSize="12.5sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="• Your internet service provider"
+                        android:textColor="#BDC1C6"
+                        android:textSize="12.5sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Exit Incognito Button -->
+            <Button
+                android:id="@+id/btnExitIncognito"
+                android:layout_width="wrap_content"
+                android:layout_height="42dp"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:text="Close Incognito Mode"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</FrameLayout>
