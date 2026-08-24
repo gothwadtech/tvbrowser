@@ -4,9 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version (e.g. 1.0.0)'
+        description: 'Version Name (e.g. 1.0.1)'
         required: true
-        default: '1.0.0'
+        default: '1.0.1'
+      version_code:
+        description: 'Version Code (Integer, e.g. 2, 3... leave blank for auto increment)'
+        required: false
+        default: ''
 
 jobs:
   build_release:
@@ -26,8 +30,23 @@ jobs:
       - name: Make Gradle Executable
         run: chmod +x ./gradlew
 
+      - name: Determine Version Code
+        id: versioning
+        run: |
+          if [ -n "${{ inputs.version_code }}" ]; then
+            V_CODE="${{ inputs.version_code }}"
+          else
+            V_CODE=$(( 10 + ${{ github.run_number }} ))
+          fi
+          echo "Determined Version Code: $V_CODE"
+          echo "v_code=$V_CODE" >> $GITHUB_OUTPUT
+
       - name: Build Release APK and AAB
-        run: ./gradlew assembleRelease bundleRelease --no-daemon
+        run: |
+          ./gradlew assembleRelease bundleRelease \
+            -PversionCode=${{ steps.versioning.outputs.v_code }} \
+            -PversionName=${{ inputs.version }} \
+            --no-daemon
 
       - name: Sign Release APK & AAB
         env:
