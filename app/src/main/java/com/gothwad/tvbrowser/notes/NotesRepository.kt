@@ -26,9 +26,10 @@ class NotesRepository(private val context: Context) {
             list.add(
                 NoteItem(
                     title = "📌 Welcome to TV Notes",
-                    content = "Create, edit and organize your ideas, shopping lists, and website links directly on your TV screen!\n\n• Press '+ New Note' to create\n• Use TV Remote D-Pad to navigate\n• Long-press to color code or delete.",
+                    content = "Create, edit and organize your ideas, shopping lists, and website links directly on your TV screen!\n\n• Press '+ New Note' to create\n• Use TV Remote D-Pad to navigate\n• Long-press or click Select to multi-select, archive or delete.",
                     colorHex = "#065F46",
-                    isPinned = true
+                    isPinned = true,
+                    isArchived = false
                 )
             )
             list.add(
@@ -36,7 +37,8 @@ class NotesRepository(private val context: Context) {
                     title = "📺 TV Quick Links & Watchlist",
                     content = "1. JioCinema IPL Live\n2. Hotstar Specials\n3. YouTube Tech Documentaries\n4. Netflix Movies",
                     colorHex = "#1E3A8A",
-                    isPinned = false
+                    isPinned = false,
+                    isArchived = false
                 )
             )
             saveAllNotes(list)
@@ -68,6 +70,22 @@ class NotesRepository(private val context: Context) {
     fun deleteNote(noteId: String) {
         val notes = getAllNotes()
         notes.removeAll { it.id == noteId }
+        saveAllNotes(notes)
+    }
+
+    fun deleteNotes(noteIds: Set<String>) {
+        val notes = getAllNotes()
+        notes.removeAll { it.id in noteIds }
+        saveAllNotes(notes)
+    }
+
+    fun archiveNotes(noteIds: Set<String>, archive: Boolean) {
+        val notes = getAllNotes()
+        for (note in notes) {
+            if (note.id in noteIds) {
+                note.isArchived = archive
+            }
+        }
         saveAllNotes(notes)
     }
 }

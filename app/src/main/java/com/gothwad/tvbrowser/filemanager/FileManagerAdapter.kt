@@ -1,8 +1,11 @@
 package com.gothwad.tvbrowser.filemanager
 
+import android.content.ClipData
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
@@ -12,7 +15,8 @@ import com.gothwad.tvbrowser.R
 class FileManagerAdapter(
     private var items: List<FileItem>,
     private val onItemClick: (FileItem) -> Unit,
-    private val onItemLongClick: (FileItem) -> Boolean
+    private val onItemLongClick: (FileItem) -> Boolean,
+    private val onItemMoreClick: ((FileItem) -> Unit)? = null
 ) : RecyclerView.Adapter<FileManagerAdapter.FileViewHolder>() {
 
     class FileViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -20,6 +24,8 @@ class FileManagerAdapter(
         val tvFileName: TextView = view.findViewById(R.id.tvFileName)
         val tvFileSize: TextView = view.findViewById(R.id.tvFileSize)
         val tvFileDate: TextView = view.findViewById(R.id.tvFileDate)
+        val ivFolderArrow: ImageView = view.findViewById(R.id.ivFolderArrow)
+        val ibItemMore: ImageButton = view.findViewById(R.id.ibItemMore)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FileViewHolder {
@@ -35,34 +41,57 @@ class FileManagerAdapter(
         holder.tvFileDate.text = item.formattedDate
         holder.ivFileIcon.setImageResource(item.iconRes)
 
+        // Arrow indicator: Show on folders to indicate entering/navigating into folder
+        if (item.isDirectory) {
+            holder.ivFolderArrow.visibility = View.VISIBLE
+        } else {
+            holder.ivFolderArrow.visibility = View.GONE
+        }
+
         holder.itemView.isFocusable = true
         holder.itemView.isClickable = true
 
+        // Smooth TV D-pad Focus animation & hover effects for PC mouse
         holder.itemView.setOnFocusChangeListener { v, hasFocus ->
             if (hasFocus) {
                 v.animate()
-                    .scaleX(1.04f)
-                    .scaleY(1.04f)
-                    .setDuration(150)
+                    .scaleX(1.015f)
+                    .scaleY(1.015f)
+                    .setDuration(100)
                     .start()
-                v.elevation = 8f
+                v.elevation = 4f
                 holder.tvFileName.setTextColor(ContextCompat.getColor(v.context, android.R.color.white))
+                holder.ivFolderArrow.setColorFilter(ContextCompat.getColor(v.context, R.color.progressbar_tint))
             } else {
                 v.animate()
                     .scaleX(1.0f)
                     .scaleY(1.0f)
-                    .setDuration(150)
+                    .setDuration(100)
                     .start()
-                v.elevation = 2f
+                v.elevation = 1f
                 holder.tvFileName.setTextColor(ContextCompat.getColor(v.context, R.color.day_night_text_color_contrast))
+                holder.ivFolderArrow.setColorFilter(ContextCompat.getColor(v.context, R.color.day_night_disabled_icon_color))
             }
         }
 
+        // PC / Mouse & Remote Click
         holder.itemView.setOnClickListener {
             onItemClick(item)
         }
 
-        holder.itemView.setOnLongClickListener {
+        // More button click
+        holder.ibItemMore.setOnClickListener {
+            onItemMoreClick?.invoke(item) ?: onItemLongClick(item)
+        }
+
+        // Long click for TV remote options or PC right-click / drag
+        holder.itemView.setOnLongClickListener { v ->
+            val itemUri = item.file.absolutePath
+            val clipData = ClipData.newPlainText("file_path", itemUri)
+            val shadow = View.DragShadowBuilder(v)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                v.startDragAndDrop(clipData, shadow, item, 0)
+            }
             onItemLongClick(item)
         }
     }

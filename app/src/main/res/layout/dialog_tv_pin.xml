@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_modal_dialog_card"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingStart="32dp"
+    android:paddingTop="24dp"
+    android:paddingEnd="32dp"
+    android:paddingBottom="24dp">
+
+    <!-- Title & Subtitle -->
+    <TextView
+        android:id="@+id/tvPinDialogTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🔒 Set 4-Digit TV PIN"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvPinDialogSubtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:gravity="center"
+        android:text="Enter new 4-digit PIN"
+        android:textColor="#94A3B8"
+        android:textSize="13sp" />
+
+    <!-- 4 PIN Dots -->
+    <LinearLayout
+        android:id="@+id/llPinDotsContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <View
+            android:id="@+id/pinDot1"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/pin_dot_empty" />
+
+        <View
+            android:id="@+id/pinDot2"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/pin_dot_empty" />
+
+        <View
+            android:id="@+id/pinDot3"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/pin_dot_empty" />
+
+        <View
+            android:id="@+id/pinDot4"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_margin="8dp"
+            android:background="@drawable/pin_dot_empty" />
+    </LinearLayout>
+
+    <!-- Keypad Container (300dp width) -->
+    <LinearLayout
+        android:layout_width="280dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/keypad_card_bg"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <!-- Row 1: 1 2 3 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnDlgKey1"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="1"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:nextFocusRight="@+id/btnDlgKey2"
+                android:nextFocusDown="@+id/btnDlgKey4" />
+
+            <Button
+                android:id="@+id/btnDlgKey2"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="2"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:nextFocusLeft="@+id/btnDlgKey1"
+                android:nextFocusRight="@+id/btnDlgKey3"
+                android:nextFocusDown="@+id/btnDlgKey5" />
+
+            <Button
+                android:id="@+id/btnDlgKey3"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="3"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:nextFocusLeft="@+id/btnDlgKey2"
+                android:nextFocusDown="@+id/btnDlgKey6" />
+        </LinearLayout>
+
+        <!-- Row 2: 4 5 6 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnDlgKey4"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="4"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:nextFocusUp="@+id/btnDlgKey1"
+                android:nextFocusRight="@+id/btnDlgKey5"
+                android:nextFocusDown="@+id/btnDlgKey7" />
+
+            <Button
+                android:id="@+id/btnDlgKey5"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="5"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:nextFocusUp="@+id/btnDlgKey2"
+                android:nextFocusLeft="@+id/btnDlgKey4"
+                android:nextFocusRight="@+id/btnDlgKey6"
+                android:nextFocusDown="@+id/btnDlgKey8" />
+
+            <Button
+                android:id="@+id/btnDlgKey6"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="6"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:nextFocusUp="@+id/btnDlgKey3"
+                android:nextFocusLeft="@+id/btnDlgKey5"
+                android:nextFocusDown="@+id/btnDlgKey9" />
+        </LinearLayout>
+
+        <!-- Row 3: 7 8 9 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnDlgKey7"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="7"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:nextFocusUp="@+id/btnDlgKey4"
+                android:nextFocusRight="@+id/btnDlgKey8"
+                android:nextFocusDown="@+id/btnDlgKeyClear" />
+
+            <Button
+                android:id="@+id/btnDlgKey8"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="8"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:nextFocusUp="@+id/btnDlgKey5"
+                android:nextFocusLeft="@+id/btnDlgKey7"
+                android:nextFocusRight="@+id/btnDlgKey9"
+                android:nextFocusDown="@+id/btnDlgKey0" />
+
+            <Button
+                android:id="@+id/btnDlgKey9"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="9"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:nextFocusUp="@+id/btnDlgKey6"
+                android:nextFocusLeft="@+id/btnDlgKey8"
+                android:nextFocusDown="@+id/btnDlgKeyBackspace" />
+        </LinearLayout>
+
+        <!-- Row 4: Clear 0 Backspace -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnDlgKeyClear"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="C"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:nextFocusUp="@+id/btnDlgKey7"
+                android:nextFocusRight="@+id/btnDlgKey0"
+                android:nextFocusDown="@+id/btnDlgCancel" />
+
+            <Button
+                android:id="@+id/btnDlgKey0"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="0"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:nextFocusUp="@+id/btnDlgKey8"
+                android:nextFocusLeft="@+id/btnDlgKeyClear"
+                android:nextFocusRight="@+id/btnDlgKeyBackspace"
+                android:nextFocusDown="@+id/btnDlgCancel" />
+
+            <Button
+                android:id="@+id/btnDlgKeyBackspace"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_bg_selector"
+                android:focusable="true"
+                android:text="⌫"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:nextFocusUp="@+id/btnDlgKey9"
+                android:nextFocusLeft="@+id/btnDlgKey0"
+                android:nextFocusDown="@+id/btnDlgCancel" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Cancel Button -->
+    <Button
+        android:id="@+id/btnDlgCancel"
+        android:layout_width="140dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/button_bg_selector"
+        android:focusable="true"
+        android:text="Cancel"
+        android:textColor="#EF4444"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:nextFocusUp="@+id/btnDlgKey0" />
+
+</LinearLayout>

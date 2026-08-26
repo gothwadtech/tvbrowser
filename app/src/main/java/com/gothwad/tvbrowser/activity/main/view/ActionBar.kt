@@ -5,6 +5,7 @@ import android.transition.TransitionManager
 import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.view.View.OnFocusChangeListener
 import android.view.View.OnKeyListener
@@ -157,4 +158,8 @@ class ActionBar @JvmOverloads constructor(
     fun catchFocus() {
         vb.etUrl.requestFocus()
     }
+
+    fun getUrlEditText(): View = vb.etUrl
+
+    fun getVoiceSearchButton(): View = vb.ibVoiceSearch
 }

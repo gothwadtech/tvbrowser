@@ -95,8 +95,15 @@ class ChromeMenuPopup(private val activity: MainActivity) {
                 AppLockManager.setSessionUnlocked(false)
                 activity.startActivity(Intent(activity, AppLockActivity::class.java))
             } else {
-                activity.showSettingsDialog()
-                Toast.makeText(activity, "Configure App Lock PIN in Privacy Settings", Toast.LENGTH_SHORT).show()
+                val dlg = com.gothwad.tvbrowser.activity.lock.TvPinDialog(
+                    context = activity,
+                    mode = com.gothwad.tvbrowser.activity.lock.TvPinDialog.Mode.CREATE,
+                    onSuccess = {
+                        AppLockManager.setSessionUnlocked(false)
+                        activity.startActivity(Intent(activity, AppLockActivity::class.java))
+                    }
+                )
+                dlg.show()
             }
         }
 

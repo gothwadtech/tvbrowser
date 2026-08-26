@@ -14,28 +14,46 @@ object AppLockManager {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
 
+    fun hasPinSet(context: Context): Boolean {
+        val pin = getPrefs(context).getString(KEY_PIN_HASH, null)
+        return !pin.isNullOrEmpty() && pin.length == 4 && pin.all { it.isDigit() }
+    }
+
     fun isLockEnabled(context: Context): Boolean {
-        return getPrefs(context).getBoolean(KEY_LOCK_ENABLED, false)
+        return hasPinSet(context) && getPrefs(context).getBoolean(KEY_LOCK_ENABLED, false)
     }
 
     fun setLockEnabled(context: Context, enabled: Boolean) {
+        if (enabled && !hasPinSet(context)) {
+            return
+        }
         getPrefs(context).edit().putBoolean(KEY_LOCK_ENABLED, enabled).apply()
         if (!enabled) {
             isSessionUnlocked = true
         }
     }
 
-    fun getPin(context: Context): String {
-        return getPrefs(context).getString(KEY_PIN_HASH, "0000") ?: "0000"
+    fun getPin(context: Context): String? {
+        return getPrefs(context).getString(KEY_PIN_HASH, null)
     }
 
     fun setPin(context: Context, pin: String) {
-        getPrefs(context).edit().putString(KEY_PIN_HASH, pin).apply()
+        if (pin.length == 4 && pin.all { it.isDigit() }) {
+            getPrefs(context).edit().putString(KEY_PIN_HASH, pin).apply()
+        }
     }
 
     fun verifyPin(context: Context, inputPin: String): Boolean {
-        val currentPin = getPin(context)
+        val currentPin = getPin(context) ?: return false
         return inputPin == currentPin
+    }
+
+    fun clearPinAndDisableLock(context: Context) {
+        getPrefs(context).edit()
+            .remove(KEY_PIN_HASH)
+            .putBoolean(KEY_LOCK_ENABLED, false)
+            .apply()
+        isSessionUnlocked = true
     }
 
     fun isSessionUnlocked(): Boolean = isSessionUnlocked

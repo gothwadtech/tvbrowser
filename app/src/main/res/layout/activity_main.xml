@@ -270,11 +270,11 @@
         android:visibility="gone" />
 
     <com.gothwad.tvbrowser.widgets.cursor.CursorLayout
+        android:id="@+id/flWebViewContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentBottom="true"
-        android:id="@+id/flWebViewContainer" />
+        android:layout_below="@+id/rlActionBar"
+        android:layout_alignParentBottom="true" />
 
     <com.gothwad.tvbrowser.activity.main.view.home.NativeHomeView
         android:id="@+id/vNativeHome"

@@ -16,8 +16,10 @@ import com.gothwad.tvbrowser.Config
 import com.gothwad.tvbrowser.R
 import com.gothwad.tvbrowser.activity.downloads.DownloadsActivity
 import com.gothwad.tvbrowser.activity.history.HistoryActivity
+import com.gothwad.tvbrowser.activity.main.dialogs.BrowserSidebarPopup
 import com.gothwad.tvbrowser.activity.main.dialogs.ChromeMenuPopup
 import com.gothwad.tvbrowser.activity.main.dialogs.ShortcutDialog
+import com.gothwad.tvbrowser.activity.main.dialogs.WebsiteMenuPopup
 import com.gothwad.tvbrowser.activity.main.dialogs.favorites.FavoriteEditorDialog
 import com.gothwad.tvbrowser.activity.main.dialogs.favorites.FavoritesDialog
 import com.gothwad.tvbrowser.filemanager.FileManagerActivity
@@ -34,34 +36,26 @@ internal fun MainActivity.showMenuOverlay() {
     if (isFullscreen) return
     vb.vActionBar.dismissExtendedAddressBarMode()
     vb.rlActionBar.visibility = View.VISIBLE
-    vb.rlActionBar.animate()
-        .translationY(0f)
-        .setDuration(220)
-        .setInterpolator(DecelerateInterpolator())
-        .start()
+    vb.rlActionBar.translationY = 0f
 }
 
 internal fun MainActivity.hideMenuOverlay(hideBottomButtons: Boolean = true) {
-    if (isFullscreen || vb.vNativeHome.isVisible) return
-    val hideHeight = if (vb.rlActionBar.height > 0) vb.rlActionBar.height.toFloat() else Utils.D2P(this, 70f)
-    vb.rlActionBar.animate()
-        .translationY(-hideHeight)
-        .setDuration(200)
-        .setInterpolator(AccelerateInterpolator())
-        .start()
+    if (isFullscreen) {
+        vb.rlActionBar.visibility = View.GONE
+    } else {
+        vb.rlActionBar.visibility = View.VISIBLE
+        vb.rlActionBar.translationY = 0f
+    }
 }
 
 internal fun MainActivity.toggleMenu() {
     if (isFullscreen) return
-    if (vb.rlActionBar.translationY < 0f || vb.rlActionBar.visibility != View.VISIBLE) {
-        showMenuOverlay()
-    } else {
-        hideMenuOverlay()
-    }
+    vb.rlActionBar.visibility = View.VISIBLE
+    vb.rlActionBar.translationY = 0f
 }
 
 internal fun MainActivity.setupHeaderClickListeners(incognitoMode: Boolean) {
-    vb.ibMenu.setOnClickListener { showChromeMenu(vb.ibMenu) }
+    vb.ibMenu.setOnClickListener { showBrowserSidebar(vb.ibMenu) }
     vb.ibHome.setOnClickListener {
         if (vb.vNativeHome.visibility == View.VISIBLE) {
             vb.vNativeHome.scrollToTop()
@@ -91,7 +85,7 @@ internal fun MainActivity.setupHeaderClickListeners(incognitoMode: Boolean) {
     vb.ibFileManager.setOnClickListener { startActivity(Intent(this, FileManagerActivity::class.java)) }
     vb.ibBookmarks.setOnClickListener { showFavorites() }
     vb.ibIncognito.setOnClickListener { toggleIncognitoMode(true) }
-    vb.ibMore.setOnClickListener { showChromeMenu(vb.ibMore) }
+    vb.ibMore.setOnClickListener { showWebsiteMenu(vb.ibMore) }
     vb.ibSettings.setOnClickListener { showSettingsDialog() }
 
     if (incognitoMode) {
@@ -197,8 +191,16 @@ internal fun MainActivity.showSettingsDialog() {
     SettingsDialog(this, settingsModel).show()
 }
 
+internal fun MainActivity.showBrowserSidebar(anchorView: View? = null) {
+    BrowserSidebarPopup(this).show(anchorView ?: vb.ibMenu)
+}
+
+internal fun MainActivity.showWebsiteMenu(anchorView: View? = null) {
+    WebsiteMenuPopup(this).show(anchorView ?: vb.ibMore)
+}
+
 internal fun MainActivity.showChromeMenu(anchorView: View? = null) {
-    ChromeMenuPopup(this).show(anchorView ?: vb.ibMore)
+    WebsiteMenuPopup(this).show(anchorView ?: vb.ibMore)
 }
 
 internal fun MainActivity.showDownloadsActivity() {

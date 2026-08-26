@@ -1,12 +1,10 @@
 package com.gothwad.tvbrowser.activity.main.view.home
 
-import android.content.res.ColorStateList
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -22,15 +20,15 @@ class HomeCardAdapter(
 
     companion object {
         const val VIEW_TYPE_SHORTCUT = 0
-        const val VIEW_TYPE_ACTION = 1
+        const val VIEW_TYPE_HEADER = 1
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (items[position].isActionCard || items[position].isAddButton) {
-            VIEW_TYPE_ACTION
-        } else {
-            VIEW_TYPE_SHORTCUT
-        }
+        return if (items[position].isHeader) VIEW_TYPE_HEADER else VIEW_TYPE_SHORTCUT
+    }
+
+    class HeaderViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
+        val tvCategoryTitle: TextView = view.findViewById(R.id.tvCategoryTitle)
     }
 
     class ShortcutViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
@@ -41,19 +39,10 @@ class HomeCardAdapter(
         val tvShortcutDomain: TextView = view.findViewById(R.id.tvShortcutDomain)
     }
 
-    class ActionViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
-        val btnCardAdd: LinearLayout = view.findViewById(R.id.btnCardAdd)
-        val btnCardRemove: LinearLayout = view.findViewById(R.id.btnCardRemove)
-        val ivAddIcon: ImageView = view.findViewById(R.id.ivAddIcon)
-        val ivRemoveIcon: ImageView = view.findViewById(R.id.ivRemoveIcon)
-        val tvAddLabel: TextView = view.findViewById(R.id.tvAddLabel)
-        val tvRemoveLabel: TextView = view.findViewById(R.id.tvRemoveLabel)
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if (viewType == VIEW_TYPE_ACTION) {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_home_action_card, parent, false)
-            ActionViewHolder(view)
+        return if (viewType == VIEW_TYPE_HEADER) {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_home_category_header, parent, false)
+            HeaderViewHolder(view)
         } else {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.item_home_card, parent, false)
             ShortcutViewHolder(view)
@@ -63,55 +52,38 @@ class HomeCardAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = items[position]
 
-        if (holder is ActionViewHolder) {
-            holder.btnCardAdd.isFocusable = true
-            holder.btnCardAdd.isFocusableInTouchMode = true
-            holder.btnCardRemove.isFocusable = true
-            holder.btnCardRemove.isFocusableInTouchMode = true
+        if (holder is HeaderViewHolder) {
+            holder.tvCategoryTitle.text = item.title
+            holder.itemView.isFocusable = false
+            holder.itemView.isFocusableInTouchMode = false
+            holder.itemView.isClickable = false
+            return
+        }
 
-            holder.btnCardAdd.setOnClickListener { onAddClick() }
-            holder.btnCardRemove.setOnClickListener { onRemoveClick() }
-
-            holder.btnCardAdd.setOnFocusChangeListener { v, hasFocus ->
-                if (hasFocus) {
-                    v.animate().scaleX(1.05f).scaleY(1.05f).setDuration(150).start()
-                    v.elevation = 8f
-                    holder.tvAddLabel.setTextColor(ContextCompat.getColor(v.context, R.color.progressbar_tint))
-                    holder.ivAddIcon.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(v.context, R.color.progressbar_tint))
-                } else {
-                    v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(150).start()
-                    v.elevation = 1f
-                    holder.tvAddLabel.setTextColor(ContextCompat.getColor(v.context, R.color.day_night_text_color_contrast))
-                    holder.ivAddIcon.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(v.context, R.color.day_night_icon_color))
-                }
-            }
-
-            holder.btnCardRemove.setOnFocusChangeListener { v, hasFocus ->
-                if (hasFocus) {
-                    v.animate().scaleX(1.05f).scaleY(1.05f).setDuration(150).start()
-                    v.elevation = 8f
-                    holder.tvRemoveLabel.setTextColor(ContextCompat.getColor(v.context, R.color.progressbar_tint))
-                    holder.ivRemoveIcon.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(v.context, R.color.progressbar_tint))
-                } else {
-                    v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(150).start()
-                    v.elevation = 1f
-                    holder.tvRemoveLabel.setTextColor(ContextCompat.getColor(v.context, R.color.day_night_text_color_contrast))
-                    holder.ivRemoveIcon.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(v.context, R.color.day_night_icon_color))
-                }
-            }
-        } else if (holder is ShortcutViewHolder) {
+        if (holder is ShortcutViewHolder) {
             holder.tvShortcutTitle.text = item.title
             holder.tvShortcutDomain.text = item.domainText
 
-            if (item.iconDrawableRes != null && item.iconDrawableRes != 0) {
+            if (item.isAddButton) {
                 holder.ivIconDrawable.visibility = View.VISIBLE
                 holder.tvIconText.visibility = View.GONE
+                holder.ivIconDrawable.setImageResource(R.drawable.ic_add)
+                holder.ivIconDrawable.imageTintList = ContextCompat.getColorStateList(holder.view.context, R.color.day_night_icon_color)
+            } else if (item.isDeleteButton) {
+                holder.ivIconDrawable.visibility = View.VISIBLE
+                holder.tvIconText.visibility = View.GONE
+                holder.ivIconDrawable.setImageResource(R.drawable.ic_delete)
+                holder.ivIconDrawable.imageTintList = ContextCompat.getColorStateList(holder.view.context, R.color.day_night_icon_color)
+            } else if (item.iconDrawableRes != null && item.iconDrawableRes != 0) {
+                holder.ivIconDrawable.visibility = View.VISIBLE
+                holder.tvIconText.visibility = View.GONE
+                holder.ivIconDrawable.imageTintList = null
                 holder.ivIconDrawable.setImageResource(item.iconDrawableRes)
             } else {
                 holder.ivIconDrawable.visibility = View.GONE
                 holder.tvIconText.visibility = View.VISIBLE
                 holder.tvIconText.text = item.singleLetter
-                holder.tvIconText.textSize = 18f
+                holder.tvIconText.textSize = 17f
             }
 
             holder.itemView.isFocusable = true
@@ -128,6 +100,9 @@ class HomeCardAdapter(
                     v.elevation = 8f
                     holder.tvShortcutTitle.setTextColor(ContextCompat.getColor(v.context, R.color.day_night_text_color_contrast))
                     holder.tvShortcutDomain.setTextColor(ContextCompat.getColor(v.context, R.color.progressbar_tint))
+                    if (item.isAddButton || item.isDeleteButton) {
+                        holder.ivIconDrawable.imageTintList = ContextCompat.getColorStateList(v.context, R.color.progressbar_tint)
+                    }
                 } else {
                     v.animate()
                         .scaleX(1.0f)
@@ -137,15 +112,26 @@ class HomeCardAdapter(
                     v.elevation = 1f
                     holder.tvShortcutTitle.setTextColor(ContextCompat.getColor(v.context, R.color.day_night_text_color_contrast))
                     holder.tvShortcutDomain.setTextColor(ContextCompat.getColor(v.context, R.color.day_night_text_secondary))
+                    if (item.isAddButton || item.isDeleteButton) {
+                        holder.ivIconDrawable.imageTintList = ContextCompat.getColorStateList(v.context, R.color.day_night_icon_color)
+                    }
                 }
             }
 
             holder.itemView.setOnClickListener {
-                onItemClick(item)
+                when {
+                    item.isAddButton -> onAddClick()
+                    item.isDeleteButton -> onRemoveClick()
+                    else -> onItemClick(item)
+                }
             }
 
             holder.itemView.setOnLongClickListener {
-                onItemLongClick?.invoke(item) ?: false
+                if (!item.isAddButton && !item.isDeleteButton && !item.isActionCard && !item.isHeader) {
+                    onItemLongClick?.invoke(item) ?: false
+                } else {
+                    false
+                }
             }
         }
     }

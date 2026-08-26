@@ -178,14 +178,6 @@ internal class WebEngineCallback(val activity: MainActivity, val tab: WebTabStat
         if (isCurrent) {
             activity.vb.progressBarGeneric.visibility = View.GONE
             activity.onWebViewUpdated(tab)
-            val isHome = tab.url == activity.settingsModel.homePage || tab.url == Config.HOME_PAGE_URL || tab.url == Config.HOME_URL_ALIAS || tab.url.isEmpty() || tab.url == "about:blank"
-            if (!isHome && !activity.vb.vNativeHome.isVisible) {
-                activity.uiHandler.postDelayed({
-                    if (!activity.isFinishing && !activity.vb.vNativeHome.isVisible && activity.tabsModel.currentTab.value == tab) {
-                        activity.hideMenuOverlay()
-                    }
-                }, 1200L)
-            }
         }
         val webViewUrl = tab.webEngine.url
         tab.url = webViewUrl ?: (url ?: "")
@@ -352,11 +344,6 @@ internal class WebEngineCallback(val activity: MainActivity, val tab: WebTabStat
     }
 
     override fun onScrollChange(scrollY: Int, oldScrollY: Int, dy: Int) {
-        if (activity.tabsModel.currentTab.value != tab) return
-        if (activity.vb.vNativeHome.isVisible || activity.isFullscreen) return
-        // Do not automatically show header on scroll; website stays fullscreen unless explicitly summoned via Back/Escape
-        if (dy > 12) {
-            activity.hideMenuOverlay()
-        }
+        // Header is permanently fixed at the top
     }
 }

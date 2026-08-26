@@ -60,58 +60,106 @@ object SettingsGeneralSection {
     }
 
     fun initAppLockSettingsUI(context: Context, vb: ViewSettingsMainBinding) {
-        val isLocked = com.gothwad.tvbrowser.singleton.AppLockManager.isLockEnabled(context)
-        vb.scAppLock.isChecked = isLocked
-        vb.llAppLock.setOnClickListener {
-            vb.scAppLock.toggle()
-        }
-        vb.scAppLock.setOnCheckedChangeListener { _, isChecked ->
-            com.gothwad.tvbrowser.singleton.AppLockManager.setLockEnabled(context, isChecked)
+        var isUpdatingProgrammatically = false
+
+        fun syncSwitchState() {
+            isUpdatingProgrammatically = true
+            vb.scAppLock.isChecked = com.gothwad.tvbrowser.singleton.AppLockManager.isLockEnabled(context)
+            isUpdatingProgrammatically = false
             updateAppLockStatus(context, vb)
         }
 
-        vb.btnChangePin.setOnClickListener {
-            showChangePinDialog(context, vb)
+        syncSwitchState()
+
+        val toggleAction = {
+            val currentlyEnabled = com.gothwad.tvbrowser.singleton.AppLockManager.isLockEnabled(context)
+            if (!currentlyEnabled) {
+                // User wants to enable PIN lock
+                if (!com.gothwad.tvbrowser.singleton.AppLockManager.hasPinSet(context)) {
+                    // Force user to create and confirm 4-digit PIN first
+                    val dlg = com.gothwad.tvbrowser.activity.lock.TvPinDialog(
+                        context = context,
+                        mode = com.gothwad.tvbrowser.activity.lock.TvPinDialog.Mode.CREATE,
+                        onSuccess = {
+                            syncSwitchState()
+                        },
+                        onCancel = {
+                            syncSwitchState()
+                        }
+                    )
+                    dlg.show()
+                } else {
+                    com.gothwad.tvbrowser.singleton.AppLockManager.setLockEnabled(context, true)
+                    syncSwitchState()
+                }
+            } else {
+                // User wants to disable PIN lock -> Require PIN verification
+                val dlg = com.gothwad.tvbrowser.activity.lock.TvPinDialog(
+                    context = context,
+                    mode = com.gothwad.tvbrowser.activity.lock.TvPinDialog.Mode.VERIFY,
+                    onSuccess = {
+                        com.gothwad.tvbrowser.singleton.AppLockManager.setLockEnabled(context, false)
+                        syncSwitchState()
+                        Toast.makeText(context, "PIN Lock Disabled", Toast.LENGTH_SHORT).show()
+                    },
+                    onCancel = {
+                        syncSwitchState()
+                    }
+                )
+                dlg.show()
+            }
         }
 
-        updateAppLockStatus(context, vb)
+        vb.llAppLock.setOnClickListener {
+            toggleAction()
+        }
+
+        vb.scAppLock.setOnClickListener {
+            toggleAction()
+        }
+
+        vb.scAppLock.setOnCheckedChangeListener { _, isChecked ->
+            if (isUpdatingProgrammatically) return@setOnCheckedChangeListener
+            // Revert direct toggle and route through secure action
+            syncSwitchState()
+            toggleAction()
+        }
+
+        vb.btnChangePin.setOnClickListener {
+            val mode = if (com.gothwad.tvbrowser.singleton.AppLockManager.hasPinSet(context)) {
+                com.gothwad.tvbrowser.activity.lock.TvPinDialog.Mode.CHANGE
+            } else {
+                com.gothwad.tvbrowser.activity.lock.TvPinDialog.Mode.CREATE
+            }
+            val dlg = com.gothwad.tvbrowser.activity.lock.TvPinDialog(
+                context = context,
+                mode = mode,
+                onSuccess = {
+                    syncSwitchState()
+                }
+            )
+            dlg.show()
+        }
     }
 
     private fun updateAppLockStatus(context: Context, vb: ViewSettingsMainBinding) {
         val isEnabled = com.gothwad.tvbrowser.singleton.AppLockManager.isLockEnabled(context)
+        val hasPin = com.gothwad.tvbrowser.singleton.AppLockManager.hasPinSet(context)
         if (isEnabled) {
-            vb.tvAppLockStatus.text = "PIN lock is enabled (Protected)"
+            vb.tvAppLockStatus.text = "PIN Lock Active (Protected)"
             vb.tvAppLockStatus.setTextColor(0xFF38BDF8.toInt())
             vb.btnChangePin.visibility = View.VISIBLE
-        } else {
-            vb.tvAppLockStatus.text = "PIN lock is disabled"
+            vb.btnChangePin.text = "Change PIN"
+        } else if (hasPin) {
+            vb.tvAppLockStatus.text = "PIN Lock Disabled (PIN configured)"
             vb.tvAppLockStatus.setTextColor(0xFF94A3B8.toInt())
+            vb.btnChangePin.visibility = View.VISIBLE
+            vb.btnChangePin.text = "Change PIN"
+        } else {
+            vb.tvAppLockStatus.text = "No PIN set (Set 4-digit PIN to enable)"
+            vb.tvAppLockStatus.setTextColor(0xFF94A3B8.toInt())
+            vb.btnChangePin.visibility = View.GONE
         }
-    }
-
-    private fun showChangePinDialog(context: Context, vb: ViewSettingsMainBinding) {
-        val input = EditText(context).apply {
-            hint = "Enter 4-digit PIN"
-            inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD
-            setPadding(40, 30, 40, 30)
-            setTextColor(0xFFFFFFFF.toInt())
-        }
-
-        AlertDialog.Builder(context)
-            .setTitle("🔒 Set 4-Digit TV PIN")
-            .setView(input)
-            .setPositiveButton("Save PIN") { _, _ ->
-                val newPin = input.text.toString().trim()
-                if (newPin.length == 4 && newPin.all { it.isDigit() }) {
-                    com.gothwad.tvbrowser.singleton.AppLockManager.setPin(context, newPin)
-                    updateAppLockStatus(context, vb)
-                    Toast.makeText(context, "New PIN saved successfully!", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(context, "PIN must be exactly 4 digits!", Toast.LENGTH_SHORT).show()
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
     }
 
     fun initQuickToolsUI(

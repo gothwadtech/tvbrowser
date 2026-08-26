@@ -144,7 +144,7 @@ internal fun MainActivity.switchToTab(newTab: WebTabState) {
         vb.ibBack.isEnabled = false
         vb.ibForward.isEnabled = !newTab.lastUrlBeforeHome.isNullOrEmpty()
         showMenuOverlay()
-        vb.vNativeHome.catchFocus()
+        vb.ibMenu.requestFocus()
     } else {
         vb.vNativeHome.visibility = View.GONE
         vb.flWebViewContainer.visibility = View.VISIBLE

@@ -21,6 +21,12 @@ class AppLockActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!AppLockManager.isLockEnabled(this) || !AppLockManager.hasPinSet(this)) {
+            AppLockManager.setSessionUnlocked(true)
+            setResult(RESULT_OK)
+            finish()
+            return
+        }
         setContentView(R.layout.activity_app_lock)
 
         dot1 = findViewById(R.id.dot1)

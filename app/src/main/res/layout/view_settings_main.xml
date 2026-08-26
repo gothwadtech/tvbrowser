@@ -1282,7 +1282,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="PIN protection active (Default: 0000)"
+                android:text="No PIN set (Set 4-digit PIN to enable)"
                 android:textColor="@color/day_night_text_secondary"
                 android:textSize="13sp" />
 

@@ -2,7 +2,6 @@ package com.gothwad.tvbrowser.activity.main.view.home
 
 import android.app.AlertDialog
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.util.AttributeSet
@@ -11,19 +10,14 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
-import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.Toast
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gothwad.tvbrowser.R
-import com.gothwad.tvbrowser.activity.downloads.DownloadsActivity
 import com.gothwad.tvbrowser.activity.main.MainActivity
-import com.gothwad.tvbrowser.activity.main.showSettingsDialog
 import com.gothwad.tvbrowser.activity.main.toggleIncognitoMode
-import com.gothwad.tvbrowser.filemanager.FileManagerActivity
-import com.gothwad.tvbrowser.notes.NotesActivity
 import com.gothwad.tvbrowser.utils.activity
 import org.json.JSONArray
 import org.json.JSONObject
@@ -34,7 +28,7 @@ class NativeHomeView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : LinearLayout(context, attrs, defStyleAttr) {
 
-    private val prefs: SharedPreferences = context.getSharedPreferences("native_home_shortcuts_v10", Context.MODE_PRIVATE)
+    private val prefs: SharedPreferences = context.getSharedPreferences("native_home_shortcuts_v11", Context.MODE_PRIVATE)
     private val bookmarkItems = mutableListOf<HomeShortcutItem>()
     private var bookmarksAdapter: HomeCardAdapter? = null
 
@@ -76,28 +70,91 @@ class NativeHomeView @JvmOverloads constructor(
 
     private fun populateBookmarkItemsList() {
         bookmarkItems.clear()
-        val userBookmarks = loadUserBookmarks()
-        val nonAction = userBookmarks.filter { !it.isActionCard && !it.isAddButton }
-        val sorted = HomeData.sortShortcutsWithGoogleFirst(nonAction)
 
-        // All shortcuts: Google #1, then alphabetical A-Z
-        bookmarkItems.addAll(sorted)
-
-        // Place the combined Action Card (Add + Remove) at the VERY END as the last item
+        // 1. My Shortcuts Category (Manual user-added shortcuts + Add/Remove controls)
+        val userManualBookmarks = loadUserBookmarks()
         bookmarkItems.add(
             HomeShortcutItem(
-                title = "Manage",
-                url = "",
-                isActionCard = true
+                title = "My Shortcuts",
+                isHeader = true
             )
         )
+
+        // Add any user-added custom shortcuts
+        for (item in userManualBookmarks) {
+            bookmarkItems.add(item)
+        }
+
+        // Add Shortcut Card
+        bookmarkItems.add(
+            HomeShortcutItem(
+                title = "Add Shortcut",
+                url = "",
+                subtitleText = "New shortcut",
+                iconDrawableRes = R.drawable.ic_add,
+                isAddButton = true
+            )
+        )
+
+        // Remove Shortcut Card
+        bookmarkItems.add(
+            HomeShortcutItem(
+                title = "Remove Shortcut",
+                url = "",
+                subtitleText = "Delete shortcut",
+                iconDrawableRes = R.drawable.ic_delete,
+                isDeleteButton = true
+            )
+        )
+
+        // 2. Google Services Category
+        bookmarkItems.add(
+            HomeShortcutItem(
+                title = "Google Services",
+                isHeader = true
+            )
+        )
+        bookmarkItems.addAll(HomeData.getGoogleShortcuts())
+
+        // 3. Social Media Category
+        bookmarkItems.add(
+            HomeShortcutItem(
+                title = "Social Media",
+                isHeader = true
+            )
+        )
+        bookmarkItems.addAll(HomeData.getSocialMediaShortcuts())
+
+        // 4. Entertainment & Streaming Category
+        bookmarkItems.add(
+            HomeShortcutItem(
+                title = "Entertainment & Streaming",
+                isHeader = true
+            )
+        )
+        bookmarkItems.addAll(HomeData.getEntertainmentShortcuts())
+
+        // 5. Utilities & Tools Category
+        bookmarkItems.add(
+            HomeShortcutItem(
+                title = "Utilities & Tools",
+                isHeader = true
+            )
+        )
+        bookmarkItems.addAll(HomeData.getUtilityShortcuts())
     }
 
     private fun setupBookmarks() {
         populateBookmarkItemsList()
 
-        // Fixed 4-Column Horizontal Grid with infinite vertical rows
-        val gridLayoutManager = GridLayoutManager(context, 4, RecyclerView.VERTICAL, false)
+        // 5-Column Grid with full-span Section Headers
+        val gridLayoutManager = GridLayoutManager(context, 5, RecyclerView.VERTICAL, false)
+        gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int {
+                return if (position in bookmarkItems.indices && bookmarkItems[position].isHeader) 5 else 1
+            }
+        }
+
         rvBookmarks.layoutManager = gridLayoutManager
         rvBookmarks.setHasFixedSize(false)
         rvBookmarks.isNestedScrollingEnabled = true
@@ -116,7 +173,7 @@ class NativeHomeView @JvmOverloads constructor(
                 showRemoveSelectionDialog()
             },
             onItemLongClick = { shortcut ->
-                if (!shortcut.isActionCard && !shortcut.isAddButton) {
+                if (shortcut.isUserBookmark) {
                     showDeleteBookmarkDialog(shortcut)
                     true
                 } else {
@@ -157,20 +214,13 @@ class NativeHomeView @JvmOverloads constructor(
                 e.printStackTrace()
             }
         }
-
-        if (list.isEmpty()) {
-            val defaults = HomeData.getDefaultGoogleBookmarks()
-            list.addAll(defaults)
-            saveUserBookmarks(list)
-        }
-
-        return HomeData.sortShortcutsWithGoogleFirst(list)
+        return list
     }
 
     private fun saveUserBookmarks(items: List<HomeShortcutItem>) {
         val array = JSONArray()
         for (item in items) {
-            if (!item.isAddButton && !item.isActionCard) {
+            if (!item.isAddButton && !item.isDeleteButton && !item.isActionCard && !item.isHeader && item.isUserBookmark) {
                 val obj = JSONObject()
                 obj.put("name", item.title)
                 obj.put("url", item.url)
@@ -206,13 +256,12 @@ class NativeHomeView @JvmOverloads constructor(
                         isUserBookmark = true
                     )
 
-                    val currentList = bookmarkItems.filter { !it.isAddButton && !it.isActionCard }.toMutableList()
+                    val currentList = loadUserBookmarks().toMutableList()
                     currentList.add(newItem)
-                    val sorted = HomeData.sortShortcutsWithGoogleFirst(currentList)
-                    saveUserBookmarks(sorted)
+                    saveUserBookmarks(currentList)
                     reloadShortcuts()
 
-                    Toast.makeText(context, "Shortcut added!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Shortcut '$name' added!", Toast.LENGTH_SHORT).show()
                 }
             }
             .setNegativeButton("Cancel", null)
@@ -220,16 +269,16 @@ class NativeHomeView @JvmOverloads constructor(
     }
 
     private fun showRemoveSelectionDialog() {
-        val userShortcuts = bookmarkItems.filter { !it.isActionCard && !it.isAddButton }
+        val userShortcuts = loadUserBookmarks()
         if (userShortcuts.isEmpty()) {
-            Toast.makeText(context, "No shortcuts to remove", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "No manual shortcuts to remove", Toast.LENGTH_SHORT).show()
             return
         }
 
         val shortcutTitles = userShortcuts.map { "${it.title} (${it.domainText})" }.toTypedArray()
 
         AlertDialog.Builder(context)
-            .setTitle("🗑️ Select Shortcut to Remove")
+            .setTitle("Select Shortcut to Remove")
             .setItems(shortcutTitles) { _, which ->
                 if (which in userShortcuts.indices) {
                     val target = userShortcuts[which]
@@ -243,11 +292,10 @@ class NativeHomeView @JvmOverloads constructor(
     private fun showDeleteBookmarkDialog(item: HomeShortcutItem) {
         AlertDialog.Builder(context)
             .setTitle("Delete Shortcut")
-            .setMessage("Remove '${item.title}' from shortcuts?")
+            .setMessage("Remove '${item.title}' from My Shortcuts?")
             .setPositiveButton("Delete") { _, _ ->
-                val userOnly = bookmarkItems.filter { !it.isActionCard && !it.isAddButton && it != item }
-                val sorted = HomeData.sortShortcutsWithGoogleFirst(userOnly)
-                saveUserBookmarks(sorted)
+                val userOnly = loadUserBookmarks().filter { it.url != item.url || it.title != item.title }
+                saveUserBookmarks(userOnly)
                 reloadShortcuts()
                 Toast.makeText(context, "'${item.title}' deleted", Toast.LENGTH_SHORT).show()
             }
@@ -259,6 +307,31 @@ class NativeHomeView @JvmOverloads constructor(
         rvBookmarks.smoothScrollToPosition(0)
     }
 
+    fun getFocusedShortcutPosition(): Int {
+        val focusedChild = rvBookmarks.findFocus() ?: return 1
+        val itemView = rvBookmarks.findContainingItemView(focusedChild) ?: return 1
+        return rvBookmarks.getChildAdapterPosition(itemView)
+    }
+
+    fun focusShortcutAtColumn(col: Int) {
+        val mainActivity = activity as? MainActivity
+        val isIncognito = mainActivity?.config?.incognitoMode == true
+        if (isIncognito && svIncognitoHome.visibility == View.VISIBLE) {
+            btnExitIncognito.requestFocus()
+            return
+        }
+        val count = bookmarkItems.size
+        if (count <= 1) return
+        // Skip position 0 (Header), row 1 begins at index 1
+        val targetPos = (1 + col).coerceIn(1, count - 1)
+        val itemView = rvBookmarks.layoutManager?.findViewByPosition(targetPos)
+        if (itemView != null) {
+            itemView.requestFocus()
+        } else {
+            catchFocus()
+        }
+    }
+
     fun catchFocus() {
         val mainActivity = activity as? MainActivity
         val isIncognito = mainActivity?.config?.incognitoMode == true
@@ -267,19 +340,20 @@ class NativeHomeView @JvmOverloads constructor(
             return
         }
         if (hasFocus()) return
-        val firstChild = rvBookmarks.layoutManager?.findViewByPosition(0)
+        // First focusable shortcut is at position 1 (pos 0 is header)
+        val firstChild = rvBookmarks.layoutManager?.findViewByPosition(1) ?: rvBookmarks.layoutManager?.findViewByPosition(0)
         if (firstChild != null) {
             firstChild.requestFocus()
         } else {
             rvBookmarks.post {
-                val child = rvBookmarks.layoutManager?.findViewByPosition(0)
+                val child = rvBookmarks.layoutManager?.findViewByPosition(1) ?: rvBookmarks.layoutManager?.findViewByPosition(0)
                 child?.requestFocus() ?: rvBookmarks.requestFocus()
             }
         }
     }
 
     companion object {
-        private const val PREFS_NAME = "native_home_shortcuts_v10"
+        private const val PREFS_NAME = "native_home_shortcuts_v11"
         private const val KEY_BOOKMARKS = "bookmarks_json"
 
         fun loadUserBookmarks(context: Context): List<HomeShortcutItem> {
@@ -308,19 +382,14 @@ class NativeHomeView @JvmOverloads constructor(
                     e.printStackTrace()
                 }
             }
-            if (list.isEmpty()) {
-                val defaults = HomeData.getDefaultGoogleBookmarks()
-                list.addAll(defaults)
-                saveUserBookmarks(context, list)
-            }
-            return HomeData.sortShortcutsWithGoogleFirst(list)
+            return list
         }
 
         fun saveUserBookmarks(context: Context, items: List<HomeShortcutItem>) {
             val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             val array = JSONArray()
             for (item in items) {
-                if (!item.isAddButton && !item.isActionCard) {
+                if (!item.isAddButton && !item.isDeleteButton && !item.isActionCard && !item.isHeader && item.isUserBookmark) {
                     val obj = JSONObject()
                     obj.put("name", item.title)
                     obj.put("url", item.url)

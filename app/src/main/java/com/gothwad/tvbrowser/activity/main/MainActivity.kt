@@ -367,7 +367,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     fun focusDefaultNavigationElement() { vb.ibMenu.requestFocus() }
     fun showHome() { showHomeScreen() }
     fun handleBack() { handleBackNavigation() }
-    fun handleMenu() { showChromeMenu() }
+    fun handleMenu() { showBrowserSidebar() }
     fun applyUiScale() { recreate() }
 
     override fun search(aText: String) { handleSearch(aText) }

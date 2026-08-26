@@ -13,6 +13,8 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29"/>
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
@@ -117,19 +119,19 @@
             android:windowSoftInputMode="adjustResize"
             tools:ignore="DiscouragedApi"/>
 
-        <activity android:name=".activity.filemanager.FileManagerActivity"
+        <activity android:name=".filemanager.FileManagerActivity"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:screenOrientation="behind"
             android:windowSoftInputMode="adjustResize"
             tools:ignore="DiscouragedApi"/>
 
-        <activity android:name=".activity.notes.NotesActivity"
+        <activity android:name=".notes.NotesActivity"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:screenOrientation="behind"
             android:windowSoftInputMode="adjustResize"
             tools:ignore="DiscouragedApi"/>
 
-        <activity android:name=".activity.clipboard.ClipboardActivity"
+        <activity android:name=".notes.clipboard.ClipboardActivity"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:screenOrientation="behind"
             android:windowSoftInputMode="adjustResize"

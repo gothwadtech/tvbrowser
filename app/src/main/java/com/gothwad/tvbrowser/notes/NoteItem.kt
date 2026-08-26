@@ -12,7 +12,8 @@ data class NoteItem(
     var content: String = "",
     var timestamp: Long = System.currentTimeMillis(),
     var colorHex: String = "#1E293B",
-    var isPinned: Boolean = false
+    var isPinned: Boolean = false,
+    var isArchived: Boolean = false
 ) : Serializable {
 
     val formattedDate: String
@@ -29,6 +30,7 @@ data class NoteItem(
             put("timestamp", timestamp)
             put("colorHex", colorHex)
             put("isPinned", isPinned)
+            put("isArchived", isArchived)
         }
     }
 
@@ -40,7 +42,8 @@ data class NoteItem(
                 content = obj.optString("content", ""),
                 timestamp = obj.optLong("timestamp", System.currentTimeMillis()),
                 colorHex = obj.optString("colorHex", "#1E293B"),
-                isPinned = obj.optBoolean("isPinned", false)
+                isPinned = obj.optBoolean("isPinned", false),
+                isArchived = obj.optBoolean("isArchived", false)
             )
         }
     }

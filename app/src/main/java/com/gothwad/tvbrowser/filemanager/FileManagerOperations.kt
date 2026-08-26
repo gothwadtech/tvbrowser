@@ -1,6 +1,5 @@
 package com.gothwad.tvbrowser.filemanager
 
-import android.app.AlertDialog
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -8,9 +7,11 @@ import android.net.Uri
 import android.webkit.MimeTypeMap
 import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
 import com.gothwad.tvbrowser.BuildConfig
 import java.io.File
+import java.io.FileOutputStream
 import java.util.Locale
 
 object FileManagerOperations {
@@ -137,6 +138,7 @@ object FileManagerOperations {
             Size: ${item.formattedSize}
             Last Modified: ${item.formattedDate}
             Type: ${if (item.isDirectory) "Folder" else item.extension.uppercase(Locale.ROOT)}
+            Writable: ${item.file.canWrite()}
         """.trimIndent()
 
         AlertDialog.Builder(context)
@@ -148,7 +150,7 @@ object FileManagerOperations {
 
     fun showNewFolderDialog(context: Context, currentDirectory: File, onRefresh: () -> Unit) {
         val etInput = EditText(context).apply {
-            hint = "Folder Name"
+            hint = "Folder Name (e.g. My Videos)"
         }
 
         AlertDialog.Builder(context)
@@ -162,7 +164,35 @@ object FileManagerOperations {
                         Toast.makeText(context, "Folder created", Toast.LENGTH_SHORT).show()
                         onRefresh()
                     } else {
-                        Toast.makeText(context, "Failed to create folder", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Failed to create folder (Check permissions)", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    fun showNewFileDialog(context: Context, currentDirectory: File, onRefresh: () -> Unit) {
+        val etInput = EditText(context).apply {
+            hint = "File Name (e.g. note.txt)"
+        }
+
+        AlertDialog.Builder(context)
+            .setTitle("New File")
+            .setView(etInput)
+            .setPositiveButton("Create") { _, _ ->
+                val fileName = etInput.text.toString().trim()
+                if (fileName.isNotEmpty()) {
+                    val newFile = File(currentDirectory, fileName)
+                    try {
+                        if (newFile.createNewFile()) {
+                            Toast.makeText(context, "File created", Toast.LENGTH_SHORT).show()
+                            onRefresh()
+                        } else {
+                            Toast.makeText(context, "File already exists or failed to create", Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Failed to create file: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
