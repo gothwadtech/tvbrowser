@@ -5,168 +5,1039 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:paddingStart="24dp"
-    android:paddingTop="16dp"
+    android:paddingTop="18dp"
     android:paddingEnd="24dp"
-    android:paddingBottom="40dp"
-    android:background="@color/day_night_background_color">
+    android:paddingBottom="48dp"
+    android:background="#0B0F19">
 
-    <!-- Card 1: Quick Tools & Actions -->
+    <!-- ========================================================================= -->
+    <!-- SECTION 1: DISPLAY & UI ZOOM CONTROLS                                     -->
+    <!-- ========================================================================= -->
+    <LinearLayout
+        android:id="@+id/cardDisplayZoom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="🔍 Display &amp; Zoom Controls"
+            android:textColor="#38BDF8"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- Desktop Chrome Top Tab Bar Item -->
+        <LinearLayout
+            android:id="@+id/llShowTopTabBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="56dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_tv_setting_item"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@null"
+                android:duplicateParentState="true"
+                android:src="@drawable/ic_menu_new_tab"
+                android:tint="@color/selector_tv_setting_item_icon" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:duplicateParentState="true"
+                    android:text="@string/top_tab_bar_title"
+                    android:textColor="@color/selector_tv_setting_item_text"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:duplicateParentState="true"
+                    android:text="@string/top_tab_bar_desc"
+                    android:textColor="@color/selector_tv_setting_item_desc"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/scShowTopTabBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:focusable="false" />
+        </LinearLayout>
+
+        <!-- UI Scaling Card Item -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_tv_setting_item"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_zoom_in_gray_24dp"
+                    android:tint="#38BDF8" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/ui_scale_title"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/ui_scale_desc"
+                        android:textColor="#94A3B8"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvUiScaleValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/tv_accent_badge_bg"
+                    android:paddingStart="10dp"
+                    android:paddingTop="3dp"
+                    android:paddingEnd="10dp"
+                    android:paddingBottom="3dp"
+                    android:textColor="#38BDF8"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="100%" />
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sbUiScale"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:focusable="true"
+                android:max="125" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnUiScale100"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:focusable="true"
+                    android:text="100%"
+                    android:textColor="@color/selector_tv_tab_pill_text"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/btnUiScale125"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="3dp"
+                    android:layout_marginEnd="3dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:focusable="true"
+                    android:text="125%"
+                    android:textColor="@color/selector_tv_tab_pill_text"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/btnUiScale150"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:focusable="true"
+                    android:text="150%"
+                    android:textColor="@color/selector_tv_tab_pill_text"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/btnUiScaleApply"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="3dp"
+                    android:layout_weight="1.3"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:focusable="true"
+                    android:text="@string/apply_ui_scale"
+                    android:textColor="#38BDF8"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Web Page Zoom Item -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_tv_setting_item"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_search_white"
+                    android:tint="#38BDF8" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/web_page_zoom_title"
+                        android:textColor="#FFFFFF"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/web_page_zoom_desc"
+                        android:textColor="#94A3B8"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvWebPageZoomValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/tv_accent_badge_bg"
+                    android:paddingStart="10dp"
+                    android:paddingTop="3dp"
+                    android:paddingEnd="10dp"
+                    android:paddingBottom="3dp"
+                    android:textColor="#38BDF8"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="100%" />
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sbWebPageZoom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:focusable="true"
+                android:max="250" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnWebZoom75"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:focusable="true"
+                    android:text="75%"
+                    android:textColor="@color/selector_tv_tab_pill_text"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/btnWebZoom100"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:focusable="true"
+                    android:text="100%"
+                    android:textColor="@color/selector_tv_tab_pill_text"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/btnWebZoom125"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:focusable="true"
+                    android:text="125%"
+                    android:textColor="@color/selector_tv_tab_pill_text"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/btnWebZoom150"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:focusable="true"
+                    android:text="150%"
+                    android:textColor="@color/selector_tv_tab_pill_text"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/btnWebZoom200"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:focusable="true"
+                    android:text="200%"
+                    android:textColor="@color/selector_tv_tab_pill_text"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ========================================================================= -->
+    <!-- SECTION 2: THEME & PLAYBACK CONTROLS                                      -->
+    <!-- ========================================================================= -->
+    <LinearLayout
+        android:id="@+id/cardThemeMedia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="🎨 Theme &amp; Playback"
+            android:textColor="#38BDF8"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- Theme Selector Item -->
+        <LinearLayout
+            android:id="@+id/llThemeSettings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_tv_setting_item"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_settings_general"
+                    android:tint="#38BDF8" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:text="@string/theme"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <Spinner
+                android:id="@+id/spTheme"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_tv_tab_pill"
+                android:dropDownWidth="300dp"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <!-- Web Dark Mode Toggle -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="54dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_tv_setting_item"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_incognito"
+                android:tint="#38BDF8" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="12dp"
+                android:layout_weight="1"
+                android:text="@string/webview_use_algorithmic_darkening_with_dark_ui_mode"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/scWebViewAlgorithmicDarkeningWithDarkUiMode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <!-- Autoplay Media Toggle -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="54dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_tv_setting_item"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_file_video"
+                android:tint="#38BDF8" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="12dp"
+                android:layout_weight="1"
+                android:text="@string/allow_autoplay_media"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/scAllowAutoplayMedia"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <!-- Keep Screen On Toggle -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="54dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_tv_setting_item"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_clock_cyan"
+                android:tint="#38BDF8" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="12dp"
+                android:layout_weight="1"
+                android:text="@string/toggle_keep_screen_on"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/scKeepScreenOn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <!-- Web Engine Debug Toggle -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="54dp"
+            android:background="@drawable/bg_tv_setting_item"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_settings_tools"
+                android:tint="#38BDF8" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="12dp"
+                android:layout_weight="1"
+                android:text="@string/web_engine_debug"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/scWebEngineDebug"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:focusable="true" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ========================================================================= -->
+    <!-- SECTION 3: BROWSER ENGINE, SEARCH & HOME                                  -->
+    <!-- ========================================================================= -->
+    <LinearLayout
+        android:id="@+id/cardBrowserEngine"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="🌐 Browser Engine &amp; Search"
+            android:textColor="#38BDF8"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <!-- Web Browser Engine Picker -->
+        <LinearLayout
+            android:id="@+id/llWebEngine"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_tv_setting_item"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/web_browser_engine_temporary_setting"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <Spinner
+                android:id="@+id/spWebEngine"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_tv_tab_pill"
+                android:dropDownWidth="300dp"
+                android:focusable="true" />
+        </LinearLayout>
+
+        <!-- Search Engine Config -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_tv_setting_item"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_search_white"
+                    android:tint="#38BDF8" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:text="@string/choose_default_search_engine"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <Spinner
+                android:id="@+id/spEngine"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_tv_tab_pill"
+                android:dropDownWidth="300dp"
+                android:focusable="true" />
+
+            <LinearLayout
+                android:id="@+id/llURL"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/url"
+                    android:textColor="#94A3B8"
+                    android:textSize="13sp" />
+
+                <EditText
+                    android:id="@+id/etUrl"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:ems="10"
+                    android:focusable="true"
+                    android:hint="@string/search_engine_url_with_query_placeholder_query"
+                    android:importantForAutofill="no"
+                    android:inputType="textUri"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#64748B" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Home Page Config -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_tv_setting_item"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_home_grey_900_24dp"
+                    android:tint="#38BDF8" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:text="@string/home_page"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <Spinner
+                android:id="@+id/spHomePage"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_tv_tab_pill"
+                android:dropDownWidth="300dp"
+                android:focusable="true" />
+
+            <LinearLayout
+                android:id="@+id/llCustomHomePage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/custom_home_page_url"
+                    android:textColor="#94A3B8"
+                    android:textSize="13sp" />
+
+                <EditText
+                    android:id="@+id/etCustomHomePageUrl"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:ems="10"
+                    android:focusable="true"
+                    android:hint="@string/url"
+                    android:importantForAutofill="no"
+                    android:inputType="textUri"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#64748B" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/llHomePageLinksMode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/home_page_links"
+                    android:textColor="#94A3B8"
+                    android:textSize="13sp" />
+
+                <Spinner
+                    android:id="@+id/spHomePageLinks"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:dropDownWidth="300dp"
+                    android:focusable="true" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- User Agent String Config -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_tv_setting_item"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_menu_desktop"
+                    android:tint="#38BDF8" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:text="@string/choose_user_agent_string"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <Spinner
+                android:id="@+id/spTitles"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_tv_tab_pill"
+                android:dropDownWidth="300dp"
+                android:focusable="true" />
+
+            <LinearLayout
+                android:id="@+id/llUAString"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/user_agent_string"
+                    android:textColor="#94A3B8"
+                    android:textSize="13sp" />
+
+                <EditText
+                    android:id="@+id/etUAString"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:ems="10"
+                    android:focusable="true"
+                    android:hint="@string/edit_user_agent_string"
+                    android:importantForAutofill="no"
+                    android:inputType="textUri"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:textColor="#FFFFFF"
+                    android:textColorHint="#64748B" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ========================================================================= -->
+    <!-- SECTION 4: QUICK TOOLS & ACTIONS                                          -->
+    <!-- ========================================================================= -->
     <LinearLayout
         android:id="@+id/cardQuickTools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/settings_card_bg"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_marginBottom="24dp"
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:text="⚡ Quick Tools &amp; Actions"
-            android:textColor="@color/progressbar_tint"
+            android:textColor="#38BDF8"
             android:textSize="16sp"
             android:textStyle="bold" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="10dp"
             android:orientation="horizontal">
 
             <Button
                 android:id="@+id/btnQuickHistory"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="50dp"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
-                android:background="@drawable/button_bg_selector"
+                android:background="@drawable/bg_tv_tab_pill"
                 android:drawableStart="@drawable/ic_history_grey_900_36dp"
-                android:drawablePadding="8dp"
+                android:drawableTint="@color/selector_tv_tab_pill_icon"
+                android:drawablePadding="10dp"
+                android:focusable="true"
                 android:gravity="center_vertical|start"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
                 android:text="@string/history"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="13sp" />
+                android:textColor="@color/selector_tv_tab_pill_text"
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btnQuickFavorites"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="50dp"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                android:background="@drawable/button_bg_selector"
+                android:background="@drawable/bg_tv_tab_pill"
                 android:drawableStart="@drawable/ic_star_border_grey_900_36dp"
-                android:drawablePadding="8dp"
+                android:drawableTint="@color/selector_tv_tab_pill_icon"
+                android:drawablePadding="10dp"
+                android:focusable="true"
                 android:gravity="center_vertical|start"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
                 android:text="@string/favorites"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="13sp" />
+                android:textColor="@color/selector_tv_tab_pill_text"
+                android:textSize="13sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="10dp"
             android:orientation="horizontal">
 
             <Button
                 android:id="@+id/btnQuickClipboard"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="50dp"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
-                android:background="@drawable/button_bg_selector"
+                android:background="@drawable/bg_tv_tab_pill"
                 android:drawableStart="@drawable/ic_nav_clipboard"
-                android:drawablePadding="8dp"
+                android:drawableTint="@color/selector_tv_tab_pill_icon"
+                android:drawablePadding="10dp"
+                android:focusable="true"
                 android:gravity="center_vertical|start"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
                 android:text="Clipboard &amp; Snippets"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="13sp" />
+                android:textColor="@color/selector_tv_tab_pill_text"
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btnQuickDownloads"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="50dp"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                android:background="@drawable/button_bg_selector"
+                android:background="@drawable/bg_tv_tab_pill"
                 android:drawableStart="@drawable/ic_file_download_grey_900"
-                android:drawablePadding="8dp"
+                android:drawableTint="@color/selector_tv_tab_pill_icon"
+                android:drawablePadding="10dp"
+                android:focusable="true"
                 android:gravity="center_vertical|start"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
                 android:text="@string/downloads"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="13sp" />
+                android:textColor="@color/selector_tv_tab_pill_text"
+                android:textSize="13sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="10dp"
             android:orientation="horizontal">
 
             <Button
                 android:id="@+id/btnQuickIncognito"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="50dp"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
-                android:background="@drawable/button_bg_selector"
+                android:background="@drawable/bg_tv_tab_pill"
                 android:drawableStart="@drawable/ic_incognito"
-                android:drawablePadding="8dp"
+                android:drawableTint="@color/selector_tv_tab_pill_icon"
+                android:drawablePadding="10dp"
+                android:focusable="true"
                 android:gravity="center_vertical|start"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
                 android:text="@string/incognito_mode"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="13sp" />
+                android:textColor="@color/selector_tv_tab_pill_text"
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
             <Button
                 android:id="@+id/btnQuickRotate"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="50dp"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                android:background="@drawable/button_bg_selector"
+                android:background="@drawable/bg_tv_tab_pill"
                 android:drawableStart="@drawable/ic_screen_rotation"
-                android:drawablePadding="8dp"
+                android:drawableTint="@color/selector_tv_tab_pill_icon"
+                android:drawablePadding="10dp"
+                android:focusable="true"
                 android:gravity="center_vertical|start"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
                 android:text="Rotate Screen"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="13sp" />
+                android:textColor="@color/selector_tv_tab_pill_text"
+                android:textSize="13sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
-        <LinearLayout
+        <Button
+            android:id="@+id/btnQuickPopupBlock"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:orientation="horizontal">
+            android:layout_height="50dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_tv_tab_pill"
+            android:drawableStart="@drawable/ic_block_popups"
+            android:drawableTint="@color/selector_tv_tab_pill_icon"
+            android:drawablePadding="10dp"
+            android:focusable="true"
+            android:gravity="center_vertical|start"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:text="@string/block_popups"
+            android:textColor="@color/selector_tv_tab_pill_text"
+            android:textSize="13sp"
+            android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/btnQuickPopupBlock"
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:background="@drawable/button_bg_selector"
-                android:drawableStart="@drawable/ic_block_popups"
-                android:drawablePadding="8dp"
-                android:gravity="center_vertical|start"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:text="@string/block_popups"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="13sp" />
-        </LinearLayout>
-
+        <!-- Quick Zoom Stepper -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -175,536 +1046,158 @@
             <Button
                 android:id="@+id/btnQuickZoomIn"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
-                android:layout_marginEnd="4dp"
+                android:layout_height="46dp"
+                android:layout_marginEnd="6dp"
                 android:layout_weight="1"
-                android:background="@drawable/button_bg_selector"
+                android:background="@drawable/bg_tv_tab_pill"
                 android:drawableStart="@drawable/ic_zoom_in_gray_24dp"
+                android:drawableTint="@color/selector_tv_tab_pill_icon"
                 android:drawablePadding="6dp"
+                android:focusable="true"
                 android:gravity="center_vertical|start"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
                 android:text="@string/quick_zoom_in"
-                android:textColor="@color/day_night_text_color_contrast"
+                android:textColor="@color/selector_tv_tab_pill_text"
                 android:textSize="12sp" />
 
             <Button
                 android:id="@+id/btnQuickZoomOut"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
+                android:layout_height="46dp"
+                android:layout_marginStart="3dp"
+                android:layout_marginEnd="6dp"
                 android:layout_weight="1"
-                android:background="@drawable/button_bg_selector"
+                android:background="@drawable/bg_tv_tab_pill"
                 android:drawableStart="@drawable/ic_zoom_out_gray_24dp"
+                android:drawableTint="@color/selector_tv_tab_pill_icon"
                 android:drawablePadding="6dp"
+                android:focusable="true"
                 android:gravity="center_vertical|start"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
                 android:text="@string/quick_zoom_out"
-                android:textColor="@color/day_night_text_color_contrast"
+                android:textColor="@color/selector_tv_tab_pill_text"
                 android:textSize="12sp" />
 
             <Button
                 android:id="@+id/btnQuickZoomReset"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
-                android:layout_marginStart="4dp"
+                android:layout_height="46dp"
+                android:layout_marginStart="3dp"
                 android:layout_weight="1"
-                android:background="@drawable/button_bg_selector"
+                android:background="@drawable/bg_tv_tab_pill"
+                android:focusable="true"
                 android:gravity="center"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
                 android:text="@string/quick_zoom_reset"
-                android:textColor="@color/day_night_text_color_contrast"
+                android:textColor="@color/selector_tv_tab_pill_text"
                 android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Card 2: Display & UI Scaling -->
-    <LinearLayout
-        android:id="@+id/cardDisplayZoom"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/settings_card_bg"
-        android:orientation="vertical"
-        android:padding="16dp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:text="🔍 Display &amp; Zoom Controls"
-            android:textColor="@color/progressbar_tint"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <!-- UI Scaling Controls -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/ui_scale_title"
-            android:textColor="@color/day_night_text_color_contrast"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="6dp"
-            android:text="@string/ui_scale_desc"
-            android:textColor="@color/day_night_text_secondary"
-            android:textSize="12sp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <SeekBar
-                android:id="@+id/sbUiScale"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:max="125" />
-
-            <TextView
-                android:id="@+id/tvUiScaleValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minWidth="64dp"
-                android:gravity="end"
-                android:textColor="@color/progressbar_tint"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                tools:text="100%" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="16dp"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btnUiScale100"
-                android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_marginEnd="4dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_bg_selector"
-                android:text="100%"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="12sp" />
-
-            <Button
-                android:id="@+id/btnUiScale125"
-                android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_bg_selector"
-                android:text="125%"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="12sp" />
-
-            <Button
-                android:id="@+id/btnUiScale150"
-                android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_bg_selector"
-                android:text="150%"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="12sp" />
-
-            <Button
-                android:id="@+id/btnUiScaleApply"
-                android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_marginStart="4dp"
-                android:layout_weight="1.3"
-                android:background="@drawable/button_bg_selector"
-                android:text="@string/apply_ui_scale"
-                android:textColor="@color/progressbar_tint"
-                android:textSize="12sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <!-- Web Page Zoom Controls -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/web_page_zoom_title"
-            android:textColor="@color/day_night_text_color_contrast"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="6dp"
-            android:text="@string/web_page_zoom_desc"
-            android:textColor="@color/day_night_text_secondary"
-            android:textSize="12sp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <SeekBar
-                android:id="@+id/sbWebPageZoom"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:max="250" />
-
-            <TextView
-                android:id="@+id/tvWebPageZoomValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minWidth="64dp"
-                android:gravity="end"
-                android:textColor="@color/progressbar_tint"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                tools:text="100%" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btnWebZoom75"
-                android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_marginEnd="4dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_bg_selector"
-                android:text="75%"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="12sp" />
-
-            <Button
-                android:id="@+id/btnWebZoom100"
-                android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_bg_selector"
-                android:text="100%"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="12sp" />
-
-            <Button
-                android:id="@+id/btnWebZoom125"
-                android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_bg_selector"
-                android:text="125%"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="12sp" />
-
-            <Button
-                android:id="@+id/btnWebZoom150"
-                android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="4dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_bg_selector"
-                android:text="150%"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="12sp" />
-
-            <Button
-                android:id="@+id/btnWebZoom200"
-                android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_marginStart="4dp"
-                android:layout_weight="1"
-                android:background="@drawable/button_bg_selector"
-                android:text="200%"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="12sp" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- Card 3: Browser Engine, Search & Home Page -->
-    <LinearLayout
-        android:id="@+id/cardBrowserEngine"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/settings_card_bg"
-        android:orientation="vertical"
-        android:padding="16dp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:text="🌐 Browser Engine &amp; Search"
-            android:textColor="@color/progressbar_tint"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <LinearLayout
-            android:id="@+id/llWebEngine"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/web_browser_engine_temporary_setting"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="14sp" />
-
-            <Spinner
-                android:id="@+id/spWebEngine"
-                android:layout_width="match_parent"
-                android:layout_height="42dp"
-                android:layout_marginTop="4dp"
-                android:dropDownWidth="300dp" />
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:text="@string/choose_default_search_engine"
-            android:textColor="@color/day_night_text_color_contrast"
-            android:textSize="14sp" />
-
-        <Spinner
-            android:id="@+id/spEngine"
-            android:layout_width="match_parent"
-            android:layout_height="42dp"
-            android:layout_marginTop="4dp"
-            android:dropDownWidth="300dp" />
-
-        <LinearLayout
-            android:id="@+id/llURL"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/url"
-                android:textColor="@color/day_night_text_secondary"
-                android:textSize="13sp" />
-
-            <EditText
-                android:id="@+id/etUrl"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="@string/search_engine_url_with_query_placeholder_query"
-                android:importantForAutofill="no"
-                android:inputType="textUri"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textColorHint="@color/day_night_text_secondary" />
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:text="@string/home_page"
-            android:textColor="@color/day_night_text_color_contrast"
-            android:textSize="14sp" />
-
-        <Spinner
-            android:id="@+id/spHomePage"
-            android:layout_width="match_parent"
-            android:layout_height="42dp"
-            android:layout_marginTop="4dp"
-            android:dropDownWidth="300dp" />
-
-        <LinearLayout
-            android:id="@+id/llCustomHomePage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/custom_home_page_url"
-                android:textColor="@color/day_night_text_secondary"
-                android:textSize="13sp" />
-
-            <EditText
-                android:id="@+id/etCustomHomePageUrl"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="@string/url"
-                android:importantForAutofill="no"
-                android:inputType="textUri"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textColorHint="@color/day_night_text_secondary" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/llHomePageLinksMode"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/home_page_links"
-                android:textColor="@color/day_night_text_secondary"
-                android:textSize="13sp" />
-
-            <Spinner
-                android:id="@+id/spHomePageLinks"
-                android:layout_width="match_parent"
-                android:layout_height="42dp"
-                android:layout_marginTop="4dp"
-                android:dropDownWidth="300dp" />
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:text="@string/choose_user_agent_string"
-            android:textColor="@color/day_night_text_color_contrast"
-            android:textSize="14sp" />
-
-        <Spinner
-            android:id="@+id/spTitles"
-            android:layout_width="match_parent"
-            android:layout_height="42dp"
-            android:layout_marginTop="4dp"
-            android:dropDownWidth="300dp" />
-
-        <LinearLayout
-            android:id="@+id/llUAString"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/user_agent_string"
-                android:textColor="@color/day_night_text_secondary"
-                android:textSize="13sp" />
-
-            <EditText
-                android:id="@+id/etUAString"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="@string/edit_user_agent_string"
-                android:importantForAutofill="no"
-                android:inputType="textUri"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textColorHint="@color/day_night_text_secondary" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- Card 4: Ad Blocker & Privacy -->
+    <!-- ========================================================================= -->
+    <!-- SECTION 5: ADBLOCK PLUS & FILTERS                                         -->
+    <!-- ========================================================================= -->
     <LinearLayout
         android:id="@+id/cardAdBlockPrivacy"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/settings_card_bg"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_marginBottom="24dp"
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:text="🛡️ Ad Blocker &amp; Privacy"
-            android:textColor="@color/progressbar_tint"
+            android:textColor="#38BDF8"
             android:textSize="16sp"
             android:textStyle="bold" />
 
+        <!-- AdBlock Toggle Pill -->
         <LinearLayout
             android:id="@+id/llAdblock"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:background="@drawable/button_bg_selector"
+            android:layout_height="wrap_content"
+            android:minHeight="56dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_tv_setting_item"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp">
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@null"
+                android:duplicateParentState="true"
+                android:src="@drawable/ic_adblock_on"
+                android:tint="@color/selector_tv_setting_item_icon" />
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="12dp"
                 android:layout_weight="1"
-                android:ellipsize="end"
-                android:lines="1"
+                android:duplicateParentState="true"
                 android:text="@string/toggle_ads_blocking"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="14sp" />
+                android:textColor="@color/selector_tv_setting_item_text"
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/scAdblock"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:duplicateParentState="true" />
+                android:clickable="false"
+                android:focusable="false" />
         </LinearLayout>
 
+        <!-- Filter URL & Update Card -->
         <LinearLayout
             android:id="@+id/llAdBlockerDetails"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="vertical">
+            android:background="@drawable/bg_tv_setting_item"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="AdBlock Filter Rule List URL"
+                android:textColor="#FFFFFF"
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
             <EditText
                 android:id="@+id/etAdBlockerListUrl"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="44dp"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_tv_tab_pill"
                 android:ems="10"
+                android:focusable="true"
                 android:hint="@string/url"
                 android:importantForAutofill="no"
                 android:inputType="textUri"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textColorHint="@color/day_night_text_secondary" />
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#64748B" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -714,7 +1207,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:lines="1"
-                    android:textColor="@color/day_night_text_secondary"
+                    android:textColor="#94A3B8"
                     android:textSize="13sp"
                     tools:text="Last update: never" />
 
@@ -722,13 +1215,13 @@
                     android:id="@+id/btnAdBlockerUpdate"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:background="@drawable/button_bg_selector"
+                    android:background="@drawable/bg_tv_tab_pill"
                     android:contentDescription="@string/update_ad_blocker_list"
                     android:focusable="true"
                     android:padding="8dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/ic_refresh_grey_900_24dp"
-                    android:tint="@color/progressbar_tint" />
+                    android:tint="#38BDF8" />
 
                 <ProgressBar
                     android:id="@+id/pbAdBlockerListLoading"
@@ -740,356 +1233,302 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Card 5: Theme & Media Playback -->
-    <LinearLayout
-        android:id="@+id/cardThemeMedia"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/settings_card_bg"
-        android:orientation="vertical"
-        android:padding="16dp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:text="🎨 Theme &amp; Playback"
-            android:textColor="@color/progressbar_tint"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <LinearLayout
-            android:id="@+id/llThemeSettings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/theme"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="14sp" />
-
-            <Spinner
-                android:id="@+id/spTheme"
-                android:layout_width="match_parent"
-                android:layout_height="42dp"
-                android:layout_marginTop="4dp"
-                android:dropDownWidth="300dp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="8dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:ellipsize="end"
-                android:lines="1"
-                android:text="@string/webview_use_algorithmic_darkening_with_dark_ui_mode"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="14sp" />
-
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/scWebViewAlgorithmicDarkeningWithDarkUiMode"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:ellipsize="end"
-                android:lines="1"
-                android:text="@string/allow_autoplay_media"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="14sp" />
-
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/scAllowAutoplayMedia"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:ellipsize="end"
-                android:lines="1"
-                android:text="@string/web_engine_debug"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="14sp" />
-
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/scWebEngineDebug"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:ellipsize="end"
-                android:lines="1"
-                android:text="@string/toggle_keep_screen_on"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="14sp" />
-
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/scKeepScreenOn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- Card 6: TV Remote, Joystick & Virtual Cursor -->
+    <!-- ========================================================================= -->
+    <!-- SECTION 6: TV REMOTE & VIRTUAL CURSOR                                     -->
+    <!-- ========================================================================= -->
     <LinearLayout
         android:id="@+id/cardRemoteCursor"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/settings_card_bg"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_marginBottom="24dp"
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:text="🎮 TV Remote &amp; Cursor Control"
-            android:textColor="@color/progressbar_tint"
+            android:textColor="#38BDF8"
             android:textSize="16sp"
             android:textStyle="bold" />
 
+        <!-- Disable Virtual Keyboard Toggle -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="wrap_content"
+            android:minHeight="54dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_tv_setting_item"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_settings_keyboard_mouse"
+                android:tint="#38BDF8" />
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="12dp"
                 android:layout_weight="1"
-                android:ellipsize="end"
-                android:lines="1"
                 android:text="@string/disable_virtual_keyboard"
-                android:textColor="@color/day_night_text_color_contrast"
+                android:textColor="#FFFFFF"
                 android:textSize="14sp" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/scDisableVirtualKeyboard"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:focusable="true" />
         </LinearLayout>
 
+        <!-- Joystick Axes Toggle -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="wrap_content"
+            android:minHeight="54dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_tv_setting_item"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@null"
+                android:src="@drawable/gamepad_circle_up_24px"
+                android:tint="#38BDF8" />
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="12dp"
                 android:layout_weight="1"
-                android:ellipsize="end"
-                android:lines="1"
                 android:text="@string/navigate_with_joystick_axes"
-                android:textColor="@color/day_night_text_color_contrast"
+                android:textColor="#FFFFFF"
                 android:textSize="14sp" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/scNavigateWithJoystickAxes"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:focusable="true" />
         </LinearLayout>
 
+        <!-- Enable Virtual Cursor Toggle -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="wrap_content"
+            android:minHeight="54dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_tv_setting_item"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_move_remote"
+                android:tint="#38BDF8" />
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="12dp"
                 android:layout_weight="1"
-                android:ellipsize="end"
-                android:lines="1"
                 android:text="@string/toggle_enable_virtual_cursor"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="14sp" />
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/scEnableVirtualCursor"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:focusable="true" />
         </LinearLayout>
 
+        <!-- Virtual Cursor Physics & Style Options -->
         <LinearLayout
             android:id="@+id/llVirtualCursorDetails"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="vertical">
+            android:background="@drawable/bg_tv_setting_item"
+            android:orientation="vertical"
+            android:padding="16dp">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/cursor_style"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="14sp" />
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
             <Spinner
                 android:id="@+id/spCursorStyle"
                 android:layout_width="match_parent"
-                android:layout_height="42dp"
-                android:layout_marginTop="4dp"
-                android:entries="@array/cursor_styles" />
+                android:layout_height="44dp"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_tv_tab_pill"
+                android:dropDownWidth="300dp"
+                android:entries="@array/cursor_styles"
+                android:focusable="true" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="@string/cursor_size"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="14sp" />
-
+            <!-- Cursor Size -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <SeekBar
-                    android:id="@+id/sbCursorSize"
+                <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:max="150" />
+                    android:text="@string/cursor_size"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/tvCursorSizeValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minWidth="64dp"
-                    android:gravity="end"
-                    android:textColor="@color/progressbar_tint"
-                    android:textSize="14sp"
+                    android:background="@drawable/tv_accent_badge_bg"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="2dp"
+                    android:textColor="#38BDF8"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
                     tools:text="100%" />
             </LinearLayout>
 
-            <TextView
+            <SeekBar
+                android:id="@+id/sbCursorSize"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="@string/cursor_max_speed"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="14sp" />
+                android:layout_marginTop="8dp"
+                android:focusable="true"
+                android:max="150" />
 
+            <!-- Cursor Max Speed -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <SeekBar
-                    android:id="@+id/sbCursorMaxSpeed"
+                <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:max="175" />
+                    android:text="@string/cursor_max_speed"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/tvCursorMaxSpeedValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minWidth="64dp"
-                    android:gravity="end"
-                    android:textColor="@color/progressbar_tint"
-                    android:textSize="14sp"
+                    android:background="@drawable/tv_accent_badge_bg"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="2dp"
+                    android:textColor="#38BDF8"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
                     tools:text="100%" />
             </LinearLayout>
 
-            <TextView
+            <SeekBar
+                android:id="@+id/sbCursorMaxSpeed"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="@string/cursor_acceleration"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="14sp" />
+                android:layout_marginTop="8dp"
+                android:focusable="true"
+                android:max="175" />
 
+            <!-- Cursor Acceleration -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <SeekBar
-                    android:id="@+id/sbCursorAcceleration"
+                <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:max="175" />
+                    android:text="@string/cursor_acceleration"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/tvCursorAccelerationValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minWidth="64dp"
-                    android:gravity="end"
-                    android:textColor="@color/progressbar_tint"
-                    android:textSize="14sp"
+                    android:background="@drawable/tv_accent_badge_bg"
+                    android:paddingStart="8dp"
+                    android:paddingTop="2dp"
+                    android:paddingEnd="8dp"
+                    android:paddingBottom="2dp"
+                    android:textColor="#38BDF8"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
                     tools:text="100%" />
             </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sbCursorAcceleration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:focusable="true"
+                android:max="175" />
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Card: Dedicated Physical Keyboard & Mouse Section -->
+    <!-- ========================================================================= -->
+    <!-- SECTION 7: PHYSICAL KEYBOARD & MOUSE                                      -->
+    <!-- ========================================================================= -->
     <LinearLayout
         android:id="@+id/cardKeyboardMouse"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/settings_card_bg"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_marginBottom="24dp"
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:text="⌨️ Physical Keyboard &amp; Mouse Settings"
-            android:textColor="@color/progressbar_tint"
+            android:textColor="#38BDF8"
             android:textSize="16sp"
             android:textStyle="bold" />
 
@@ -1097,15 +1536,16 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/settings_card_bg"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_tv_setting_item"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="16dp">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="🔌 Connected Input Devices (Auto-Detect)"
-                android:textColor="@color/day_night_text_color_contrast"
+                android:textColor="#FFFFFF"
                 android:textSize="14sp"
                 android:textStyle="bold" />
 
@@ -1116,21 +1556,22 @@
                 android:layout_marginTop="6dp"
                 android:lineSpacingExtra="4dp"
                 android:text="Scanning for USB / Bluetooth devices..."
-                android:textColor="@color/day_night_text_secondary"
+                android:textColor="#94A3B8"
                 android:textSize="13sp" />
 
             <Button
                 android:id="@+id/btnRefreshDevices"
                 android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/button_bg_selector"
+                android:layout_height="40dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_tv_tab_pill"
                 android:focusable="true"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:text="🔄 Refresh Device List"
-                android:textColor="@color/progressbar_tint"
-                android:textSize="12sp" />
+                android:textColor="#38BDF8"
+                android:textSize="12sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
         <!-- Hardware Mouse Click Compatibility Mode (Airtel STB Fix) -->
@@ -1138,12 +1579,12 @@
             android:id="@+id/llMouseCompatibility"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/button_bg_selector"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_tv_setting_item"
             android:clickable="true"
             android:focusable="true"
             android:orientation="vertical"
-            android:padding="10dp">
+            android:padding="16dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -1151,12 +1592,22 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@null"
+                    android:duplicateParentState="true"
+                    android:src="@drawable/ic_move_remote"
+                    android:tint="@color/selector_tv_setting_item_icon" />
+
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
                     android:layout_weight="1"
+                    android:duplicateParentState="true"
                     android:text="TV Box Precision Mouse Click Fix"
-                    android:textColor="@color/day_night_text_color_contrast"
+                    android:textColor="@color/selector_tv_setting_item_text"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
@@ -1165,29 +1616,31 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="true"
-                    android:duplicateParentState="true" />
+                    android:clickable="false"
+                    android:duplicateParentState="true"
+                    android:focusable="false" />
             </LinearLayout>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="6dp"
+                android:duplicateParentState="true"
                 android:text="Fixes dropped clicks on Airtel Xstream &amp; Set-top boxes when tapping search bars, buttons (e.g., PW.live, Google sign-in)."
-                android:textColor="@color/day_night_text_secondary"
+                android:textColor="@color/selector_tv_setting_item_desc"
                 android:textSize="12sp" />
         </LinearLayout>
 
-        <!-- Disable Virtual Keyboard Setting -->
+        <!-- Disable Virtual Keyboard Setting (KM) -->
         <LinearLayout
             android:id="@+id/llDisableVirtualKeyboardKm"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/button_bg_selector"
+            android:background="@drawable/bg_tv_setting_item"
             android:clickable="true"
             android:focusable="true"
             android:orientation="vertical"
-            android:padding="10dp">
+            android:padding="16dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -1195,12 +1648,22 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@null"
+                    android:duplicateParentState="true"
+                    android:src="@drawable/ic_settings_keyboard_mouse"
+                    android:tint="@color/selector_tv_setting_item_icon" />
+
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
                     android:layout_weight="1"
+                    android:duplicateParentState="true"
                     android:text="Disable On-Screen Virtual Keyboard"
-                    android:textColor="@color/day_night_text_color_contrast"
+                    android:textColor="@color/selector_tv_setting_item_text"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
@@ -1208,74 +1671,95 @@
                     android:id="@+id/scDisableVirtualKeyboardKm"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:duplicateParentState="true" />
+                    android:clickable="false"
+                    android:duplicateParentState="true"
+                    android:focusable="false" />
             </LinearLayout>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="6dp"
+                android:duplicateParentState="true"
                 android:text="Prevents the Android TV soft keyboard from popping up when a physical keyboard is attached."
-                android:textColor="@color/day_night_text_secondary"
+                android:textColor="@color/selector_tv_setting_item_desc"
                 android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Card: App Security & PIN Lock -->
+    <!-- ========================================================================= -->
+    <!-- SECTION 8: APP SECURITY & PIN LOCK                                        -->
+    <!-- ========================================================================= -->
     <LinearLayout
         android:id="@+id/cardAppLock"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/settings_card_bg"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_marginBottom="24dp"
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:text="🔒 App Security &amp; PIN Lock"
-            android:textColor="@color/progressbar_tint"
+            android:textColor="#38BDF8"
             android:textSize="16sp"
             android:textStyle="bold" />
 
+        <!-- Enable App Lock Pill -->
         <LinearLayout
             android:id="@+id/llAppLock"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:background="@drawable/button_bg_selector"
+            android:layout_height="wrap_content"
+            android:minHeight="56dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/bg_tv_setting_item"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp">
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@null"
+                android:duplicateParentState="true"
+                android:src="@drawable/ic_lock_security"
+                android:tint="@color/selector_tv_setting_item_icon" />
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="12dp"
                 android:layout_weight="1"
-                android:ellipsize="end"
-                android:lines="1"
+                android:duplicateParentState="true"
                 android:text="Enable App Lock (4-Digit PIN)"
-                android:textColor="@color/day_night_text_color_contrast"
-                android:textSize="14sp" />
+                android:textColor="@color/selector_tv_setting_item_text"
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
             <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/scAppLock"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:duplicateParentState="true" />
+                android:clickable="false"
+                android:focusable="false" />
         </LinearLayout>
 
+        <!-- PIN Status & Change Card -->
         <LinearLayout
             android:id="@+id/llAppLockDetails"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_tv_setting_item"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="16dp">
 
             <TextView
                 android:id="@+id/tvAppLockStatus"
@@ -1283,55 +1767,96 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="No PIN set (Set 4-digit PIN to enable)"
-                android:textColor="@color/day_night_text_secondary"
+                android:textColor="#94A3B8"
                 android:textSize="13sp" />
 
             <Button
                 android:id="@+id/btnChangePin"
                 android:layout_width="wrap_content"
                 android:layout_height="40dp"
-                android:background="@drawable/button_bg_selector"
+                android:background="@drawable/bg_tv_tab_pill"
                 android:focusable="true"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:text="Change PIN"
-                android:textColor="@color/progressbar_tint"
+                android:textColor="#38BDF8"
                 android:textSize="13sp"
                 android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Card 7: Cache & Data Maintenance -->
+    <!-- ========================================================================= -->
+    <!-- SECTION 9: CACHE & DATA MAINTENANCE                                       -->
+    <!-- ========================================================================= -->
     <LinearLayout
         android:id="@+id/cardCacheData"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:background="@drawable/settings_card_bg"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_marginBottom="24dp"
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:text="🗑️ Cache &amp; Storage"
-            android:textColor="@color/progressbar_tint"
+            android:textColor="#38BDF8"
             android:textSize="16sp"
             android:textStyle="bold" />
 
-        <Button
-            android:id="@+id/btnClearWebCache"
-            android:layout_width="wrap_content"
-            android:layout_height="44dp"
-            android:background="@drawable/button_bg_selector"
-            android:focusable="true"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:text="@string/clear_web_cache"
-            android:textColor="#EF4444"
-            android:textSize="13sp"
-            android:textStyle="bold" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_tv_setting_item"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="16dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_delete"
+                android:tint="#EF4444" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Clear Browser Cache &amp; Cookies"
+                    android:textColor="#FFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Frees up internal TV storage and resets temporary web engine sessions."
+                    android:textColor="#94A3B8"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnClearWebCache"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_tv_tab_pill"
+                android:focusable="true"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:text="@string/clear_web_cache"
+                android:textColor="#EF4444"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>

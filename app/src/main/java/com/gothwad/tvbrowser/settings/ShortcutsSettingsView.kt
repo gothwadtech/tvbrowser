@@ -34,7 +34,7 @@ class ShortcutsSettingsView @JvmOverloads constructor(
         lvShortcuts = findViewById(R.id.lvShortcuts)
         btnResetAllShortcuts = findViewById(R.id.btnResetAllShortcuts)
 
-        lvShortcuts.selector = ResourcesCompat.getDrawable(context.resources, R.drawable.list_item_bg_selector, null)
+        lvShortcuts.selector = ResourcesCompat.getDrawable(context.resources, android.R.color.transparent, null)
         adapter = ShortcutItemAdapter()
         lvShortcuts.adapter = adapter
         lvShortcuts.onItemClickListener = this
@@ -89,7 +89,7 @@ class ShortcutsSettingsView @JvmOverloads constructor(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
-            background = ResourcesCompat.getDrawable(resources, R.drawable.list_item_bg_selector, null)
+            background = ResourcesCompat.getDrawable(resources, R.drawable.bg_tv_setting_item, null)
             isFocusable = true
             isClickable = true
         }

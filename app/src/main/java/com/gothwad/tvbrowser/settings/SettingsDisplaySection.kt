@@ -20,6 +20,14 @@ object SettingsDisplaySection {
     ) {
         val mainAct = activity as? MainActivity
 
+        // Top Tab Bar toggle
+        vb.scShowTopTabBar.isChecked = config.showTopTabBar.value
+        vb.llShowTopTabBar.setOnClickListener {
+            val newState = !vb.scShowTopTabBar.isChecked
+            vb.scShowTopTabBar.isChecked = newState
+            config.showTopTabBar.value = newState
+        }
+
         // UI Scaling controls
         val minUiScale = Config.UI_SCALE_PERCENT_MIN
         val maxUiScale = Config.UI_SCALE_PERCENT_MAX

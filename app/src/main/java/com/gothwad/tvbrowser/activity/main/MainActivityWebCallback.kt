@@ -100,6 +100,7 @@ internal class WebEngineCallback(val activity: MainActivity, val tab: WebTabStat
     override fun onReceivedTitle(title: String) {
         tab.title = title
         activity.currentTabsDialog?.refreshData()
+        activity.refreshTopTabs()
         activity.viewModel.onTabTitleUpdated(tab)
     }
 
@@ -126,6 +127,7 @@ internal class WebEngineCallback(val activity: MainActivity, val tab: WebTabStat
 
     override fun onReceivedIcon(icon: Bitmap) {
         activity.currentTabsDialog?.refreshData()
+        activity.refreshTopTabs()
     }
 
     override fun shouldOverrideUrlLoading(url: String): Boolean {

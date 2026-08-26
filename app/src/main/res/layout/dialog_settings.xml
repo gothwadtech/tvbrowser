@@ -5,15 +5,15 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
-    android:background="@color/day_night_background_color">
+    android:background="#0B0F19">
 
     <!-- Top Settings Header Bar -->
     <RelativeLayout
         android:id="@+id/rlSettingsHeader"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="@color/top_bar_background"
-        android:elevation="4dp"
+        android:layout_height="58dp"
+        android:background="#111827"
+        android:elevation="6dp"
         android:paddingStart="20dp"
         android:paddingEnd="20dp">
 
@@ -24,6 +24,19 @@
             android:layout_centerVertical="true"
             android:gravity="center_vertical"
             android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/ibCloseSettings"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="14dp"
+                android:background="@drawable/bg_tv_side_back_btn"
+                android:contentDescription="Close Settings"
+                android:focusable="true"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_arrow_back_grey_900_24dp"
+                android:tint="@color/selector_tv_side_back_icon" />
 
             <ImageView
                 android:layout_width="26dp"
@@ -36,7 +49,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
                 android:text="@string/settings"
-                android:textColor="@color/day_night_text_color_contrast"
+                android:textColor="#FFFFFF"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -50,30 +63,16 @@
                 android:paddingEnd="10dp"
                 android:paddingBottom="3dp"
                 android:text="TV Configuration Hub"
-                android:textColor="@color/progressbar_tint"
+                android:textColor="#38BDF8"
                 android:textSize="11sp"
                 android:textStyle="bold" />
         </LinearLayout>
-
-        <ImageButton
-            android:id="@+id/ibCloseSettings"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:background="@drawable/button_bg_selector"
-            android:contentDescription="Close"
-            android:focusable="true"
-            android:padding="8dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_close_grey_900_24dp"
-            android:tint="@color/day_night_icon_color" />
     </RelativeLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/day_night_divider" />
+        android:background="#1E293B" />
 
     <!-- TV Split Body: Left Categories Navigation Rail + Right Content Area -->
     <LinearLayout
@@ -85,9 +84,9 @@
         <!-- Left Categories Navigation Rail -->
         <ScrollView
             android:id="@+id/svSettingsTabs"
-            android:layout_width="230dp"
+            android:layout_width="240dp"
             android:layout_height="match_parent"
-            android:background="@color/day_night_surface_subtle"
+            android:background="#0F172A"
             android:paddingTop="14dp"
             android:paddingBottom="16dp"
             android:scrollbars="none">
@@ -97,25 +96,25 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp">
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp">
 
                 <!-- 1. General & Theme -->
                 <Button
                     android:id="@+id/btnTabGeneral"
                     android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:layout_marginBottom="6dp"
-                    android:background="@drawable/settings_tab_item_bg"
+                    android:layout_height="48dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/bg_tv_tab_pill"
                     android:drawableStart="@drawable/ic_settings_general"
-                    android:drawableTint="@color/progressbar_tint"
+                    android:drawableTint="@color/selector_tv_tab_pill_icon"
                     android:drawablePadding="12dp"
                     android:focusable="true"
                     android:gravity="start|center_vertical"
                     android:paddingStart="14dp"
                     android:paddingEnd="10dp"
                     android:text="General &amp; Theme"
-                    android:textColor="@color/day_night_text_color_contrast"
+                    android:textColor="@color/selector_tv_tab_pill_text"
                     android:textSize="13sp"
                     android:textStyle="bold" />
 
@@ -123,125 +122,125 @@
                 <Button
                     android:id="@+id/btnTabPrivacy"
                     android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:layout_marginBottom="6dp"
-                    android:background="@drawable/settings_tab_item_bg"
+                    android:layout_height="48dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/bg_tv_tab_pill"
                     android:drawableStart="@drawable/ic_settings_privacy"
-                    android:drawableTint="@color/day_night_text_secondary"
+                    android:drawableTint="@color/selector_tv_tab_pill_icon"
                     android:drawablePadding="12dp"
                     android:focusable="true"
                     android:gravity="start|center_vertical"
                     android:paddingStart="14dp"
                     android:paddingEnd="10dp"
                     android:text="Privacy &amp; PIN Lock"
-                    android:textColor="@color/day_night_text_secondary"
+                    android:textColor="@color/selector_tv_tab_pill_text"
                     android:textSize="13sp" />
 
                 <!-- 3. Browser & Search Engine -->
                 <Button
                     android:id="@+id/btnTabBrowser"
                     android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:layout_marginBottom="6dp"
-                    android:background="@drawable/settings_tab_item_bg"
+                    android:layout_height="48dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/bg_tv_tab_pill"
                     android:drawableStart="@drawable/ic_settings_browser"
-                    android:drawableTint="@color/day_night_text_secondary"
+                    android:drawableTint="@color/selector_tv_tab_pill_icon"
                     android:drawablePadding="12dp"
                     android:focusable="true"
                     android:gravity="start|center_vertical"
                     android:paddingStart="14dp"
                     android:paddingEnd="10dp"
                     android:text="Browser &amp; Search"
-                    android:textColor="@color/day_night_text_secondary"
+                    android:textColor="@color/selector_tv_tab_pill_text"
                     android:textSize="13sp" />
 
                 <!-- 4. Tools & AdBlock -->
                 <Button
                     android:id="@+id/btnTabTools"
                     android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:layout_marginBottom="6dp"
-                    android:background="@drawable/settings_tab_item_bg"
+                    android:layout_height="48dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/bg_tv_tab_pill"
                     android:drawableStart="@drawable/ic_settings_tools"
-                    android:drawableTint="@color/day_night_text_secondary"
+                    android:drawableTint="@color/selector_tv_tab_pill_icon"
                     android:drawablePadding="12dp"
                     android:focusable="true"
                     android:gravity="start|center_vertical"
                     android:paddingStart="14dp"
                     android:paddingEnd="10dp"
                     android:text="Tools &amp; AdBlock"
-                    android:textColor="@color/day_night_text_secondary"
+                    android:textColor="@color/selector_tv_tab_pill_text"
                     android:textSize="13sp" />
 
                 <!-- 5. TV Remote & Keys -->
                 <Button
                     android:id="@+id/btnTabRemote"
                     android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:layout_marginBottom="6dp"
-                    android:background="@drawable/settings_tab_item_bg"
+                    android:layout_height="48dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/bg_tv_tab_pill"
                     android:drawableStart="@drawable/ic_settings_remote"
-                    android:drawableTint="@color/day_night_text_secondary"
+                    android:drawableTint="@color/selector_tv_tab_pill_icon"
                     android:drawablePadding="12dp"
                     android:focusable="true"
                     android:gravity="start|center_vertical"
                     android:paddingStart="14dp"
                     android:paddingEnd="10dp"
                     android:text="TV Remote &amp; Keys"
-                    android:textColor="@color/day_night_text_secondary"
+                    android:textColor="@color/selector_tv_tab_pill_text"
                     android:textSize="13sp" />
 
                 <!-- 6. Keyboard & Mouse (Dedicated Hardware Section) -->
                 <Button
                     android:id="@+id/btnTabKeyboardMouse"
                     android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:layout_marginBottom="6dp"
-                    android:background="@drawable/settings_tab_item_bg"
+                    android:layout_height="48dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/bg_tv_tab_pill"
                     android:drawableStart="@drawable/ic_settings_keyboard_mouse"
-                    android:drawableTint="@color/day_night_text_secondary"
+                    android:drawableTint="@color/selector_tv_tab_pill_icon"
                     android:drawablePadding="12dp"
                     android:focusable="true"
                     android:gravity="start|center_vertical"
                     android:paddingStart="14dp"
                     android:paddingEnd="10dp"
                     android:text="Keyboard &amp; Mouse"
-                    android:textColor="@color/day_night_text_secondary"
+                    android:textColor="@color/selector_tv_tab_pill_text"
                     android:textSize="13sp" />
 
-                <!-- 7. Shortcuts & Hotkeys (Dedicated PC Shortcuts Section) -->
+                <!-- 7. Shortcuts & Hotkeys -->
                 <Button
                     android:id="@+id/btnTabShortcuts"
                     android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:layout_marginBottom="6dp"
-                    android:background="@drawable/settings_tab_item_bg"
+                    android:layout_height="48dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/bg_tv_tab_pill"
                     android:drawableStart="@drawable/ic_settings_shortcuts"
-                    android:drawableTint="@color/day_night_text_secondary"
+                    android:drawableTint="@color/selector_tv_tab_pill_icon"
                     android:drawablePadding="12dp"
                     android:focusable="true"
                     android:gravity="start|center_vertical"
                     android:paddingStart="14dp"
                     android:paddingEnd="10dp"
                     android:text="Shortcuts &amp; Hotkeys"
-                    android:textColor="@color/day_night_text_secondary"
+                    android:textColor="@color/selector_tv_tab_pill_text"
                     android:textSize="13sp" />
 
                 <!-- 8. About & Gothwad Tech -->
                 <Button
                     android:id="@+id/btnTabAbout"
                     android:layout_width="match_parent"
-                    android:layout_height="46dp"
-                    android:background="@drawable/settings_tab_item_bg"
+                    android:layout_height="48dp"
+                    android:background="@drawable/bg_tv_tab_pill"
                     android:drawableStart="@drawable/ic_settings_about"
-                    android:drawableTint="@color/day_night_text_secondary"
+                    android:drawableTint="@color/selector_tv_tab_pill_icon"
                     android:drawablePadding="12dp"
                     android:focusable="true"
                     android:gravity="start|center_vertical"
                     android:paddingStart="14dp"
                     android:paddingEnd="10dp"
                     android:text="About Gothwad Tech"
-                    android:textColor="@color/day_night_text_secondary"
+                    android:textColor="@color/selector_tv_tab_pill_text"
                     android:textSize="13sp" />
             </LinearLayout>
         </ScrollView>
@@ -249,7 +248,7 @@
         <View
             android:layout_width="1dp"
             android:layout_height="match_parent"
-            android:background="@color/day_night_divider" />
+            android:background="#1E293B" />
 
         <!-- Right Content Area -->
         <FrameLayout
@@ -257,7 +256,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@color/day_night_background_color">
+            android:background="#0B0F19">
         </FrameLayout>
     </LinearLayout>
 </LinearLayout>

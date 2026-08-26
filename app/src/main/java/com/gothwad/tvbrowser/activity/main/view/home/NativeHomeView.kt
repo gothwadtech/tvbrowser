@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.util.AttributeSet
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
@@ -308,9 +309,128 @@ class NativeHomeView @JvmOverloads constructor(
     }
 
     fun getFocusedShortcutPosition(): Int {
-        val focusedChild = rvBookmarks.findFocus() ?: return 1
-        val itemView = rvBookmarks.findContainingItemView(focusedChild) ?: return 1
+        val focusedChild = rvBookmarks.findFocus() ?: return -1
+        val itemView = rvBookmarks.findContainingItemView(focusedChild) ?: return -1
         return rvBookmarks.getChildAdapterPosition(itemView)
+    }
+
+    fun getFocusedShortcutColumn(): Int {
+        val pos = getFocusedShortcutPosition()
+        if (pos < 0) return 0
+        // Find column within current row (accounting for section headers which span 5)
+        var col = 0
+        for (i in 0..pos) {
+            if (i >= bookmarkItems.size) break
+            if (bookmarkItems[i].isHeader) {
+                col = 0
+            } else {
+                if (i == pos) return col % 5
+                col = (col + 1) % 5
+            }
+        }
+        return col % 5
+    }
+
+    fun navigateFocus(keyCode: Int): Boolean {
+        val mainActivity = activity as? MainActivity
+        val isIncognito = mainActivity?.config?.incognitoMode == true
+        if (isIncognito && svIncognitoHome.visibility == View.VISIBLE) {
+            btnExitIncognito.requestFocus()
+            return true
+        }
+
+        val currentPos = getFocusedShortcutPosition()
+        if (currentPos < 0) {
+            catchFocus()
+            return true
+        }
+
+        when (keyCode) {
+            KeyEvent.KEYCODE_DPAD_LEFT -> {
+                // Find previous focusable item (skip section headers)
+                var prevPos = currentPos - 1
+                while (prevPos >= 0 && prevPos < bookmarkItems.size && bookmarkItems[prevPos].isHeader) {
+                    prevPos--
+                }
+                if (prevPos >= 0 && prevPos < bookmarkItems.size) {
+                    focusPosition(prevPos)
+                    return true
+                }
+                return false
+            }
+            KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                // Find next focusable item (skip section headers)
+                var nextPos = currentPos + 1
+                while (nextPos < bookmarkItems.size && bookmarkItems[nextPos].isHeader) {
+                    nextPos++
+                }
+                if (nextPos < bookmarkItems.size) {
+                    focusPosition(nextPos)
+                    return true
+                }
+                return false
+            }
+            KeyEvent.KEYCODE_DPAD_UP -> {
+                // Move 1 row up (5 items back in grid), skipping headers if encountered
+                var targetPos = currentPos - 5
+                while (targetPos >= 0 && targetPos < bookmarkItems.size && bookmarkItems[targetPos].isHeader) {
+                    targetPos--
+                }
+                if (targetPos >= 0 && targetPos < bookmarkItems.size && !bookmarkItems[targetPos].isHeader) {
+                    focusPosition(targetPos)
+                    return true
+                } else if (currentPos > 0) {
+                    // Check if there is any item above currentPos before top header
+                    var checkPos = currentPos - 1
+                    while (checkPos >= 0 && bookmarkItems[checkPos].isHeader) {
+                        checkPos--
+                    }
+                    if (checkPos >= 0 && !bookmarkItems[checkPos].isHeader) {
+                        focusPosition(checkPos)
+                        return true
+                    }
+                }
+                return false // Cannot move up further -> navigate up to header
+            }
+            KeyEvent.KEYCODE_DPAD_DOWN -> {
+                // Move 1 row down (5 items forward in grid), skipping headers
+                var targetPos = currentPos + 5
+                if (targetPos >= bookmarkItems.size) {
+                    targetPos = bookmarkItems.size - 1
+                }
+                while (targetPos < bookmarkItems.size && bookmarkItems[targetPos].isHeader) {
+                    targetPos++
+                }
+                if (targetPos < bookmarkItems.size && !bookmarkItems[targetPos].isHeader && targetPos != currentPos) {
+                    focusPosition(targetPos)
+                    return true
+                } else if (currentPos < bookmarkItems.size - 1) {
+                    var nextPos = currentPos + 1
+                    while (nextPos < bookmarkItems.size && bookmarkItems[nextPos].isHeader) {
+                        nextPos++
+                    }
+                    if (nextPos < bookmarkItems.size && !bookmarkItems[nextPos].isHeader) {
+                        focusPosition(nextPos)
+                        return true
+                    }
+                }
+                return true
+            }
+        }
+        return false
+    }
+
+    fun focusPosition(pos: Int) {
+        if (pos !in bookmarkItems.indices) return
+        rvBookmarks.smoothScrollToPosition(pos)
+        val view = rvBookmarks.layoutManager?.findViewByPosition(pos)
+        if (view != null) {
+            view.requestFocus()
+        } else {
+            rvBookmarks.postDelayed({
+                rvBookmarks.layoutManager?.findViewByPosition(pos)?.requestFocus()
+            }, 50)
+        }
     }
 
     fun focusShortcutAtColumn(col: Int) {

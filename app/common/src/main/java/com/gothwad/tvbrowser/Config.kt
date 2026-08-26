@@ -63,6 +63,7 @@ class Config(val prefs: SharedPreferences) {
         const val APP_WEB_EXTENSION_VERSION_KEY = "app_web_extension_version"
         const val NOTIFICATION_ABOUT_ENGINE_CHANGE_SHOWN_KEY = "notification_about_engine_change_shown"
         const val APP_VERSION_CODE_MARK_KEY = "app_version_code_mark"
+        const val SHOW_TOP_TAB_BAR_KEY = "show_top_tab_bar"
         const val DESKTOP_MODE_KEY = "desktop_mode"
         const val DESKTOP_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
@@ -293,6 +294,7 @@ class Config(val prefs: SharedPreferences) {
 
     var userAgentString = ObservableOptStringPreference(null, USER_AGENT_PREF_KEY)
     var desktopMode = ObservableBooleanPreference(false, DESKTOP_MODE_KEY)
+    var showTopTabBar = ObservableBooleanPreference(true, SHOW_TOP_TAB_BAR_KEY)
 
     var adBlockEnabled: Boolean = prefs.getBoolean(ADBLOCK_ENABLED_PREF_KEY, true)
         set(value) {

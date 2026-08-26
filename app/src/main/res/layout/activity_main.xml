@@ -10,11 +10,12 @@
     tools:deviceIds="tv"
     android:clipChildren="false">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/rlActionBar"
         android:layout_alignParentTop="true"
+        android:orientation="vertical"
         android:background="@color/top_bar_background"
         android:elevation="4dp"
         android:paddingStart="6dp"
@@ -24,19 +25,42 @@
         android:clipChildren="false"
         android:clipToPadding="false">
 
-        <!-- Unified Single Header Layer in Exact Requested Sequence:
-             1. Home
-             2. Search Bar (with Mic inside)
-             3. Plus (+) Icon
-             4. Tab Icon (Count Badge)
-             5. Back
-             6. Forward
-             7. Reload
-             8. Download Icon
-             9. Bookmark Icon
-             10. Settings Icon (3-dots)
-        -->
+        <!-- Top Chrome Style Tab Bar -->
         <LinearLayout
+            android:id="@+id/llTopTabBar"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:layout_marginBottom="2dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:clipChildren="false">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvTopTabs"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:overScrollMode="never"
+                android:clipChildren="false" />
+
+            <ImageButton
+                android:id="@+id/ibTopNewTab"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/button_bg_selector"
+                android:contentDescription="@string/open_new_tab"
+                android:focusable="true"
+                android:padding="5dp"
+                android:scaleType="fitCenter"
+                android:tint="@color/header_button_icon_tint"
+                android:src="@drawable/ic_add" />
+        </LinearLayout>
+
+        <!-- Unified Main Header Toolbar -->
+        <LinearLayout
+            android:id="@+id/llMainToolbar"
             android:layout_width="match_parent"
             android:layout_height="42dp"
             android:gravity="center_vertical"
@@ -257,7 +281,7 @@
                 android:src="@drawable/ic_settings_grey_900_24dp" />
 
         </LinearLayout>
-    </RelativeLayout>
+    </LinearLayout>
 
     <ProgressBar
         style="@android:style/Widget.ProgressBar.Horizontal"

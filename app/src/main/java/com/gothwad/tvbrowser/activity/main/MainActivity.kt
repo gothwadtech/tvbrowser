@@ -81,6 +81,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     var openUrlInExternalAppDialog: AlertDialog? = null
     internal var linkActionsMenu: PopupMenu? = null
     var currentTabsDialog: TabsRowDialog? = null
+    internal var topTabsAdapter: com.gothwad.tvbrowser.browser.tabs.TopTabsAdapter? = null
 
     internal val progressBarHideRunnable = Runnable {
         val anim = AnimationUtils.loadAnimation(this@MainActivity, android.R.anim.fade_out)
@@ -178,6 +179,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
         vb.progressBar.visibility = View.GONE
 
         setupHeaderClickListeners(incognitoMode)
+        setupTopTabBar()
         setupSettingsSubscriptions()
 
         tabsModel.currentTab.subscribe(this) {

@@ -13,30 +13,82 @@ import com.gothwad.tvbrowser.singleton.shortcuts.ShortcutMgr
 
 fun MainActivity.getHeaderFocusableViews(): List<View> {
     val list = mutableListOf<View>()
-    if (vb.ibMenu.isShown && vb.ibMenu.isFocusable) list.add(vb.ibMenu)
-    if (vb.ibHome.isShown && vb.ibHome.isFocusable) list.add(vb.ibHome)
-    if (vb.ibBack.isShown && vb.ibBack.isFocusable) list.add(vb.ibBack)
-    if (vb.ibForward.isShown && vb.ibForward.isFocusable) list.add(vb.ibForward)
-    if (vb.ibRefresh.isShown && vb.ibRefresh.isFocusable) list.add(vb.ibRefresh)
+    // Menu and Home are always focusable in toolbar
+    if (vb.ibMenu.isShown && vb.ibMenu.visibility == View.VISIBLE) list.add(vb.ibMenu)
+    if (vb.ibHome.isShown && vb.ibHome.visibility == View.VISIBLE) list.add(vb.ibHome)
+    // Only include Back/Forward if enabled, or if disabled allow navigation to pass through
+    if (vb.ibBack.isShown && vb.ibBack.visibility == View.VISIBLE && vb.ibBack.isEnabled) list.add(vb.ibBack)
+    if (vb.ibForward.isShown && vb.ibForward.visibility == View.VISIBLE && vb.ibForward.isEnabled) list.add(vb.ibForward)
+    if (vb.ibRefresh.isShown && vb.ibRefresh.visibility == View.VISIBLE) list.add(vb.ibRefresh)
     val etUrl = vb.vActionBar.getUrlEditText()
-    if (etUrl.isShown && etUrl.isFocusable) list.add(etUrl)
+    if (etUrl.isShown && etUrl.visibility == View.VISIBLE) list.add(etUrl)
     val ibVoice = vb.vActionBar.getVoiceSearchButton()
-    if (ibVoice.isShown && ibVoice.isFocusable && ibVoice.visibility == View.VISIBLE) list.add(ibVoice)
-    if (vb.ibNewTab.isShown && vb.ibNewTab.isFocusable) list.add(vb.ibNewTab)
-    if (vb.flTabsSwitcher.isShown && vb.flTabsSwitcher.isFocusable) list.add(vb.flTabsSwitcher)
-    if (vb.ibNotes.isShown && vb.ibNotes.isFocusable) list.add(vb.ibNotes)
-    if (vb.ibDownloads.isShown && vb.ibDownloads.isFocusable) list.add(vb.ibDownloads)
-    if (vb.ibFileManager.isShown && vb.ibFileManager.isFocusable) list.add(vb.ibFileManager)
-    if (vb.ibBookmarks.isShown && vb.ibBookmarks.isFocusable) list.add(vb.ibBookmarks)
-    if (vb.ibIncognito.isShown && vb.ibIncognito.isFocusable) list.add(vb.ibIncognito)
-    if (vb.ibMore.isShown && vb.ibMore.isFocusable) list.add(vb.ibMore)
-    if (vb.ibSettings.isShown && vb.ibSettings.isFocusable) list.add(vb.ibSettings)
+    if (ibVoice.isShown && ibVoice.visibility == View.VISIBLE) list.add(ibVoice)
+    if (vb.ibNewTab.isShown && vb.ibNewTab.visibility == View.VISIBLE) list.add(vb.ibNewTab)
+    if (vb.flTabsSwitcher.isShown && vb.flTabsSwitcher.visibility == View.VISIBLE) list.add(vb.flTabsSwitcher)
+    if (vb.ibNotes.isShown && vb.ibNotes.visibility == View.VISIBLE) list.add(vb.ibNotes)
+    if (vb.ibDownloads.isShown && vb.ibDownloads.visibility == View.VISIBLE) list.add(vb.ibDownloads)
+    if (vb.ibFileManager.isShown && vb.ibFileManager.visibility == View.VISIBLE) list.add(vb.ibFileManager)
+    if (vb.ibBookmarks.isShown && vb.ibBookmarks.visibility == View.VISIBLE) list.add(vb.ibBookmarks)
+    if (vb.ibIncognito.isShown && vb.ibIncognito.visibility == View.VISIBLE) list.add(vb.ibIncognito)
+    if (vb.ibMore.isShown && vb.ibMore.visibility == View.VISIBLE) list.add(vb.ibMore)
+    if (vb.ibSettings.isShown && vb.ibSettings.visibility == View.VISIBLE) list.add(vb.ibSettings)
     return list
+}
+
+fun MainActivity.isTopTabBarView(view: View): Boolean {
+    var p: Any? = view
+    while (p is View) {
+        if (p.id == R.id.llTopTabBar) return true
+        p = p.parent
+    }
+    return false
 }
 
 fun MainActivity.handleDpadKey(keyCode: Int): Boolean {
     val isNativeHomeVisible = vb.vNativeHome.isVisible
     val focus = currentFocus
+
+    if (focus != null && isTopTabBarView(focus)) {
+        when (keyCode) {
+            KeyEvent.KEYCODE_DPAD_DOWN -> {
+                vb.ibHome.requestFocus()
+                return true
+            }
+            KeyEvent.KEYCODE_DPAD_UP -> {
+                return true
+            }
+            KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                if (focus == vb.ibTopNewTab) {
+                    return true
+                }
+                // Try normal focus, if can't move right, move to ibTopNewTab
+                val next = focus.focusSearch(View.FOCUS_RIGHT)
+                if (next != null && (isTopTabBarView(next) || next == vb.ibTopNewTab)) {
+                    next.requestFocus()
+                } else if (vb.ibTopNewTab.isVisible) {
+                    vb.ibTopNewTab.requestFocus()
+                }
+                return true
+            }
+            KeyEvent.KEYCODE_DPAD_LEFT -> {
+                val next = focus.focusSearch(View.FOCUS_LEFT)
+                if (next != null && isTopTabBarView(next)) {
+                    next.requestFocus()
+                } else if (focus == vb.ibTopNewTab && vb.rvTopTabs.childCount > 0) {
+                    val lastChild = vb.rvTopTabs.getChildAt(vb.rvTopTabs.childCount - 1)
+                    lastChild?.requestFocus()
+                }
+                return true
+            }
+            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
+                focus.performClick()
+                return true
+            }
+        }
+        return false
+    }
+
     val inToolbar = focus != null && isToolbarView(focus)
 
     if (inToolbar) {
@@ -61,7 +113,22 @@ fun MainActivity.handleDpadKey(keyCode: Int): Boolean {
                 return true
             }
             KeyEvent.KEYCODE_DPAD_UP -> {
-                // Header is already at top edge
+                if (vb.llTopTabBar.isVisible && vb.rvTopTabs.childCount > 0) {
+                    // Focus active tab or first tab in top tab bar
+                    val currentTab = tabsModel.currentTab.value
+                    var targetView: View? = null
+                    for (i in 0 until vb.rvTopTabs.childCount) {
+                        val child = vb.rvTopTabs.getChildAt(i)
+                        if (child.tag == currentTab) {
+                            targetView = child
+                            break
+                        }
+                    }
+                    if (targetView == null) {
+                        targetView = vb.rvTopTabs.getChildAt(0)
+                    }
+                    targetView?.requestFocus()
+                }
                 return true
             }
             KeyEvent.KEYCODE_DPAD_DOWN -> {
@@ -94,10 +161,10 @@ fun MainActivity.handleDpadKey(keyCode: Int): Boolean {
                     vb.vNativeHome.catchFocus()
                     return true
                 }
-                val next = focus.focusSearch(View.FOCUS_UP)
-                if (next == null || isToolbarView(next) || !isDescendantOrSelf(next, vb.vNativeHome)) {
-                    val pos = vb.vNativeHome.getFocusedShortcutPosition()
-                    val col = if (pos >= 0) pos % 5 else 0
+                val canMoveUp = vb.vNativeHome.navigateFocus(KeyEvent.KEYCODE_DPAD_UP)
+                if (!canMoveUp) {
+                    // Navigate from current shortcut column to corresponding header button
+                    val col = vb.vNativeHome.getFocusedShortcutColumn()
                     when (col) {
                         0 -> vb.ibHome.requestFocus()
                         1 -> vb.vActionBar.getUrlEditText().requestFocus()
@@ -108,21 +175,31 @@ fun MainActivity.handleDpadKey(keyCode: Int): Boolean {
                     }
                     return true
                 }
-                return false
+                return true
             }
             KeyEvent.KEYCODE_DPAD_DOWN -> {
                 if (focus == null) {
                     vb.vNativeHome.catchFocus()
                     return true
                 }
-                return false
+                vb.vNativeHome.navigateFocus(KeyEvent.KEYCODE_DPAD_DOWN)
+                return true
             }
-            KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
+            KeyEvent.KEYCODE_DPAD_LEFT -> {
                 if (focus == null) {
                     vb.vNativeHome.catchFocus()
                     return true
                 }
-                return false
+                vb.vNativeHome.navigateFocus(KeyEvent.KEYCODE_DPAD_LEFT)
+                return true
+            }
+            KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                if (focus == null) {
+                    vb.vNativeHome.catchFocus()
+                    return true
+                }
+                vb.vNativeHome.navigateFocus(KeyEvent.KEYCODE_DPAD_RIGHT)
+                return true
             }
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
                 if (focus != null) {

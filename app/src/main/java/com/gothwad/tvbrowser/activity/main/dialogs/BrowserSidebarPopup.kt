@@ -1,18 +1,19 @@
 package com.gothwad.tvbrowser.activity.main.dialogs
 
-import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.os.Bundle
+import android.view.Gravity
 import android.view.KeyEvent
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.PopupWindow
+import android.view.WindowManager
+import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import com.gothwad.tvbrowser.BuildConfig
 import com.gothwad.tvbrowser.Config
 import com.gothwad.tvbrowser.R
 import com.gothwad.tvbrowser.activity.downloads.DownloadsActivity
@@ -29,25 +30,24 @@ import com.gothwad.tvbrowser.filemanager.FileManagerActivity
 import com.gothwad.tvbrowser.notes.NotesActivity
 import com.gothwad.tvbrowser.singleton.AppLockManager
 
-class BrowserSidebarPopup(private val activity: MainActivity) {
+class BrowserSidebarPopup(private val activity: MainActivity) : Dialog(activity, R.style.TvSideDrawerDialog) {
 
-    private val popupWindow: PopupWindow
-    private val contentView: View
-    private val popupWidth: Int
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.dialog_browser_side_menu)
 
-    init {
-        contentView = LayoutInflater.from(activity).inflate(R.layout.popup_browser_sidebar, null)
-        popupWidth = (240 * activity.resources.displayMetrics.density).toInt()
-        popupWindow = PopupWindow(
-            contentView,
-            popupWidth,
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            true
-        ).apply {
-            isOutsideTouchable = true
-            isFocusable = true
+        window?.apply {
+            setGravity(Gravity.END or Gravity.TOP)
+            val dm = activity.resources.displayMetrics
+            val panelWidth = (dm.widthPixels * 0.38f).toInt().coerceIn(
+                (360 * dm.density).toInt(),
+                (440 * dm.density).toInt()
+            )
+            setLayout(panelWidth, ViewGroup.LayoutParams.MATCH_PARENT)
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            elevation = 24f
+            setDimAmount(0.65f)
+            addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+            setWindowAnimations(R.style.SideDrawerAnimation)
         }
 
         setupViews()
@@ -82,112 +82,161 @@ class BrowserSidebarPopup(private val activity: MainActivity) {
 
     private fun setupViews() {
         val config = activity.config
+        val currentTab = activity.tabsModel.currentTab.value
 
-        // 1. File Manager
-        bindItem(contentView.findViewById(R.id.btnSidebarFileManager)) {
-            activity.startActivity(Intent(activity, FileManagerActivity::class.java))
+        // Backdrop click dismisses drawer
+        findViewById<View>(R.id.vSideMenuBackdrop)?.setOnClickListener {
+            dismiss()
         }
 
-        // 2. Bookmarks
-        bindItem(contentView.findViewById(R.id.btnSidebarBookmarks)) {
-            activity.showFavoritesDialog()
+        // Circular Back Button
+        val btnBack: ImageButton? = findViewById(R.id.btnSideMenuBack)
+        btnBack?.setOnClickListener {
+            dismiss()
         }
-
-        // 3. History
-        bindItem(contentView.findViewById(R.id.btnSidebarHistory)) {
-            activity.showHistoryActivity()
-        }
-
-        // 4. Downloads
-        bindItem(contentView.findViewById(R.id.btnSidebarDownloads)) {
-            activity.startActivity(Intent(activity, DownloadsActivity::class.java))
-        }
-
-        // 5. Notes
-        bindItem(contentView.findViewById(R.id.btnSidebarNotes)) {
-            activity.startActivity(Intent(activity, NotesActivity::class.java))
-        }
-
-        // 6. Native Clipboard
-        bindItem(contentView.findViewById(R.id.btnSidebarClipboard)) {
-            activity.showClipboardActivity()
-        }
-
-        // 7. Incognito Mode
-        val tvIncognito = contentView.findViewById<TextView>(R.id.tvSidebarIncognito)
-        if (config.incognitoMode) {
-            tvIncognito.text = "Exit Incognito Mode"
-        } else {
-            tvIncognito.text = "New Incognito Tab"
-        }
-        bindItem(contentView.findViewById(R.id.btnSidebarIncognito)) {
-            activity.toggleIncognitoMode(andSwitchProcess = true)
-        }
-
-        // 8. App Lock Security
-        bindItem(contentView.findViewById(R.id.btnSidebarAppLock)) {
-            if (AppLockManager.isLockEnabled(activity)) {
-                AppLockManager.setSessionUnlocked(false)
-                activity.startActivity(Intent(activity, AppLockActivity::class.java))
-            } else {
-                val dlg = TvPinDialog(
-                    context = activity,
-                    mode = TvPinDialog.Mode.CREATE,
-                    onSuccess = {
-                        AppLockManager.setSessionUnlocked(false)
-                        activity.startActivity(Intent(activity, AppLockActivity::class.java))
+        btnBack?.setOnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN) {
+                when (keyCode) {
+                    KeyEvent.KEYCODE_DPAD_CENTER,
+                    KeyEvent.KEYCODE_ENTER,
+                    KeyEvent.KEYCODE_NUMPAD_ENTER,
+                    KeyEvent.KEYCODE_BUTTON_A,
+                    KeyEvent.KEYCODE_BACK,
+                    KeyEvent.KEYCODE_ESCAPE -> {
+                        dismiss()
+                        true
                     }
-                )
-                dlg.show()
+                    else -> false
+                }
+            } else false
+        }
+
+        // 1. Privacy Protection / App Lock
+        findViewById<View>(R.id.btnSidePrivacy)?.let { btn ->
+            bindItem(btn) {
+                if (AppLockManager.isLockEnabled(activity)) {
+                    AppLockManager.setSessionUnlocked(false)
+                    activity.startActivity(Intent(activity, AppLockActivity::class.java))
+                } else {
+                    val dlg = TvPinDialog(
+                        context = activity,
+                        mode = TvPinDialog.Mode.CREATE,
+                        onSuccess = {
+                            AppLockManager.setSessionUnlocked(false)
+                            activity.startActivity(Intent(activity, AppLockActivity::class.java))
+                        }
+                    )
+                    dlg.show()
+                }
             }
         }
 
-        // App UI Zoom buttons
-        val btnUi100: Button = contentView.findViewById(R.id.btnSidebarUiScale100)
-        val btnUi125: Button = contentView.findViewById(R.id.btnSidebarUiScale125)
-        val btnUi150: Button = contentView.findViewById(R.id.btnSidebarUiScale150)
-
-        fun applyUi(scale: Int) {
-            config.uiScalePercent = scale
-            dismiss()
-            activity.applyUiScale()
-            Toast.makeText(activity, "App UI Scale set to $scale%", Toast.LENGTH_SHORT).show()
+        // 2. Incognito Mode
+        val tvIncognito = findViewById<TextView>(R.id.tvSideIncognitoTitle)
+        if (config.incognitoMode) {
+            tvIncognito?.text = "Exit incognito"
+        } else {
+            tvIncognito?.text = "Start incognito"
+        }
+        findViewById<View>(R.id.btnSideIncognito)?.let { btn ->
+            bindItem(btn) {
+                activity.toggleIncognitoMode(andSwitchProcess = true)
+            }
         }
 
-        btnUi100.setOnClickListener { applyUi(100) }
-        btnUi125.setOnClickListener { applyUi(125) }
-        btnUi150.setOnClickListener { applyUi(150) }
-
-        // 9. Settings
-        bindItem(contentView.findViewById(R.id.btnSidebarSettings)) {
-            activity.showSettingsDialog()
+        // 3. Share
+        findViewById<View>(R.id.btnSideShare)?.let { btn ->
+            bindItem(btn) {
+                val url = currentTab?.url
+                if (!url.isNullOrEmpty() && url != Config.HOME_PAGE_URL) {
+                    val sendIntent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, url)
+                        putExtra(Intent.EXTRA_SUBJECT, currentTab.title ?: "Link")
+                        type = "text/plain"
+                    }
+                    activity.startActivity(Intent.createChooser(sendIntent, "Share URL"))
+                } else {
+                    Toast.makeText(activity, "No active page to share", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
-        // 10. Help & feedback
-        bindItem(contentView.findViewById(R.id.btnSidebarHelp)) {
-            AlertDialog.Builder(activity)
-                .setTitle("Gothwad TV Browser")
-                .setMessage("Modern Fast TV Web Browser with Native Clipboard, File Manager & Notes.\n\nVersion: ${BuildConfig.VERSION_NAME}\nDeveloper: gothwadtech@gmail.com")
-                .setPositiveButton("OK", null)
-                .show()
+        // 4. Bookmarks
+        findViewById<View>(R.id.btnSideBookmarks)?.let { btn ->
+            bindItem(btn) {
+                activity.showFavoritesDialog()
+            }
+        }
+
+        // 5. History
+        findViewById<View>(R.id.btnSideHistory)?.let { btn ->
+            bindItem(btn) {
+                activity.showHistoryActivity()
+            }
+        }
+
+        // 6. Downloads
+        findViewById<View>(R.id.btnSideDownloads)?.let { btn ->
+            bindItem(btn) {
+                activity.startActivity(Intent(activity, DownloadsActivity::class.java))
+            }
+        }
+
+        // 7. File Manager
+        findViewById<View>(R.id.btnSideFileManager)?.let { btn ->
+            bindItem(btn) {
+                activity.startActivity(Intent(activity, FileManagerActivity::class.java))
+            }
+        }
+
+        // 8. Notes
+        findViewById<View>(R.id.btnSideNotes)?.let { btn ->
+            bindItem(btn) {
+                activity.startActivity(Intent(activity, NotesActivity::class.java))
+            }
+        }
+
+        // 9. Native Clipboard
+        findViewById<View>(R.id.btnSideClipboard)?.let { btn ->
+            bindItem(btn) {
+                activity.showClipboardActivity()
+            }
+        }
+
+        // 10. Desktop View Mode
+        val ivDesktopCheck = findViewById<ImageView>(R.id.ivSideDesktopCheck)
+        val isDesktop = config.desktopMode.value || config.userAgentString.value?.contains("Windows") == true
+        ivDesktopCheck?.setImageResource(
+            if (isDesktop) R.drawable.ic_check_box_checked else R.drawable.ic_check_box_outline
+        )
+        findViewById<View>(R.id.btnSideDesktopMode)?.let { btn ->
+            bindItem(btn) {
+                val willBeDesktop = !isDesktop
+                config.desktopMode.value = willBeDesktop
+                config.userAgentString.value = if (willBeDesktop) Config.DESKTOP_UA else null
+                for (tab in activity.tabsModel.tabsStates) {
+                    tab.webEngine.userAgentString = if (willBeDesktop) Config.DESKTOP_UA else null
+                }
+                currentTab?.webEngine?.reload()
+                Toast.makeText(activity, if (willBeDesktop) "Desktop mode enabled" else "Mobile mode enabled", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // 11. Full Settings
+        findViewById<View>(R.id.btnSideSettings)?.let { btn ->
+            bindItem(btn) {
+                activity.showSettingsDialog()
+            }
+        }
+
+        // Initial focus request on first navigation item
+        findViewById<View>(R.id.btnSidePrivacy)?.post {
+            findViewById<View>(R.id.btnSidePrivacy)?.requestFocus()
         }
     }
 
-    fun show(anchorView: View) {
-        val density = activity.resources.displayMetrics.density
-        val xOffset = 0
-        val yOffset = (4 * density).toInt()
-
-        popupWindow.showAsDropDown(anchorView, xOffset, yOffset)
-
-        contentView.post {
-            contentView.findViewById<View>(R.id.btnSidebarFileManager)?.requestFocus()
-        }
-    }
-
-    fun dismiss() {
-        if (popupWindow.isShowing) {
-            popupWindow.dismiss()
-        }
+    fun show(anchorView: View? = null) {
+        show()
     }
 }

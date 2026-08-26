@@ -113,23 +113,10 @@ class SettingsDialog(context: Context, val model: SettingsModel) :
     }
 
     private fun updateHighlight(activeButton: Button) {
-        val activeColor = ContextCompat.getColor(context, R.color.day_night_text_color_contrast)
-        val inactiveColor = ContextCompat.getColor(context, R.color.day_night_text_secondary)
-        val activeTint = ContextCompat.getColor(context, R.color.progressbar_tint)
-        val defaultTint = ContextCompat.getColor(context, R.color.day_night_text_secondary)
-
         allButtons.forEach { btn ->
             val isActive = (btn == activeButton)
             btn.isActivated = isActive
-            if (isActive) {
-                btn.setTextColor(activeColor)
-                btn.setTypeface(null, Typeface.BOLD)
-                btn.compoundDrawableTintList = ColorStateList.valueOf(activeTint)
-            } else {
-                btn.setTextColor(inactiveColor)
-                btn.setTypeface(null, Typeface.NORMAL)
-                btn.compoundDrawableTintList = ColorStateList.valueOf(defaultTint)
-            }
+            btn.setTypeface(null, if (isActive) Typeface.BOLD else Typeface.NORMAL)
         }
     }
 
