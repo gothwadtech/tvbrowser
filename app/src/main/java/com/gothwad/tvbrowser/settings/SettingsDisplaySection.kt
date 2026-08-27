@@ -45,21 +45,21 @@ object SettingsDisplaySection {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
 
-        vb.btnUiScale100.setOnClickListener {
-            config.uiScalePercent = 100
-            vb.sbUiScale.progress = 100 - minUiScale
-            vb.tvUiScaleValue.text = "100%"
+        fun setUiScale(percent: Int) {
+            config.uiScalePercent = percent
+            vb.sbUiScale.progress = (percent - minUiScale).coerceIn(0, maxUiScale - minUiScale)
+            vb.tvUiScaleValue.text = "$percent%"
         }
-        vb.btnUiScale125.setOnClickListener {
-            config.uiScalePercent = 125
-            vb.sbUiScale.progress = 125 - minUiScale
-            vb.tvUiScaleValue.text = "125%"
-        }
-        vb.btnUiScale150.setOnClickListener {
-            config.uiScalePercent = 150
-            vb.sbUiScale.progress = 150 - minUiScale
-            vb.tvUiScaleValue.text = "150%"
-        }
+
+        vb.btnUiScale1.setOnClickListener { setUiScale(1) }
+        vb.btnUiScale25.setOnClickListener { setUiScale(25) }
+        vb.btnUiScale50.setOnClickListener { setUiScale(50) }
+        vb.btnUiScale75.setOnClickListener { setUiScale(75) }
+        vb.btnUiScale100.setOnClickListener { setUiScale(100) }
+        vb.btnUiScale125.setOnClickListener { setUiScale(125) }
+        vb.btnUiScale150.setOnClickListener { setUiScale(150) }
+        vb.btnUiScale200.setOnClickListener { setUiScale(200) }
+        vb.btnUiScale300.setOnClickListener { setUiScale(300) }
         vb.btnUiScaleApply.setOnClickListener {
             onDismissDialog?.invoke()
             mainAct?.applyUiScale()

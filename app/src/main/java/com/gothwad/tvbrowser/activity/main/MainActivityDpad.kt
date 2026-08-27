@@ -1,5 +1,6 @@
 package com.gothwad.tvbrowser.activity.main
 
+import android.content.Context
 import android.os.SystemClock
 import android.view.InputDevice
 import android.view.KeyCharacterMap
@@ -7,9 +8,11 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.Window
+import android.view.inputmethod.InputMethodManager
 import androidx.core.view.isVisible
 import com.gothwad.tvbrowser.R
 import com.gothwad.tvbrowser.singleton.shortcuts.ShortcutMgr
+import com.gothwad.tvbrowser.utils.HardwareInputManager
 
 fun MainActivity.getHeaderFocusableViews(): List<View> {
     val list = mutableListOf<View>()
@@ -45,181 +48,183 @@ fun MainActivity.isTopTabBarView(view: View): Boolean {
     return false
 }
 
-fun MainActivity.handleDpadKey(keyCode: Int): Boolean {
+fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
+    val keyCode = if (event.keyCode != 0) event.keyCode else event.scanCode
     val isNativeHomeVisible = vb.vNativeHome.isVisible
     val focus = currentFocus
 
+    // 1. Top Tab Bar D-Pad navigation
     if (focus != null && isTopTabBarView(focus)) {
-        when (keyCode) {
-            KeyEvent.KEYCODE_DPAD_DOWN -> {
-                vb.ibHome.requestFocus()
-                return true
-            }
-            KeyEvent.KEYCODE_DPAD_UP -> {
-                return true
-            }
-            KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                if (focus == vb.ibTopNewTab) {
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            when (keyCode) {
+                KeyEvent.KEYCODE_DPAD_DOWN -> {
+                    vb.ibHome.requestFocus()
                     return true
                 }
-                // Try normal focus, if can't move right, move to ibTopNewTab
-                val next = focus.focusSearch(View.FOCUS_RIGHT)
-                if (next != null && (isTopTabBarView(next) || next == vb.ibTopNewTab)) {
-                    next.requestFocus()
-                } else if (vb.ibTopNewTab.isVisible) {
-                    vb.ibTopNewTab.requestFocus()
+                KeyEvent.KEYCODE_DPAD_UP -> {
+                    return true
                 }
-                return true
-            }
-            KeyEvent.KEYCODE_DPAD_LEFT -> {
-                val next = focus.focusSearch(View.FOCUS_LEFT)
-                if (next != null && isTopTabBarView(next)) {
-                    next.requestFocus()
-                } else if (focus == vb.ibTopNewTab && vb.rvTopTabs.childCount > 0) {
-                    val lastChild = vb.rvTopTabs.getChildAt(vb.rvTopTabs.childCount - 1)
-                    lastChild?.requestFocus()
+                KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    if (focus == vb.ibTopNewTab) {
+                        return true
+                    }
+                    val next = focus.focusSearch(View.FOCUS_RIGHT)
+                    if (next != null && (isTopTabBarView(next) || next == vb.ibTopNewTab)) {
+                        next.requestFocus()
+                    } else if (vb.ibTopNewTab.isVisible) {
+                        vb.ibTopNewTab.requestFocus()
+                    }
+                    return true
                 }
-                return true
-            }
-            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
-                focus.performClick()
-                return true
+                KeyEvent.KEYCODE_DPAD_LEFT -> {
+                    val next = focus.focusSearch(View.FOCUS_LEFT)
+                    if (next != null && isTopTabBarView(next)) {
+                        next.requestFocus()
+                    } else if (focus == vb.ibTopNewTab && vb.rvTopTabs.childCount > 0) {
+                        val lastChild = vb.rvTopTabs.getChildAt(vb.rvTopTabs.childCount - 1)
+                        lastChild?.requestFocus()
+                    }
+                    return true
+                }
+                KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER, KeyEvent.KEYCODE_BUTTON_A -> {
+                    focus.performClick()
+                    return true
+                }
             }
         }
         return false
     }
 
+    // 2. Toolbar D-Pad navigation
     val inToolbar = focus != null && isToolbarView(focus)
-
     if (inToolbar) {
         val headerViews = getHeaderFocusableViews()
         val currentIndex = headerViews.indexOfFirst { it == focus || isDescendantOrSelf(focus, it) }
 
-        when (keyCode) {
-            KeyEvent.KEYCODE_DPAD_LEFT -> {
-                if (currentIndex > 0) {
-                    headerViews[currentIndex - 1].requestFocus()
-                } else if (currentIndex == -1 && headerViews.isNotEmpty()) {
-                    headerViews.first().requestFocus()
-                }
-                return true
-            }
-            KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                if (currentIndex in 0 until headerViews.size - 1) {
-                    headerViews[currentIndex + 1].requestFocus()
-                } else if (currentIndex == -1 && headerViews.isNotEmpty()) {
-                    headerViews.first().requestFocus()
-                }
-                return true
-            }
-            KeyEvent.KEYCODE_DPAD_UP -> {
-                if (vb.llTopTabBar.isVisible && vb.rvTopTabs.childCount > 0) {
-                    // Focus active tab or first tab in top tab bar
-                    val currentTab = tabsModel.currentTab.value
-                    var targetView: View? = null
-                    for (i in 0 until vb.rvTopTabs.childCount) {
-                        val child = vb.rvTopTabs.getChildAt(i)
-                        if (child.tag == currentTab) {
-                            targetView = child
-                            break
-                        }
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            when (keyCode) {
+                KeyEvent.KEYCODE_DPAD_LEFT -> {
+                    if (currentIndex > 0) {
+                        headerViews[currentIndex - 1].requestFocus()
+                    } else if (currentIndex == -1 && headerViews.isNotEmpty()) {
+                        headerViews.first().requestFocus()
                     }
-                    if (targetView == null) {
-                        targetView = vb.rvTopTabs.getChildAt(0)
-                    }
-                    targetView?.requestFocus()
-                }
-                return true
-            }
-            KeyEvent.KEYCODE_DPAD_DOWN -> {
-                if (isNativeHomeVisible) {
-                    val total = headerViews.size.coerceAtLeast(1)
-                    val ratio = if (currentIndex >= 0) currentIndex.toFloat() / total else 0f
-                    val targetCol = (ratio * 5).toInt().coerceIn(0, 4)
-                    vb.vNativeHome.focusShortcutAtColumn(targetCol)
-                } else {
-                    vb.flWebViewContainer.requestFocus()
-                    sendDpadToCursor(keyCode)
-                }
-                return true
-            }
-            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
-                if (focus != null) {
-                    focus.performClick()
                     return true
                 }
-                return false
+                KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    if (currentIndex in 0 until headerViews.size - 1) {
+                        headerViews[currentIndex + 1].requestFocus()
+                    } else if (currentIndex == -1 && headerViews.isNotEmpty()) {
+                        headerViews.first().requestFocus()
+                    }
+                    return true
+                }
+                KeyEvent.KEYCODE_DPAD_UP -> {
+                    if (vb.llTopTabBar.isVisible && vb.rvTopTabs.childCount > 0) {
+                        val currentTab = tabsModel.currentTab.value
+                        var targetView: View? = null
+                        for (i in 0 until vb.rvTopTabs.childCount) {
+                            val child = vb.rvTopTabs.getChildAt(i)
+                            if (child.tag == currentTab) {
+                                targetView = child
+                                break
+                            }
+                        }
+                        if (targetView == null) {
+                            targetView = vb.rvTopTabs.getChildAt(0)
+                        }
+                        targetView?.requestFocus()
+                    }
+                    return true
+                }
+                KeyEvent.KEYCODE_DPAD_DOWN -> {
+                    if (isNativeHomeVisible) {
+                        val total = headerViews.size.coerceAtLeast(1)
+                        val ratio = if (currentIndex >= 0) currentIndex.toFloat() / total else 0f
+                        val targetCol = (ratio * 5).toInt().coerceIn(0, 4)
+                        vb.vNativeHome.focusShortcutAtColumn(targetCol)
+                    } else {
+                        vb.flWebViewContainer.requestFocus()
+                        if (config.enableVirtualCursor) {
+                            vb.flWebViewContainer.cursorDrawerDelegate.dispatchKeyEvent(event)
+                        }
+                    }
+                    return true
+                }
+                KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER, KeyEvent.KEYCODE_BUTTON_A -> {
+                    focus?.performClick()
+                    return true
+                }
             }
         }
         return false
     }
 
+    // 3. Native Home View D-Pad navigation
     if (isNativeHomeVisible) {
-        when (keyCode) {
-            KeyEvent.KEYCODE_DPAD_UP -> {
-                if (focus == null) {
-                    vb.vNativeHome.catchFocus()
-                    return true
-                }
-                val canMoveUp = vb.vNativeHome.navigateFocus(KeyEvent.KEYCODE_DPAD_UP)
-                if (!canMoveUp) {
-                    // Navigate from current shortcut column to corresponding header button
-                    val col = vb.vNativeHome.getFocusedShortcutColumn()
-                    when (col) {
-                        0 -> vb.ibHome.requestFocus()
-                        1 -> vb.vActionBar.getUrlEditText().requestFocus()
-                        2 -> vb.flTabsSwitcher.requestFocus()
-                        3 -> vb.ibDownloads.requestFocus()
-                        4 -> vb.ibBookmarks.requestFocus()
-                        else -> vb.ibHome.requestFocus()
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            when (keyCode) {
+                KeyEvent.KEYCODE_DPAD_UP -> {
+                    if (focus == null) {
+                        vb.vNativeHome.catchFocus()
+                        return true
+                    }
+                    val canMoveUp = vb.vNativeHome.navigateFocus(KeyEvent.KEYCODE_DPAD_UP)
+                    if (!canMoveUp) {
+                        val col = vb.vNativeHome.getFocusedShortcutColumn()
+                        when (col) {
+                            0 -> vb.ibHome.requestFocus()
+                            1 -> vb.vActionBar.getUrlEditText().requestFocus()
+                            2 -> vb.flTabsSwitcher.requestFocus()
+                            3 -> vb.ibDownloads.requestFocus()
+                            4 -> vb.ibBookmarks.requestFocus()
+                            else -> vb.ibHome.requestFocus()
+                        }
+                        return true
                     }
                     return true
                 }
-                return true
-            }
-            KeyEvent.KEYCODE_DPAD_DOWN -> {
-                if (focus == null) {
-                    vb.vNativeHome.catchFocus()
+                KeyEvent.KEYCODE_DPAD_DOWN -> {
+                    if (focus == null) {
+                        vb.vNativeHome.catchFocus()
+                        return true
+                    }
+                    vb.vNativeHome.navigateFocus(KeyEvent.KEYCODE_DPAD_DOWN)
                     return true
                 }
-                vb.vNativeHome.navigateFocus(KeyEvent.KEYCODE_DPAD_DOWN)
-                return true
-            }
-            KeyEvent.KEYCODE_DPAD_LEFT -> {
-                if (focus == null) {
-                    vb.vNativeHome.catchFocus()
+                KeyEvent.KEYCODE_DPAD_LEFT -> {
+                    if (focus == null) {
+                        vb.vNativeHome.catchFocus()
+                        return true
+                    }
+                    vb.vNativeHome.navigateFocus(KeyEvent.KEYCODE_DPAD_LEFT)
                     return true
                 }
-                vb.vNativeHome.navigateFocus(KeyEvent.KEYCODE_DPAD_LEFT)
-                return true
-            }
-            KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                if (focus == null) {
-                    vb.vNativeHome.catchFocus()
+                KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    if (focus == null) {
+                        vb.vNativeHome.catchFocus()
+                        return true
+                    }
+                    vb.vNativeHome.navigateFocus(KeyEvent.KEYCODE_DPAD_RIGHT)
                     return true
                 }
-                vb.vNativeHome.navigateFocus(KeyEvent.KEYCODE_DPAD_RIGHT)
-                return true
-            }
-            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
-                if (focus != null) {
-                    focus.performClick()
+                KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER, KeyEvent.KEYCODE_BUTTON_A -> {
+                    focus?.performClick()
                     return true
                 }
-                return false
             }
         }
+        return false
     } else {
-        // Web page is showing
-        when (keyCode) {
-            KeyEvent.KEYCODE_DPAD_UP,
-            KeyEvent.KEYCODE_DPAD_DOWN,
-            KeyEvent.KEYCODE_DPAD_LEFT,
-            KeyEvent.KEYCODE_DPAD_RIGHT,
-            KeyEvent.KEYCODE_DPAD_CENTER,
-            KeyEvent.KEYCODE_ENTER,
-            KeyEvent.KEYCODE_NUMPAD_ENTER -> {
-                sendDpadToCursor(keyCode)
+        // 4. Web Page Active
+        if (config.enableVirtualCursor) {
+            // If cursor is at the very top edge and user presses DPAD UP, navigate into Toolbar
+            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_DPAD_UP && vb.flWebViewContainer.cursorDrawerDelegate.isCursorNearTop()) {
+                vb.ibHome.requestFocus()
+                return true
+            }
+            // Dispatch live stream (DOWN & UP) to virtual cursor
+            if (vb.flWebViewContainer.cursorDrawerDelegate.dispatchKeyEvent(event)) {
                 return true
             }
         }
@@ -266,6 +271,22 @@ fun MainActivity.setupWindowCallbacks() {
     val localCallback = window.callback
     window.callback = object : Window.Callback by localCallback {
         override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+            val hwInput = HardwareInputManager.getInstance(this@setupWindowCallbacks)
+            if (hwInput.isDeviceBlocked(event)) {
+                return true // Consume and discard blocked input device events
+            }
+
+            // Actively enforce soft keyboard suppression when typing with physical keyboard
+            if (config.disableVirtualKeyboard) {
+                try {
+                    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                    val focused = currentFocus ?: window.decorView
+                    imm?.hideSoftInputFromWindow(focused.windowToken, 0)
+                } catch (e: Exception) {
+                    // ignore
+                }
+            }
+
             backNavigationEventsAdapter.dispatchKeyEvent(event)
             val keyCode = if (event.keyCode != 0) event.keyCode else event.scanCode
             val keyCodeBackNavigation = keyCode == KeyEvent.KEYCODE_ESCAPE ||
@@ -275,29 +296,47 @@ fun MainActivity.setupWindowCallbacks() {
             if (!keyCodeBackNavigation && shortcutMgr.handle(event, this@setupWindowCallbacks, currentTab)) {
                 return true
             }
-            if (event.action == KeyEvent.ACTION_DOWN) {
-                when (keyCode) {
-                    KeyEvent.KEYCODE_DPAD_UP,
-                    KeyEvent.KEYCODE_DPAD_DOWN,
-                    KeyEvent.KEYCODE_DPAD_LEFT,
-                    KeyEvent.KEYCODE_DPAD_RIGHT,
-                    KeyEvent.KEYCODE_DPAD_CENTER,
-                    KeyEvent.KEYCODE_ENTER,
-                    KeyEvent.KEYCODE_NUMPAD_ENTER -> {
-                        if (handleDpadKey(keyCode)) {
-                            return true
-                        }
+
+            when (keyCode) {
+                KeyEvent.KEYCODE_DPAD_UP,
+                KeyEvent.KEYCODE_DPAD_DOWN,
+                KeyEvent.KEYCODE_DPAD_LEFT,
+                KeyEvent.KEYCODE_DPAD_RIGHT,
+                KeyEvent.KEYCODE_DPAD_UP_LEFT,
+                KeyEvent.KEYCODE_DPAD_UP_RIGHT,
+                KeyEvent.KEYCODE_DPAD_DOWN_LEFT,
+                KeyEvent.KEYCODE_DPAD_DOWN_RIGHT,
+                KeyEvent.KEYCODE_DPAD_CENTER,
+                KeyEvent.KEYCODE_ENTER,
+                KeyEvent.KEYCODE_NUMPAD_ENTER,
+                KeyEvent.KEYCODE_BUTTON_A -> {
+                    if (handleDpadEvent(event)) {
+                        return true
                     }
                 }
             }
+
             return localCallback.dispatchKeyEvent(event)
         }
 
         override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
+            val hwInput = HardwareInputManager.getInstance(this@setupWindowCallbacks)
+            if (hwInput.isDeviceBlocked(event)) {
+                return true // Drop blocked hardware input device events
+            }
+
             if (backNavigationEventsAdapter.dispatchGenericMotionEvent(event)) {
                 return true
             }
             return localCallback.dispatchGenericMotionEvent(event)
+        }
+
+        override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+            val hwInput = HardwareInputManager.getInstance(this@setupWindowCallbacks)
+            if (hwInput.isDeviceBlocked(event)) {
+                return true // Drop blocked hardware input device events
+            }
+            return localCallback.dispatchTouchEvent(event)
         }
     }
 }

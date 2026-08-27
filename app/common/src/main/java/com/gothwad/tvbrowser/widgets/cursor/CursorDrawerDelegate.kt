@@ -101,6 +101,10 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
         scheduleCursorHide()
     }
 
+    fun isCursorNearTop(): Boolean {
+        return cursorPosition.y < Utils.D2P(context, 45f)
+    }
+
     fun canHandleBackNavigation(): Boolean {
         return grabMode
     }

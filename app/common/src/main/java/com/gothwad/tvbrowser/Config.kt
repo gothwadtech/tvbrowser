@@ -27,6 +27,8 @@ class Config(val prefs: SharedPreferences) {
         const val ENABLE_VIRTUAL_CURSOR_KEY = "enable_virtual_cursor"
         const val CURSOR_SIZE_PERCENT_KEY = "cursor_size_percent"
         const val CURSOR_STYLE_KEY = "cursor_style"
+        const val BLOCKED_INPUT_DEVICES_KEY = "blocked_input_devices"
+        const val MOUSE_COMPATIBILITY_MODE_KEY = "mouse_compatibility_mode"
 
         const val CURSOR_SIZE_PERCENT_MIN = 50
         const val CURSOR_SIZE_PERCENT_MAX = 200
@@ -38,8 +40,8 @@ class Config(val prefs: SharedPreferences) {
         const val CURSOR_PHYSICS_PERCENT_MIN = 25
         const val CURSOR_PHYSICS_PERCENT_MAX = 200
         const val UI_SCALE_PERCENT_KEY = "ui_scale_percent"
-        const val UI_SCALE_PERCENT_MIN = 75
-        const val UI_SCALE_PERCENT_MAX = 200
+        const val UI_SCALE_PERCENT_MIN = 1
+        const val UI_SCALE_PERCENT_MAX = 300
         const val UI_SCALE_PERCENT_DEFAULT = 100
         const val WEB_PAGE_ZOOM_PERCENT_KEY = "web_page_zoom_percent"
         const val WEB_PAGE_ZOOM_PERCENT_MIN = 50
@@ -137,6 +139,32 @@ class Config(val prefs: SharedPreferences) {
         set(value) {
             prefs.edit().putBoolean(DISABLE_VIRTUAL_KEYBOARD_KEY, value).apply()
         }
+
+    var mouseCompatibilityMode: Boolean
+        get() = prefs.getBoolean(MOUSE_COMPATIBILITY_MODE_KEY, true)
+        set(value) {
+            prefs.edit().putBoolean(MOUSE_COMPATIBILITY_MODE_KEY, value).apply()
+        }
+
+    var blockedInputDeviceIds: Set<String>
+        get() = prefs.getStringSet(BLOCKED_INPUT_DEVICES_KEY, emptySet()) ?: emptySet()
+        set(value) {
+            prefs.edit().putStringSet(BLOCKED_INPUT_DEVICES_KEY, value).apply()
+        }
+
+    fun isInputDeviceBlocked(deviceIdentifier: String): Boolean {
+        return blockedInputDeviceIds.contains(deviceIdentifier)
+    }
+
+    fun setInputDeviceBlocked(deviceIdentifier: String, blocked: Boolean) {
+        val current = blockedInputDeviceIds.toMutableSet()
+        if (blocked) {
+            current.add(deviceIdentifier)
+        } else {
+            current.remove(deviceIdentifier)
+        }
+        blockedInputDeviceIds = current
+    }
 
     var enableVirtualCursor: Boolean
         get() = prefs.getBoolean(ENABLE_VIRTUAL_CURSOR_KEY, true)

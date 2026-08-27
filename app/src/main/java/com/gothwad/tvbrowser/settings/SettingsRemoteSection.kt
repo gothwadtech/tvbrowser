@@ -1,15 +1,23 @@
 package com.gothwad.tvbrowser.settings
 
 import android.content.Context
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
+import android.view.Gravity
 import android.view.View
 import android.widget.AdapterView
+import android.widget.LinearLayout
 import android.widget.SeekBar
+import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.widget.SwitchCompat
+import androidx.core.content.ContextCompat
 import com.gothwad.tvbrowser.Config
 import com.gothwad.tvbrowser.R
 import com.gothwad.tvbrowser.activity.main.MainActivity
 import com.gothwad.tvbrowser.databinding.ViewSettingsMainBinding
 import com.gothwad.tvbrowser.utils.HardwareInputManager
+import com.gothwad.tvbrowser.utils.Utils
 
 object SettingsRemoteSection {
 
@@ -87,6 +95,8 @@ object SettingsRemoteSection {
         activity: Context?
     ) {
         val mainAct = activity as? MainActivity
+
+        // Virtual Keyboard Suppression Settings
         vb.scDisableVirtualKeyboardKm.isChecked = config.disableVirtualKeyboard
         vb.scDisableVirtualKeyboardKm.setOnCheckedChangeListener { _, isChecked ->
             config.disableVirtualKeyboard = isChecked
@@ -98,29 +108,125 @@ object SettingsRemoteSection {
             vb.scDisableVirtualKeyboardKm.toggle()
         }
 
+        // TV Box Mouse Compatibility Setting
+        vb.scMouseCompatibility.isChecked = config.mouseCompatibilityMode
+        vb.scMouseCompatibility.setOnCheckedChangeListener { _, isChecked ->
+            config.mouseCompatibilityMode = isChecked
+        }
+
         vb.llMouseCompatibility.setOnClickListener {
             vb.scMouseCompatibility.toggle()
         }
 
         val hwInput = HardwareInputManager.getInstance(context)
+
+        val renderDeviceItem: (HardwareInputManager.DeviceInfo) -> View = { dev ->
+            val itemLayout = LinearLayout(context).apply {
+                orientation = LinearLayout.HORIZONTAL
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    topMargin = Utils.D2P(context, 6f).toInt()
+                    bottomMargin = Utils.D2P(context, 6f).toInt()
+                }
+                gravity = Gravity.CENTER_VERTICAL
+                background = ContextCompat.getDrawable(context, R.drawable.bg_tv_setting_item)
+                isFocusable = true
+                isClickable = true
+                val padH = Utils.D2P(context, 12f).toInt()
+                val padV = Utils.D2P(context, 10f).toInt()
+                setPadding(padH, padV, padH, padV)
+            }
+
+            val devIdStr = dev.id.toString()
+            val isBlocked = config.isInputDeviceBlocked(devIdStr) || config.isInputDeviceBlocked(dev.name)
+
+            val typeIcon = when {
+                dev.isMouse && dev.isKeyboard -> "⌨️🖱️"
+                dev.isMouse -> "🖱️"
+                dev.isKeyboard -> "⌨️"
+                dev.isGamepad -> "🎮"
+                else -> "🔌"
+            }
+
+            val iconTv = TextView(context).apply {
+                text = typeIcon
+                textSize = 20f
+                setPadding(0, 0, Utils.D2P(context, 10f).toInt(), 0)
+            }
+            itemLayout.addView(iconTv)
+
+            val textColumn = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            }
+
+            val nameTv = TextView(context).apply {
+                text = dev.name
+                setTextColor(Color.WHITE)
+                textSize = 14f
+                typeface = android.graphics.Typeface.DEFAULT_BOLD
+            }
+            textColumn.addView(nameTv)
+
+            val descTv = TextView(context).apply {
+                val stateText = if (isBlocked) "🚫 Blocked (Input Ignored)" else "✅ Allowed (Active & Optimized)"
+                val stateColor = if (isBlocked) "#F87171" else "#4ADE80"
+                text = "ID: ${dev.id}  •  $stateText"
+                setTextColor(Color.parseColor(stateColor))
+                textSize = 12f
+                setPadding(0, Utils.D2P(context, 2f).toInt(), 0, 0)
+            }
+            textColumn.addView(descTv)
+            itemLayout.addView(textColumn)
+
+            val blockSwitch = SwitchCompat(context).apply {
+                isChecked = !isBlocked // Checked means Allowed/Active
+                isFocusable = true
+                isClickable = true
+                text = if (isBlocked) "Block" else "Allow"
+                setTextColor(Color.parseColor("#94A3B8"))
+                textSize = 12f
+            }
+
+            blockSwitch.setOnCheckedChangeListener { _, isAllowed ->
+                val newBlocked = !isAllowed
+                config.setInputDeviceBlocked(devIdStr, newBlocked)
+                config.setInputDeviceBlocked(dev.name, newBlocked)
+                if (newBlocked) {
+                    descTv.text = "ID: ${dev.id}  •  🚫 Blocked (Input Ignored)"
+                    descTv.setTextColor(Color.parseColor("#F87171"))
+                    blockSwitch.text = "Block"
+                    Toast.makeText(context, "${dev.name} is now BLOCKED", Toast.LENGTH_SHORT).show()
+                } else {
+                    descTv.text = "ID: ${dev.id}  •  ✅ Allowed (Active & Optimized)"
+                    descTv.setTextColor(Color.parseColor("#4ADE80"))
+                    blockSwitch.text = "Allow"
+                    Toast.makeText(context, "${dev.name} is now ALLOWED", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            itemLayout.setOnClickListener {
+                blockSwitch.toggle()
+            }
+
+            itemLayout.addView(blockSwitch)
+            itemLayout
+        }
+
         val updateDeviceList: (List<HardwareInputManager.DeviceInfo>) -> Unit = { devices ->
             val nonVirtual = devices.filter { !it.isVirtual }
+            vb.llConnectedDevicesContainer.removeAllViews()
+
             if (nonVirtual.isEmpty()) {
                 vb.tvConnectedHardwareStatus.text = "⚠️ No external physical keyboard or mouse currently detected.\n(Using standard TV Remote / D-Pad navigation)"
             } else {
-                val sb = StringBuilder()
+                vb.tvConnectedHardwareStatus.text = "Found ${nonVirtual.size} connected input device(s). You can toggle Allow/Block for each device below:"
                 for (dev in nonVirtual) {
-                    val typeLabel = when {
-                        dev.isMouse && dev.isKeyboard -> "⌨️ 🖱️ Combo Input"
-                        dev.isMouse -> "🖱️ Mouse / Touchpad"
-                        dev.isKeyboard -> "⌨️ Physical Keyboard"
-                        dev.isGamepad -> "🎮 Gamepad / Controller"
-                        else -> "🔌 Input Device"
-                    }
-                    sb.append("• ").append(typeLabel).append(": ").append(dev.name).append("\n")
+                    val itemView = renderDeviceItem(dev)
+                    vb.llConnectedDevicesContainer.addView(itemView)
                 }
-                sb.append("✅ Precision STB Click Optimization: Active")
-                vb.tvConnectedHardwareStatus.text = sb.toString().trim()
             }
         }
 
@@ -131,8 +237,9 @@ object SettingsRemoteSection {
         })
 
         vb.btnRefreshDevices.setOnClickListener {
-            updateDeviceList(hwInput.getConnectedDevices())
-            Toast.makeText(context, "Device list refreshed", Toast.LENGTH_SHORT).show()
+            val devs = hwInput.getConnectedDevices()
+            updateDeviceList(devs)
+            Toast.makeText(context, "Scanned: ${devs.count { !it.isVirtual }} device(s) found", Toast.LENGTH_SHORT).show()
         }
 
         updateDeviceList(hwInput.getConnectedDevices())

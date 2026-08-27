@@ -322,26 +322,42 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     }
 
     override fun onCreateInputConnection(outAttrs: EditorInfo?): InputConnection? {
+        val connection = super.onCreateInputConnection(outAttrs)
         if (config.disableVirtualKeyboard) {
-            outAttrs?.imeOptions = EditorInfo.IME_FLAG_NO_EXTRACT_UI or EditorInfo.IME_FLAG_NO_FULLSCREEN
-            return null
+            outAttrs?.imeOptions = (outAttrs?.imeOptions ?: 0) or EditorInfo.IME_FLAG_NO_EXTRACT_UI or EditorInfo.IME_FLAG_NO_FULLSCREEN
+            post {
+                val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+                imm?.hideSoftInputFromWindow(windowToken, 0)
+            }
         }
-        return super.onCreateInputConnection(outAttrs)
+        return connection
     }
 
     override fun onCheckIsTextEditor(): Boolean {
-        if (config.disableVirtualKeyboard) return false
         return super.onCheckIsTextEditor()
+    }
+
+    override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+        if (com.gothwad.tvbrowser.utils.HardwareInputManager.getInstance(context).isDeviceBlocked(event)) {
+            return true
+        }
+        if (config.disableVirtualKeyboard) {
+            val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+            imm?.hideSoftInputFromWindow(windowToken, 0)
+        }
+        return super.dispatchKeyEvent(event)
     }
 
     override fun onGenericMotionEvent(event: MotionEvent): Boolean {
         val hwInput = com.gothwad.tvbrowser.utils.HardwareInputManager.getInstance(context)
+        if (hwInput.isDeviceBlocked(event)) return true
         if (hwInput.processHardwareMouseEvent(event, this)) return true
         return super.onGenericMotionEvent(event)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val hwInput = com.gothwad.tvbrowser.utils.HardwareInputManager.getInstance(context)
+        if (hwInput.isDeviceBlocked(event)) return true
         if (hwInput.processHardwareMouseEvent(event, this)) return true
         return super.onTouchEvent(event)
     }
