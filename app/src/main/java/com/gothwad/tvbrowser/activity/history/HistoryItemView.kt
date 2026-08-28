@@ -1,10 +1,11 @@
 package com.gothwad.tvbrowser.activity.history
 
 import android.content.Context
-import android.net.Uri
+import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.widget.CheckBox
 import android.widget.FrameLayout
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
@@ -17,15 +18,22 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 class HistoryItemView(context: Context, private val viewType: Int) : FrameLayout(context) {
     private var tvDate: TextView? = null
+    private var tvHeaderCount: TextView? = null
     private var tvTitle: TextView? = null
     private var tvURL: TextView? = null
     private var tvTime: TextView? = null
     private var ivHistoryFavicon: ImageView? = null
     private var cbSelection: CheckBox? = null
+    private var ibItemDelete: ImageButton? = null
+    private var ibItemMenu: ImageButton? = null
     var historyItem: HistoryItem? = null
+
+    var onItemDeleteListener: ((HistoryItem) -> Unit)? = null
+    var onItemMenuListener: ((HistoryItem, android.view.View) -> Unit)? = null
 
     init {
         LayoutInflater.from(context).inflate(
@@ -37,6 +45,7 @@ class HistoryItemView(context: Context, private val viewType: Int) : FrameLayout
         when (viewType) {
             HistoryAdapter.VIEW_TYPE_HEADER -> {
                 tvDate = findViewById(R.id.tvDate)
+                tvHeaderCount = findViewById(R.id.tvHeaderCount)
             }
             HistoryAdapter.VIEW_TYPE_HISTORY_ITEM -> {
                 tvTitle = findViewById(R.id.tvTitle)
@@ -44,21 +53,40 @@ class HistoryItemView(context: Context, private val viewType: Int) : FrameLayout
                 tvTime = findViewById(R.id.tvTime)
                 ivHistoryFavicon = findViewById(R.id.ivHistoryFavicon)
                 cbSelection = findViewById(R.id.cbSelection)
+                ibItemDelete = findViewById(R.id.ibItemDelete)
+                ibItemMenu = findViewById(R.id.ibItemMenu)
+
+                ibItemDelete?.setOnClickListener {
+                    historyItem?.let { item -> onItemDeleteListener?.invoke(item) }
+                }
+
+                ibItemMenu?.setOnClickListener { v ->
+                    historyItem?.let { item -> onItemMenuListener?.invoke(item, v) }
+                }
             }
         }
     }
 
-    fun setHistoryItem(historyItem: HistoryItem, multiselectMode: Boolean) {
+    fun setHistoryItem(
+        historyItem: HistoryItem,
+        multiselectMode: Boolean,
+        onDelete: ((HistoryItem) -> Unit)? = null,
+        onMenu: ((HistoryItem, android.view.View) -> Unit)? = null
+    ) {
         this.historyItem = historyItem
+        this.onItemDeleteListener = onDelete
+        this.onItemMenuListener = onMenu
+
         when (viewType) {
             HistoryAdapter.VIEW_TYPE_HEADER -> {
-                val df = SimpleDateFormat.getDateInstance()
-                tvDate?.text = df.format(Date(historyItem.time))
+                val time = historyItem.time
+                val headerText = formatHeaderDate(time)
+                tvDate?.text = headerText
             }
             HistoryAdapter.VIEW_TYPE_HISTORY_ITEM -> {
                 tvTitle?.text = if (!historyItem.title.isNullOrBlank()) historyItem.title else historyItem.url
                 tvURL?.text = historyItem.url
-                val sdf = SimpleDateFormat("HH:mm")
+                val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
                 tvTime?.text = sdf.format(Date(historyItem.time))
                 cbSelection?.visibility = if (multiselectMode) VISIBLE else GONE
                 cbSelection?.isChecked = historyItem.selected
@@ -81,6 +109,23 @@ class HistoryItemView(context: Context, private val viewType: Int) : FrameLayout
                     }
                 }
             }
+        }
+    }
+
+    private fun formatHeaderDate(timestamp: Long): String {
+        return try {
+            if (DateUtils.isToday(timestamp)) {
+                val dayFormat = SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault())
+                "Today – " + dayFormat.format(Date(timestamp))
+            } else if (DateUtils.isToday(timestamp + DateUtils.DAY_IN_MILLIS)) {
+                val dayFormat = SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault())
+                "Yesterday – " + dayFormat.format(Date(timestamp))
+            } else {
+                val fullFormat = SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault())
+                fullFormat.format(Date(timestamp))
+            }
+        } catch (e: Exception) {
+            SimpleDateFormat.getDateInstance().format(Date(timestamp))
         }
     }
 

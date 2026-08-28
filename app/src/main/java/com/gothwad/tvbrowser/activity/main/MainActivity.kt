@@ -298,7 +298,14 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             }
             REQUEST_CODE_HISTORY_ACTIVITY -> if (resultCode == Activity.RESULT_OK) {
                 val url = data?.getStringExtra(HistoryActivity.KEY_URL)
-                if (url != null) navigate(url)
+                val inNewTab = data?.getBooleanExtra(HistoryActivity.KEY_OPEN_IN_NEW_TAB, false) ?: false
+                if (url != null) {
+                    if (inNewTab) {
+                        openInNewTab(url, tabsModel.tabsStates.size, needToHideMenuOverlay = true, navigateImmediately = true)
+                    } else {
+                        navigate(url)
+                    }
+                }
                 hideMenuOverlay()
             }
             REQUEST_CODE_CLIPBOARD_ACTIVITY -> if (resultCode == Activity.RESULT_OK) {

@@ -58,13 +58,25 @@ fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
         if (event.action == KeyEvent.ACTION_DOWN) {
             when (keyCode) {
                 KeyEvent.KEYCODE_DPAD_DOWN -> {
-                    vb.ibHome.requestFocus()
+                    if (focus == vb.ibTopHistory) {
+                        vb.ibMenu.requestFocus()
+                    } else {
+                        vb.ibHome.requestFocus()
+                    }
                     return true
                 }
                 KeyEvent.KEYCODE_DPAD_UP -> {
                     return true
                 }
                 KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                    if (focus == vb.ibTopHistory) {
+                        if (vb.rvTopTabs.childCount > 0) {
+                            vb.rvTopTabs.getChildAt(0)?.requestFocus()
+                        } else if (vb.ibTopNewTab.isVisible) {
+                            vb.ibTopNewTab.requestFocus()
+                        }
+                        return true
+                    }
                     if (focus == vb.ibTopNewTab) {
                         return true
                     }
@@ -77,12 +89,23 @@ fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
                     return true
                 }
                 KeyEvent.KEYCODE_DPAD_LEFT -> {
+                    if (focus == vb.ibTopHistory) {
+                        return true
+                    }
+                    if (focus == vb.ibTopNewTab) {
+                        if (vb.rvTopTabs.childCount > 0) {
+                            val lastChild = vb.rvTopTabs.getChildAt(vb.rvTopTabs.childCount - 1)
+                            lastChild?.requestFocus()
+                        } else {
+                            vb.ibTopHistory.requestFocus()
+                        }
+                        return true
+                    }
                     val next = focus.focusSearch(View.FOCUS_LEFT)
                     if (next != null && isTopTabBarView(next)) {
                         next.requestFocus()
-                    } else if (focus == vb.ibTopNewTab && vb.rvTopTabs.childCount > 0) {
-                        val lastChild = vb.rvTopTabs.getChildAt(vb.rvTopTabs.childCount - 1)
-                        lastChild?.requestFocus()
+                    } else {
+                        vb.ibTopHistory.requestFocus()
                     }
                     return true
                 }
@@ -120,20 +143,28 @@ fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
                     return true
                 }
                 KeyEvent.KEYCODE_DPAD_UP -> {
-                    if (vb.llTopTabBar.isVisible && vb.rvTopTabs.childCount > 0) {
-                        val currentTab = tabsModel.currentTab.value
-                        var targetView: View? = null
-                        for (i in 0 until vb.rvTopTabs.childCount) {
-                            val child = vb.rvTopTabs.getChildAt(i)
-                            if (child.tag == currentTab) {
-                                targetView = child
-                                break
+                    if (vb.llTopTabBar.isVisible) {
+                        if (focus == vb.ibMenu) {
+                            vb.ibTopHistory.requestFocus()
+                            return true
+                        }
+                        if (vb.rvTopTabs.childCount > 0) {
+                            val currentTab = tabsModel.currentTab.value
+                            var targetView: View? = null
+                            for (i in 0 until vb.rvTopTabs.childCount) {
+                                val child = vb.rvTopTabs.getChildAt(i)
+                                if (child.tag == currentTab) {
+                                    targetView = child
+                                    break
+                                }
                             }
+                            if (targetView == null) {
+                                targetView = vb.rvTopTabs.getChildAt(0)
+                            }
+                            targetView?.requestFocus()
+                            return true
                         }
-                        if (targetView == null) {
-                            targetView = vb.rvTopTabs.getChildAt(0)
-                        }
-                        targetView?.requestFocus()
+                        vb.ibTopHistory.requestFocus()
                     }
                     return true
                 }

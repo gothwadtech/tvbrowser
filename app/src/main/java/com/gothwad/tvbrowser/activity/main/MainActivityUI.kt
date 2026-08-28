@@ -96,6 +96,7 @@ internal fun MainActivity.setupHeaderClickListeners(incognitoMode: Boolean) {
     vb.vActionBar.callback = this
 
     listOf(
+        vb.ibTopHistory, vb.ibTopNewTab,
         vb.ibMenu, vb.ibHome, vb.ibBack, vb.ibForward, vb.ibRefresh,
         vb.ibNewTab, vb.flTabsSwitcher, vb.ibNotes, vb.ibDownloads,
         vb.ibFileManager, vb.ibBookmarks, vb.ibIncognito, vb.ibMore, vb.ibSettings

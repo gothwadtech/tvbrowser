@@ -20,8 +20,8 @@
         android:elevation="4dp"
         android:paddingStart="6dp"
         android:paddingEnd="6dp"
-        android:paddingTop="2dp"
-        android:paddingBottom="3dp"
+        android:paddingTop="0dp"
+        android:paddingBottom="0dp"
         android:clipChildren="false"
         android:clipToPadding="false">
 
@@ -29,11 +29,25 @@
         <LinearLayout
             android:id="@+id/llTopTabBar"
             android:layout_width="match_parent"
-            android:layout_height="36dp"
-            android:layout_marginBottom="2dp"
+            android:layout_height="38dp"
+            android:layout_marginBottom="0dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:clipChildren="false">
+
+            <!-- 0. Top History Button (Directly above 3-line Menu) -->
+            <ImageButton
+                android:id="@+id/ibTopHistory"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginEnd="3dp"
+                android:background="@drawable/button_bg_selector"
+                android:contentDescription="@string/history"
+                android:focusable="true"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                android:tint="@color/header_button_icon_tint"
+                android:src="@drawable/ic_history_grey_900_36dp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvTopTabs"
@@ -46,13 +60,13 @@
 
             <ImageButton
                 android:id="@+id/ibTopNewTab"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginStart="4dp"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginStart="3dp"
                 android:background="@drawable/button_bg_selector"
                 android:contentDescription="@string/open_new_tab"
                 android:focusable="true"
-                android:padding="5dp"
+                android:padding="6dp"
                 android:scaleType="fitCenter"
                 android:tint="@color/header_button_icon_tint"
                 android:src="@drawable/ic_add" />
@@ -62,7 +76,7 @@
         <LinearLayout
             android:id="@+id/llMainToolbar"
             android:layout_width="match_parent"
-            android:layout_height="42dp"
+            android:layout_height="40dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:clipChildren="false">

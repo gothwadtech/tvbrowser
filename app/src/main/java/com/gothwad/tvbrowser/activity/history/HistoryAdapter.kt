@@ -3,17 +3,10 @@ package com.gothwad.tvbrowser.activity.history
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
-
 import com.gothwad.tvbrowser.model.HistoryItem
 import com.gothwad.tvbrowser.utils.Utils
-
-import java.util.ArrayList
-
 import de.halfbit.pinnedsection.PinnedSectionListView
-
-/**
- * Created by fedex on 29.12.16.
- */
+import java.util.ArrayList
 
 class HistoryAdapter : BaseAdapter(), PinnedSectionListView.PinnedSectionListAdapter {
     val items = ArrayList<HistoryItem>()
@@ -32,6 +25,9 @@ class HistoryAdapter : BaseAdapter(), PinnedSectionListView.PinnedSectionListAda
         }
     private val _tmpSelected = ArrayList<HistoryItem>()
 
+    var onDeleteClickListener: ((HistoryItem) -> Unit)? = null
+    var onItemMenuClickListener: ((HistoryItem, View) -> Unit)? = null
+
     val selectedItems: List<HistoryItem>
         get() {
             _tmpSelected.clear()
@@ -43,11 +39,11 @@ class HistoryAdapter : BaseAdapter(), PinnedSectionListView.PinnedSectionListAda
             return _tmpSelected
         }
 
-    fun addItems(items: List<HistoryItem>) {
-        if (items.isEmpty()) {
+    fun addItems(newItems: List<HistoryItem>) {
+        if (newItems.isEmpty()) {
             return
         }
-        for (hi in items) {
+        for (hi in newItems) {
             if (!Utils.isSameDate(hi.time, lastHeaderDate)) {
                 lastHeaderDate = hi.time
                 this.items.add(HistoryItem.createDateHeaderInfo(hi.time))
@@ -71,13 +67,17 @@ class HistoryAdapter : BaseAdapter(), PinnedSectionListView.PinnedSectionListAda
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        val hiv: HistoryItemView
-        if (convertView != null) {
-            hiv = convertView as HistoryItemView
+        val hiv: HistoryItemView = if (convertView is HistoryItemView) {
+            convertView
         } else {
-            hiv = HistoryItemView(parent.context, getItemViewType(position))
+            HistoryItemView(parent.context, getItemViewType(position))
         }
-        hiv.setHistoryItem(items[position], isMultiselectMode)
+        hiv.setHistoryItem(
+            items[position],
+            isMultiselectMode,
+            onDeleteClickListener,
+            onItemMenuClickListener
+        )
         return hiv
     }
 
@@ -95,21 +95,44 @@ class HistoryAdapter : BaseAdapter(), PinnedSectionListView.PinnedSectionListAda
 
     fun erase() {
         items.clear()
+        lastHeaderDate = -1
+        realCount = 0
         notifyDataSetChanged()
     }
 
     fun remove(historyItem: HistoryItem) {
         items.remove(historyItem)
+        if (!historyItem.isDateHeader && realCount > 0) {
+            realCount--
+        }
+        // Cleanup orphaned date headers
+        cleanupHeaders()
         notifyDataSetChanged()
     }
 
-    fun remove(selectedItems: List<HistoryItem>) {
-        items.removeAll(selectedItems)
+    fun remove(selected: List<HistoryItem>) {
+        items.removeAll(selected)
+        realCount = (realCount - selected.count { !it.isDateHeader }).coerceAtLeast(0)
+        cleanupHeaders()
         notifyDataSetChanged()
+    }
+
+    private fun cleanupHeaders() {
+        val toRemove = ArrayList<HistoryItem>()
+        for (i in 0 until items.size) {
+            val item = items[i]
+            if (item.isDateHeader) {
+                // If header is at end of list or followed by another header, remove it
+                if (i == items.size - 1 || items[i + 1].isDateHeader) {
+                    toRemove.add(item)
+                }
+            }
+        }
+        items.removeAll(toRemove)
     }
 
     companion object {
-        val VIEW_TYPE_HISTORY_ITEM = 0
-        val VIEW_TYPE_HEADER = 1
+        const val VIEW_TYPE_HISTORY_ITEM = 0
+        const val VIEW_TYPE_HEADER = 1
     }
 }

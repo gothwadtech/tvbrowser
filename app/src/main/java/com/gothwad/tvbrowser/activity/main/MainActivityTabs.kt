@@ -30,6 +30,10 @@ fun MainActivity.setupTopTabBar() {
         openInNewTab(settingsModel.homePage, tabsModel.tabsStates.size, needToHideMenuOverlay = false, navigateImmediately = true)
     }
 
+    vb.ibTopHistory.setOnClickListener {
+        showHistoryActivity()
+    }
+
     val isTopTabBarEnabled = config.showTopTabBar.value
     vb.llTopTabBar.visibility = if (isTopTabBarEnabled) View.VISIBLE else View.GONE
 
