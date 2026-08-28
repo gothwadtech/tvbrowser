@@ -1,19 +1,20 @@
 package com.gothwad.tvbrowser.activity.main.dialogs
 
-import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.os.Bundle
-import android.view.Gravity
 import android.view.KeyEvent
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.Toast
+import com.gothwad.tvbrowser.BuildConfig
 import com.gothwad.tvbrowser.Config
 import com.gothwad.tvbrowser.R
 import com.gothwad.tvbrowser.activity.downloads.DownloadsActivity
@@ -30,32 +31,51 @@ import com.gothwad.tvbrowser.filemanager.FileManagerActivity
 import com.gothwad.tvbrowser.notes.NotesActivity
 import com.gothwad.tvbrowser.singleton.AppLockManager
 
-class BrowserSidebarPopup(private val activity: MainActivity) : Dialog(activity, R.style.TvSideDrawerDialog) {
+class BrowserSidebarPopup(private val activity: MainActivity) {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.dialog_browser_side_menu)
+    private val popupWindow: PopupWindow
+    private val rootContainer: FrameLayout
+    private val contentView: View
 
-        window?.apply {
-            setGravity(Gravity.START)
-            val dm = activity.resources.displayMetrics
-            // Proportional slim width (25% of screen width) so it looks thin and sleek at all UI scale ratios
-            val panelWidth = (dm.widthPixels * 0.25f).toInt()
-            setLayout(panelWidth, ViewGroup.LayoutParams.MATCH_PARENT)
-            val lp = attributes ?: WindowManager.LayoutParams()
-            lp.gravity = Gravity.START
-            lp.x = 0
-            lp.y = 0
-            lp.width = panelWidth
-            lp.height = ViewGroup.LayoutParams.MATCH_PARENT
-            attributes = lp
-
-            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            setDimAmount(0.55f)
-            addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-            setWindowAnimations(R.style.SideDrawerLeftAnimation)
+    init {
+        rootContainer = object : FrameLayout(activity) {
+            override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+                if (event.action == KeyEvent.ACTION_DOWN) {
+                    when (event.keyCode) {
+                        KeyEvent.KEYCODE_BACK,
+                        KeyEvent.KEYCODE_ESCAPE,
+                        KeyEvent.KEYCODE_BUTTON_B -> {
+                            dismiss()
+                            return true
+                        }
+                    }
+                }
+                return super.dispatchKeyEvent(event)
+            }
+        }.apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
         }
-        setCanceledOnTouchOutside(true)
+
+        contentView = LayoutInflater.from(activity).inflate(R.layout.dialog_browser_side_menu, rootContainer, true)
+
+        val dm = activity.resources.displayMetrics
+        val popupWidth = (dm.widthPixels * 0.26f).toInt()
+
+        popupWindow = PopupWindow(
+            rootContainer,
+            popupWidth,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        ).apply {
+            isOutsideTouchable = true
+            isFocusable = true
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            elevation = 24f
+            animationStyle = R.style.SideDrawerLeftAnimation
+        }
 
         setupViews()
     }
@@ -91,13 +111,8 @@ class BrowserSidebarPopup(private val activity: MainActivity) : Dialog(activity,
         val config = activity.config
         val currentTab = activity.tabsModel.currentTab.value
 
-        // Backdrop click dismisses drawer
-        findViewById<View>(R.id.vSideMenuBackdrop)?.setOnClickListener {
-            dismiss()
-        }
-
         // Circular Back Button
-        val btnBack: ImageButton? = findViewById(R.id.btnSideMenuBack)
+        val btnBack: ImageButton? = contentView.findViewById(R.id.btnSideMenuBack)
         btnBack?.setOnClickListener {
             dismiss()
         }
@@ -119,7 +134,7 @@ class BrowserSidebarPopup(private val activity: MainActivity) : Dialog(activity,
         }
 
         // 1. Privacy Protection / App Lock
-        findViewById<View>(R.id.btnSidePrivacy)?.let { btn ->
+        contentView.findViewById<View>(R.id.btnSidePrivacy)?.let { btn ->
             bindItem(btn) {
                 if (AppLockManager.isLockEnabled(activity)) {
                     AppLockManager.setSessionUnlocked(false)
@@ -139,20 +154,20 @@ class BrowserSidebarPopup(private val activity: MainActivity) : Dialog(activity,
         }
 
         // 2. Incognito Mode
-        val tvIncognito = findViewById<TextView>(R.id.tvSideIncognitoTitle)
+        val tvIncognito = contentView.findViewById<TextView>(R.id.tvSideIncognitoTitle)
         if (config.incognitoMode) {
             tvIncognito?.text = "Exit incognito"
         } else {
             tvIncognito?.text = "Start incognito"
         }
-        findViewById<View>(R.id.btnSideIncognito)?.let { btn ->
+        contentView.findViewById<View>(R.id.btnSideIncognito)?.let { btn ->
             bindItem(btn) {
                 activity.toggleIncognitoMode(andSwitchProcess = true)
             }
         }
 
         // 3. Share
-        findViewById<View>(R.id.btnSideShare)?.let { btn ->
+        contentView.findViewById<View>(R.id.btnSideShare)?.let { btn ->
             bindItem(btn) {
                 val url = currentTab?.url
                 if (!url.isNullOrEmpty() && url != Config.HOME_PAGE_URL) {
@@ -170,54 +185,54 @@ class BrowserSidebarPopup(private val activity: MainActivity) : Dialog(activity,
         }
 
         // 4. Bookmarks
-        findViewById<View>(R.id.btnSideBookmarks)?.let { btn ->
+        contentView.findViewById<View>(R.id.btnSideBookmarks)?.let { btn ->
             bindItem(btn) {
                 activity.showFavoritesDialog()
             }
         }
 
         // 5. History
-        findViewById<View>(R.id.btnSideHistory)?.let { btn ->
+        contentView.findViewById<View>(R.id.btnSideHistory)?.let { btn ->
             bindItem(btn) {
                 activity.showHistoryActivity()
             }
         }
 
         // 6. Downloads
-        findViewById<View>(R.id.btnSideDownloads)?.let { btn ->
+        contentView.findViewById<View>(R.id.btnSideDownloads)?.let { btn ->
             bindItem(btn) {
                 activity.startActivity(Intent(activity, DownloadsActivity::class.java))
             }
         }
 
         // 7. File Manager
-        findViewById<View>(R.id.btnSideFileManager)?.let { btn ->
+        contentView.findViewById<View>(R.id.btnSideFileManager)?.let { btn ->
             bindItem(btn) {
                 activity.startActivity(Intent(activity, FileManagerActivity::class.java))
             }
         }
 
         // 8. Notes
-        findViewById<View>(R.id.btnSideNotes)?.let { btn ->
+        contentView.findViewById<View>(R.id.btnSideNotes)?.let { btn ->
             bindItem(btn) {
                 activity.startActivity(Intent(activity, NotesActivity::class.java))
             }
         }
 
         // 9. Native Clipboard
-        findViewById<View>(R.id.btnSideClipboard)?.let { btn ->
+        contentView.findViewById<View>(R.id.btnSideClipboard)?.let { btn ->
             bindItem(btn) {
                 activity.showClipboardActivity()
             }
         }
 
         // 10. Desktop View Mode
-        val ivDesktopCheck = findViewById<ImageView>(R.id.ivSideDesktopCheck)
+        val ivDesktopCheck = contentView.findViewById<ImageView>(R.id.ivSideDesktopCheck)
         val isDesktop = config.desktopMode.value || config.userAgentString.value?.contains("Windows") == true
         ivDesktopCheck?.setImageResource(
             if (isDesktop) R.drawable.ic_check_box_checked else R.drawable.ic_check_box_outline
         )
-        findViewById<View>(R.id.btnSideDesktopMode)?.let { btn ->
+        contentView.findViewById<View>(R.id.btnSideDesktopMode)?.let { btn ->
             bindItem(btn) {
                 val willBeDesktop = !isDesktop
                 config.desktopMode.value = willBeDesktop
@@ -231,19 +246,44 @@ class BrowserSidebarPopup(private val activity: MainActivity) : Dialog(activity,
         }
 
         // 11. Full Settings
-        findViewById<View>(R.id.btnSideSettings)?.let { btn ->
+        contentView.findViewById<View>(R.id.btnSideSettings)?.let { btn ->
             bindItem(btn) {
                 activity.showSettingsDialog()
             }
         }
-
-        // Initial focus request on first navigation item
-        findViewById<View>(R.id.btnSidePrivacy)?.post {
-            findViewById<View>(R.id.btnSidePrivacy)?.requestFocus()
-        }
     }
 
     fun show(anchorView: View? = null) {
-        show()
+        val decorView = activity.window.decorView
+        val header = activity.findViewById<View>(R.id.rlActionBar) ?: anchorView ?: decorView
+
+        val loc = IntArray(2)
+        header.getLocationInWindow(loc)
+        if (loc[1] == 0) {
+            header.getLocationOnScreen(loc)
+        }
+        val headerBottom = loc[1] + header.height
+
+        val screenWidth = if (decorView.width > 0) decorView.width else activity.resources.displayMetrics.widthPixels
+        val screenHeight = if (decorView.height > 0) decorView.height else activity.resources.displayMetrics.heightPixels
+
+        val popupWidth = (screenWidth * 0.26f).toInt().coerceIn(240, 520)
+        val popupHeight = (screenHeight - headerBottom).coerceAtLeast(100)
+
+        popupWindow.width = popupWidth
+        popupWindow.height = popupHeight
+        popupWindow.isClippingEnabled = false
+
+        popupWindow.showAtLocation(decorView, android.view.Gravity.TOP or android.view.Gravity.START, 0, headerBottom)
+
+        contentView.post {
+            contentView.findViewById<View>(R.id.btnSidePrivacy)?.requestFocus()
+        }
+    }
+
+    fun dismiss() {
+        if (popupWindow.isShowing) {
+            popupWindow.dismiss()
+        }
     }
 }

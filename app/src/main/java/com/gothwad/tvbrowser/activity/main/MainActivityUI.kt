@@ -187,8 +187,8 @@ internal fun MainActivity.showHistoryActivity() {
     hideMenuOverlay()
 }
 
-internal fun MainActivity.showSettingsDialog() {
-    SettingsDialog(this, settingsModel).show()
+internal fun MainActivity.showSettingsDialog(anchorView: View? = null) {
+    SettingsDialog(this, settingsModel).show(anchorView ?: vb.ibSettings)
 }
 
 internal fun MainActivity.showBrowserSidebar(anchorView: View? = null) {

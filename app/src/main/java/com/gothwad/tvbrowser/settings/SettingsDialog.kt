@@ -1,25 +1,27 @@
 package com.gothwad.tvbrowser.settings
 
-import android.app.Dialog
+import android.app.Activity
 import android.content.Context
-import android.content.DialogInterface
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.os.Bundle
-import android.view.Gravity
 import android.view.KeyEvent
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.PopupWindow
 import android.widget.TextView
 import com.gothwad.tvbrowser.R
 
-class SettingsDialog(context: Context, val model: SettingsModel) :
-    Dialog(context, R.style.TvSettingsDrawerDialog),
-    DialogInterface.OnDismissListener, VersionSettingsView.Callback {
+class SettingsDialog(private val context: Context, val model: SettingsModel) :
+    VersionSettingsView.Callback {
+
+    private val activity: Activity? = context as? Activity
+    private val popupWindow: PopupWindow
+    private val rootContainer: FrameLayout
+    private val contentView: View
 
     private var mainView: MainSettingsView? = null
     private var versionView: VersionSettingsView? = null
@@ -55,70 +57,84 @@ class SettingsDialog(context: Context, val model: SettingsModel) :
     private var lastFocusedCategoryItem: View? = null
 
     init {
-        setTitle(R.string.settings)
-        setContentView(R.layout.dialog_settings)
+        rootContainer = object : FrameLayout(context) {
+            override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+                if (event.action == KeyEvent.ACTION_DOWN) {
+                    when (event.keyCode) {
+                        KeyEvent.KEYCODE_BACK,
+                        KeyEvent.KEYCODE_ESCAPE,
+                        KeyEvent.KEYCODE_BUTTON_B -> {
+                            if (::llSettingsPageDetail.isInitialized && llSettingsPageDetail.visibility == View.VISIBLE) {
+                                showCategoriesPage()
+                                return true
+                            } else {
+                                dismiss()
+                                return true
+                            }
+                        }
+                    }
+                }
+                return super.dispatchKeyEvent(event)
+            }
+        }.apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+        }
+
+        contentView = LayoutInflater.from(context).inflate(R.layout.dialog_settings, rootContainer, true)
+
+        val dm = context.resources.displayMetrics
+        val popupWidth = (dm.widthPixels * 0.26f).toInt()
+
+        popupWindow = PopupWindow(
+            rootContainer,
+            popupWidth,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        ).apply {
+            isOutsideTouchable = true
+            isFocusable = true
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            elevation = 24f
+            animationStyle = R.style.SideDrawerAnimation
+            setOnDismissListener {
+                mainView?.save()
+            }
+        }
 
         bindViews()
         initChildViews()
         setupListeners()
-
-        setOnDismissListener(this)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        window?.apply {
-            setGravity(Gravity.END)
-            val dm = context.resources.displayMetrics
-            // Proportional slim width (26% of screen width) so it looks thin and sleek at all UI scale ratios
-            val panelWidth = (dm.widthPixels * 0.26f).toInt()
-            setLayout(panelWidth, ViewGroup.LayoutParams.MATCH_PARENT)
-            val lp = attributes ?: WindowManager.LayoutParams()
-            lp.gravity = Gravity.END
-            lp.x = 0
-            lp.y = 0
-            lp.width = panelWidth
-            lp.height = ViewGroup.LayoutParams.MATCH_PARENT
-            attributes = lp
-
-            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            setDimAmount(0.55f)
-            addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-            setWindowAnimations(R.style.SideDrawerAnimation)
-        }
-        setCanceledOnTouchOutside(true)
     }
 
     private fun bindViews() {
-        llSettingsPageCategories = findViewById(R.id.llSettingsPageCategories)
-        llSettingsPageDetail = findViewById(R.id.llSettingsPageDetail)
-        flTabsContent = findViewById(R.id.flTabsContent)
-        tvSettingsDetailTitle = findViewById(R.id.tvSettingsDetailTitle)
-        tvSettingsDetailBadge = findViewById(R.id.tvSettingsDetailBadge)
-        btnSettingsBackToCategories = findViewById(R.id.btnSettingsBackToCategories)
-        ibCloseSettings = findViewById(R.id.ibCloseSettings)
+        llSettingsPageCategories = contentView.findViewById(R.id.llSettingsPageCategories)
+        llSettingsPageDetail = contentView.findViewById(R.id.llSettingsPageDetail)
+        flTabsContent = contentView.findViewById(R.id.flTabsContent)
+        tvSettingsDetailTitle = contentView.findViewById(R.id.tvSettingsDetailTitle)
+        tvSettingsDetailBadge = contentView.findViewById(R.id.tvSettingsDetailBadge)
+        btnSettingsBackToCategories = contentView.findViewById(R.id.btnSettingsBackToCategories)
+        ibCloseSettings = contentView.findViewById(R.id.ibCloseSettings)
 
-        itemCatDisplayScale = findViewById(R.id.itemCatDisplayScale)
-        itemCatWebZoom = findViewById(R.id.itemCatWebZoom)
-        itemCatThemes = findViewById(R.id.itemCatThemes)
-        itemCatMediaPlayback = findViewById(R.id.itemCatMediaPlayback)
-        itemCatSearchEngine = findViewById(R.id.itemCatSearchEngine)
-        itemCatHomePage = findViewById(R.id.itemCatHomePage)
-        itemCatUserAgent = findViewById(R.id.itemCatUserAgent)
-        itemCatWebEngine = findViewById(R.id.itemCatWebEngine)
-        itemCatAdBlock = findViewById(R.id.itemCatAdBlock)
-        itemCatAppLock = findViewById(R.id.itemCatAppLock)
-        itemCatCacheStorage = findViewById(R.id.itemCatCacheStorage)
-        itemCatQuickTools = findViewById(R.id.itemCatQuickTools)
-        itemCatRemoteNav = findViewById(R.id.itemCatRemoteNav)
-        itemCatCursorPhysics = findViewById(R.id.itemCatCursorPhysics)
-        itemCatKeyboardMouse = findViewById(R.id.itemCatKeyboardMouse)
-        itemCatShortcuts = findViewById(R.id.itemCatShortcuts)
-        itemCatAbout = findViewById(R.id.itemCatAbout)
-
-        findViewById<View>(R.id.vSettingsBackdrop)?.setOnClickListener {
-            dismiss()
-        }
+        itemCatDisplayScale = contentView.findViewById(R.id.itemCatDisplayScale)
+        itemCatWebZoom = contentView.findViewById(R.id.itemCatWebZoom)
+        itemCatThemes = contentView.findViewById(R.id.itemCatThemes)
+        itemCatMediaPlayback = contentView.findViewById(R.id.itemCatMediaPlayback)
+        itemCatSearchEngine = contentView.findViewById(R.id.itemCatSearchEngine)
+        itemCatHomePage = contentView.findViewById(R.id.itemCatHomePage)
+        itemCatUserAgent = contentView.findViewById(R.id.itemCatUserAgent)
+        itemCatWebEngine = contentView.findViewById(R.id.itemCatWebEngine)
+        itemCatAdBlock = contentView.findViewById(R.id.itemCatAdBlock)
+        itemCatAppLock = contentView.findViewById(R.id.itemCatAppLock)
+        itemCatCacheStorage = contentView.findViewById(R.id.itemCatCacheStorage)
+        itemCatQuickTools = contentView.findViewById(R.id.itemCatQuickTools)
+        itemCatRemoteNav = contentView.findViewById(R.id.itemCatRemoteNav)
+        itemCatCursorPhysics = contentView.findViewById(R.id.itemCatCursorPhysics)
+        itemCatKeyboardMouse = contentView.findViewById(R.id.itemCatKeyboardMouse)
+        itemCatShortcuts = contentView.findViewById(R.id.itemCatShortcuts)
+        itemCatAbout = contentView.findViewById(R.id.itemCatAbout)
     }
 
     private fun initChildViews() {
@@ -268,27 +284,40 @@ class SettingsDialog(context: Context, val model: SettingsModel) :
         }
     }
 
-    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (event.action == KeyEvent.ACTION_DOWN) {
-            when (event.keyCode) {
-                KeyEvent.KEYCODE_BACK,
-                KeyEvent.KEYCODE_ESCAPE,
-                KeyEvent.KEYCODE_BUTTON_B -> {
-                    if (llSettingsPageDetail.visibility == View.VISIBLE) {
-                        showCategoriesPage()
-                        return true
-                    } else {
-                        dismiss()
-                        return true
-                    }
-                }
-            }
+    fun show(anchorView: View? = null) {
+        val decorView = activity?.window?.decorView ?: return
+        val header = activity.findViewById<View>(R.id.rlActionBar) ?: anchorView ?: decorView
+
+        val loc = IntArray(2)
+        header.getLocationInWindow(loc)
+        if (loc[1] == 0) {
+            header.getLocationOnScreen(loc)
         }
-        return super.dispatchKeyEvent(event)
+        val headerBottom = loc[1] + header.height
+
+        val screenWidth = if (decorView.width > 0) decorView.width else context.resources.displayMetrics.widthPixels
+        val screenHeight = if (decorView.height > 0) decorView.height else context.resources.displayMetrics.heightPixels
+
+        val popupWidth = (screenWidth * 0.26f).toInt().coerceIn(240, 520)
+        val popupHeight = (screenHeight - headerBottom).coerceAtLeast(100)
+
+        popupWindow.width = popupWidth
+        popupWindow.height = popupHeight
+        popupWindow.isClippingEnabled = false
+
+        val xPos = screenWidth - popupWidth
+        popupWindow.showAtLocation(decorView, android.view.Gravity.TOP or android.view.Gravity.START, xPos, headerBottom)
+
+        contentView.post {
+            val focusTarget = lastFocusedCategoryItem ?: itemCatDisplayScale
+            focusTarget.requestFocus()
+        }
     }
 
-    override fun onDismiss(dialog: DialogInterface?) {
-        mainView?.save()
+    fun dismiss() {
+        if (popupWindow.isShowing) {
+            popupWindow.dismiss()
+        }
     }
 
     override fun onNeedToCloseSettings() {
