@@ -82,7 +82,7 @@ class WebViewWebEngineCallback(
     }
 
     override fun isAd(request: WebResourceRequest, baseUri: Uri): Boolean {
-        return getCallback()?.isAd(request.url, request.requestHeaders["Accept"], baseUri) ?: false
+        return getCallback()?.isAd(request.url, request.requestHeaders?.get("Accept"), baseUri) ?: false
     }
 
     override fun isAdBlockingEnabled(): Boolean {

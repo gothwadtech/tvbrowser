@@ -1,29 +1,30 @@
 package com.gothwad.tvbrowser.activity.main
 
 import android.net.Uri
-import android.widget.Toast
+import android.util.Log
 import com.brave.adblock.AdBlockClient
 import com.brave.adblock.AdBlockClient.FilterOption
 import com.brave.adblock.Utils
 import com.gothwad.tvbrowser.AppContext
 import com.gothwad.tvbrowser.BrowserApp
+import com.gothwad.tvbrowser.Config
 import com.gothwad.tvbrowser.utils.activemodel.ActiveModel
 import com.gothwad.tvbrowser.utils.observable.ObservableValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.URL
-import java.util.*
+import java.util.Calendar
 
 class AdblockModel : ActiveModel() {
     companion object {
         val TAG: String = AdblockModel::class.java.simpleName
 
         const val SERIALIZED_LIST_FILE = "adblock_ser.dat"
-        const val AUTO_UPDATE_INTERVAL_MINUTES = 60 * 24 * 30 //30 days
+        const val AUTO_UPDATE_INTERVAL_MINUTES = 60 * 24 * 30 // 30 days
     }
 
+    @Volatile
     private var client: AdBlockClient? = null
     val clientLoading = ObservableValue(false)
     val config = AppContext.provideConfig()
@@ -32,55 +33,87 @@ class AdblockModel : ActiveModel() {
         loadAdBlockList(false)
     }
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    fun loadAdBlockList(forceReload: Boolean) = modelScope.launch {
+    fun loadAdBlockList(forceReload: Boolean) = modelScope.launch(Dispatchers.IO) {
         if (clientLoading.value) return@launch
+        clientLoading.value = true
+
         val checkDate = Calendar.getInstance()
         checkDate.timeInMillis = config.adBlockListLastUpdate
         checkDate.add(Calendar.MINUTE, AUTO_UPDATE_INTERVAL_MINUTES)
         val now = Calendar.getInstance()
         val needUpdate = forceReload || checkDate.before(now)
-        clientLoading.value = true
-        val client = AdBlockClient()
+
+        val newClient = AdBlockClient()
         var success = false
-        withContext(Dispatchers.IO) ioContext@ {
-            val serializedFile = File(BrowserApp.instance.filesDir, SERIALIZED_LIST_FILE)
-            if ((!needUpdate) && serializedFile.exists() && client.deserialize(serializedFile.absolutePath)) {
-                success = true
-                return@ioContext
-            }
+        val serializedFile = File(BrowserApp.instance.filesDir, SERIALIZED_LIST_FILE)
+
+        // Try fast disk deserialization if up-to-date
+        if (!needUpdate && serializedFile.exists()) {
             try {
-                val easyList = URL(config.adBlockListURL.value).openConnection().inputStream.bufferedReader()
-                  .use { it.readText() }
-                success = client.parse(easyList)
-                client.serialize(serializedFile.absolutePath)
+                if (newClient.deserialize(serializedFile.absolutePath)) {
+                    success = true
+                    Log.d(TAG, "AdBlock list deserialized successfully from disk cache.")
+                }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.w(TAG, "Failed to deserialize cached AdBlock list: ${e.message}")
             }
         }
-        this@AdblockModel.client = client
-        config.adBlockListLastUpdate = now.timeInMillis
+
+        // If not cached or update needed, download and parse
         if (!success) {
-            Toast.makeText(BrowserApp.instance, "Error loading ad-blocker list", Toast.LENGTH_SHORT).show()
+            try {
+                val urlStr = config.adBlockListURL.value.ifEmpty { Config.DEFAULT_ADBLOCK_LIST_URL }
+                Log.d(TAG, "Downloading AdBlock filter list from: $urlStr")
+                val connection = URL(urlStr).openConnection()
+                connection.connectTimeout = 10000
+                connection.readTimeout = 15000
+                val easyList = connection.inputStream.bufferedReader().use { it.readText() }
+                if (newClient.parse(easyList)) {
+                    success = true
+                    try {
+                        newClient.serialize(serializedFile.absolutePath)
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Failed to serialize AdBlock client to disk: ${e.message}")
+                    }
+                    config.adBlockListLastUpdate = now.timeInMillis
+                    Log.d(TAG, "AdBlock list downloaded, parsed and cached.")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error downloading AdBlock list: ${e.message}")
+                // Fallback to existing disk cache if available
+                if (!success && serializedFile.exists()) {
+                    try {
+                        if (newClient.deserialize(serializedFile.absolutePath)) {
+                            success = true
+                            Log.d(TAG, "Fallback to existing disk cache succeeded.")
+                        }
+                    } catch (e2: Exception) {
+                        Log.e(TAG, "Fallback deserialize failed: ${e2.message}")
+                    }
+                }
+            }
+        }
+
+        if (success) {
+            this@AdblockModel.client = newClient
         }
         clientLoading.value = false
     }
 
     fun isAd(url: Uri, type: String?, baseUri: Uri): Boolean {
-        val client = client ?: return false
-        val baseHost = baseUri.host
+        val currentClient = client ?: return false
+        val baseHost = baseUri.host ?: return false
         val filterOption = try {
             mapRequestToFilterOption(url, type)
         } catch (e: Exception) {
             return false
         }
-        val result = try {
-            baseHost != null && client.matches(url.toString(), filterOption, baseHost)
+        val urlString = url.toString()
+        return try {
+            currentClient.matches(urlString, filterOption, baseHost)
         } catch (e: Exception) {
-            e.printStackTrace()
             false
         }
-        return result
     }
 
     private fun mapRequestToFilterOption(url: Uri?, type: String?): FilterOption? {

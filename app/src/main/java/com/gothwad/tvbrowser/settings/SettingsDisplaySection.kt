@@ -48,7 +48,7 @@ object SettingsDisplaySection {
         fun setUiScale(percent: Int) {
             config.uiScalePercent = percent
             vb.sbUiScale.progress = (percent - minUiScale).coerceIn(0, maxUiScale - minUiScale)
-            vb.tvUiScaleValue.text = "$percent%"
+            vb.tvUiScaleValue.text = if (percent == 50) "50% (Default)" else "$percent%"
         }
 
         vb.btnUiScale1.setOnClickListener { setUiScale(1) }
@@ -56,10 +56,6 @@ object SettingsDisplaySection {
         vb.btnUiScale50.setOnClickListener { setUiScale(50) }
         vb.btnUiScale75.setOnClickListener { setUiScale(75) }
         vb.btnUiScale100.setOnClickListener { setUiScale(100) }
-        vb.btnUiScale125.setOnClickListener { setUiScale(125) }
-        vb.btnUiScale150.setOnClickListener { setUiScale(150) }
-        vb.btnUiScale200.setOnClickListener { setUiScale(200) }
-        vb.btnUiScale300.setOnClickListener { setUiScale(300) }
         vb.btnUiScaleApply.setOnClickListener {
             onDismissDialog?.invoke()
             mainAct?.applyUiScale()

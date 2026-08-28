@@ -37,18 +37,25 @@ class BrowserSidebarPopup(private val activity: MainActivity) : Dialog(activity,
         setContentView(R.layout.dialog_browser_side_menu)
 
         window?.apply {
-            setGravity(Gravity.END or Gravity.TOP)
+            setGravity(Gravity.START)
             val dm = activity.resources.displayMetrics
-            val panelWidth = (dm.widthPixels * 0.38f).toInt().coerceIn(
-                (360 * dm.density).toInt(),
-                (440 * dm.density).toInt()
-            )
+            // Proportional slim width (25% of screen width) so it looks thin and sleek at all UI scale ratios
+            val panelWidth = (dm.widthPixels * 0.25f).toInt()
             setLayout(panelWidth, ViewGroup.LayoutParams.MATCH_PARENT)
+            val lp = attributes ?: WindowManager.LayoutParams()
+            lp.gravity = Gravity.START
+            lp.x = 0
+            lp.y = 0
+            lp.width = panelWidth
+            lp.height = ViewGroup.LayoutParams.MATCH_PARENT
+            attributes = lp
+
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            setDimAmount(0.65f)
+            setDimAmount(0.55f)
             addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-            setWindowAnimations(R.style.SideDrawerAnimation)
+            setWindowAnimations(R.style.SideDrawerLeftAnimation)
         }
+        setCanceledOnTouchOutside(true)
 
         setupViews()
     }

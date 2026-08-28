@@ -41,8 +41,8 @@ class Config(val prefs: SharedPreferences) {
         const val CURSOR_PHYSICS_PERCENT_MAX = 200
         const val UI_SCALE_PERCENT_KEY = "ui_scale_percent"
         const val UI_SCALE_PERCENT_MIN = 1
-        const val UI_SCALE_PERCENT_MAX = 300
-        const val UI_SCALE_PERCENT_DEFAULT = 100
+        const val UI_SCALE_PERCENT_MAX = 100
+        const val UI_SCALE_PERCENT_DEFAULT = 50
         const val WEB_PAGE_ZOOM_PERCENT_KEY = "web_page_zoom_percent"
         const val WEB_PAGE_ZOOM_PERCENT_MIN = 50
         const val WEB_PAGE_ZOOM_PERCENT_MAX = 300
@@ -216,7 +216,7 @@ class Config(val prefs: SharedPreferences) {
             ).apply()
         }
 
-    /** UI scaling percent for Android TV interface (100 = default, 75 to 200). */
+    /** UI scaling percent for Android TV interface (50 = default/100% density, 1 = 25% density, 100 = 125% density). */
     var uiScalePercent: Int
         get() = prefs.getInt(UI_SCALE_PERCENT_KEY, UI_SCALE_PERCENT_DEFAULT)
             .coerceIn(UI_SCALE_PERCENT_MIN, UI_SCALE_PERCENT_MAX)
@@ -226,6 +226,17 @@ class Config(val prefs: SharedPreferences) {
                 value.coerceIn(UI_SCALE_PERCENT_MIN, UI_SCALE_PERCENT_MAX)
             ).apply()
         }
+
+    fun getUiScaleDensityMultiplier(): Float {
+        val p = uiScalePercent.coerceIn(UI_SCALE_PERCENT_MIN, UI_SCALE_PERCENT_MAX)
+        return if (p <= 50) {
+            // 1% -> 0.25f (25%), 50% -> 1.00f (100%)
+            0.25f + (p - 1).toFloat() * (0.75f / 49f)
+        } else {
+            // 50% -> 1.00f (100%), 100% -> 1.25f (125%)
+            1.00f + (p - 50).toFloat() * (0.25f / 50f)
+        }
+    }
 
     /** Default web page zoom percent for websites (100 = default, 50 to 300). */
     var webPageZoomPercent: Int

@@ -37,6 +37,35 @@ object FaviconsPool {
         }
     }
 
+    fun getFromMemoryOrDisk(host: String): Bitmap? {
+        val cached = cache.get(host)
+        if (cached != null) return cached
+        try {
+            val hostConfig = databaseDelegate.findByHostName(host)
+            val faviconFileName = hostConfig?.favicon ?: (host.hashCode().toString() + ".png")
+            val favIconsDir = File(favIconsDir())
+            val faviconFile = File(favIconsDir, faviconFileName)
+            if (faviconFile.exists() && faviconFile.length() > 0) {
+                val bitmap = BitmapFactory.decodeFile(faviconFile.absolutePath)
+                if (bitmap != null) {
+                    cache.put(host, bitmap)
+                    return bitmap
+                }
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Fast favicon disk read failed for $host: ${e.message}")
+        }
+        // If not found, trigger background fetch without blocking the caller
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                get(host)
+            } catch (e: Exception) {
+                // Ignore background fetch error
+            }
+        }
+        return null
+    }
+
     suspend fun get(urlOrHost: String): Bitmap? {
         Log.d(TAG, "get: $urlOrHost")
         if (!urlOrHost.startsWith("http://", true) && !urlOrHost.startsWith("https://", true)) {

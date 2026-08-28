@@ -2,6 +2,7 @@ package com.gothwad.tvbrowser.utils
 
 import android.os.SystemClock
 import android.util.Log
+import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
 import kotlin.math.max
@@ -207,9 +208,15 @@ class BackNavigationEventsAdapter(
 
     fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
         val buttonState = event.buttonState
-        val backPressedNow =
+        val isMouse = (event.source and InputDevice.SOURCE_MOUSE) != 0 ||
+                (event.source and InputDevice.SOURCE_TOUCHPAD) != 0 ||
+                event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE
+        val backPressedNow = if (isMouse) {
+            (buttonState and MotionEvent.BUTTON_BACK) != 0
+        } else {
             (buttonState and MotionEvent.BUTTON_SECONDARY) != 0 ||
-                (buttonState and MotionEvent.BUTTON_BACK) != 0
+                    (buttonState and MotionEvent.BUTTON_BACK) != 0
+        }
 
         var emittedAny = false
         val suppressed = shouldSuppress(BackChannel.MOTION, event.eventTime)

@@ -75,7 +75,8 @@ object MainActivityWebContextMenuHelper {
         if (s != null && s.startsWith("\"") && s.endsWith("\"")) {
             s = s.substring(1, s.length - 1)
         }
-        val url = s
+        val url = s ?: tab.webEngine.url
+        val isLinkTarget = linkUri != null || srcUri != null
         val isHTTPUrl = url != null && (url.startsWith("http://") || url.startsWith("https://"))
         val anchor = View(activity)
         val lp = FrameLayout.LayoutParams(1, 1)
@@ -83,9 +84,9 @@ object MainActivityWebContextMenuHelper {
         activity.vb.flWebViewContainer.addView(anchor, lp)
         activity.linkActionsMenu = PopupMenu(activity, anchor, Gravity.BOTTOM).also {
             it.inflate(R.menu.menu_link)
-            it.menu.findItem(R.id.miOpenInNewTab).isVisible = isHTTPUrl
+            it.menu.findItem(R.id.miOpenInNewTab).isVisible = isHTTPUrl && isLinkTarget
             it.menu.findItem(R.id.miOpenInExternalApp).isVisible = isHTTPUrl
-            it.menu.findItem(R.id.miDownload).isVisible = isHTTPUrl
+            it.menu.findItem(R.id.miDownload).isVisible = isHTTPUrl && isLinkTarget
             it.menu.findItem(R.id.miCopyToClipboard).isVisible = url != null
             it.menu.findItem(R.id.miShare).isVisible = url != null
             it.setOnMenuItemClickListener { menuItem ->

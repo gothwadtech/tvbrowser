@@ -6,7 +6,6 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import com.gothwad.tvbrowser.singleton.FaviconsPool
-import kotlinx.coroutines.runBlocking
 import java.io.ByteArrayOutputStream
 
 object HomePageHelper {
@@ -18,9 +17,7 @@ object HomePageHelper {
         //check is scheme is favicon
         if (request.url.scheme == "favicon") {
             val host = request.url.host ?: return null
-            val favicon = runBlocking {
-                FaviconsPool.get(host)
-            }
+            val favicon = FaviconsPool.getFromMemoryOrDisk(host)
             if (favicon != null) {
                 Log.d(TAG, "shouldInterceptRequest: favicon found for $host")
                 val bytes = ByteArrayOutputStream()
@@ -30,17 +27,7 @@ object HomePageHelper {
             } else {
                 return WebResourceResponse(null, null, 404, "Not Found", null, null)
             }
-        } /*else if (url.startsWith(Config.HOME_PAGE_URL) &&
-            (url.endsWith(".svg") || url.endsWith(".png"))) {
-            //load images of tvbrowser.phlox.dev from assets for offline mode
-            val data = BrowserApp.instance.assets.open("pages/home" + request.url.path!!.replace("/appcontent/home", "")).use { it.readBytes() }
-            var imageType = url.substring(url.lastIndexOf(".") + 1)
-            if (imageType == "svg") {
-                imageType = "svg+xml"
-            }
-            return WebResourceResponse("image/" + imageType,
-                "utf-8", data.inputStream())
-        }*/
+        }
         return null
     }
 }

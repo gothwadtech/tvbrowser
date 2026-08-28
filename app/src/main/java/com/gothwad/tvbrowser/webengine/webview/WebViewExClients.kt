@@ -228,16 +228,14 @@ object WebViewExClients {
                         return it
                     }
                 }
-
-                if (!callback.isAdBlockingEnabled()) {
-                    return super.shouldInterceptRequest(view, request)
+                if (callback.isAdBlockingEnabled()) {
+                    val ad = currentPageUrl?.let { callback.isAd(request, it) } ?: false
+                    if (ad) {
+                        uiHandler.post { callback.onBlockedAd(request.url) }
+                        return WebResourceResponse("text/plain", "utf-8", "".byteInputStream())
+                    }
                 }
-
-                val ad = currentPageUrl?.let { callback.isAd(request, it) } ?: false
-                return if (ad) {
-                    uiHandler.post { callback.onBlockedAd(request.url) }
-                    WebResourceResponse("text/plain", "utf-8", "".byteInputStream())
-                } else super.shouldInterceptRequest(view, request)
+                return super.shouldInterceptRequest(view, request)
             }
 
             override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {

@@ -354,8 +354,8 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     override fun attachBaseContext(newBase: Context?) {
         if (newBase != null) {
             val cfg = AppContext.provideConfig()
-            val scale = cfg.uiScalePercent / 100f
-            if (scale != 1.0f) {
+            val scale = cfg.getUiScaleDensityMultiplier()
+            if (kotlin.math.abs(scale - 1.0f) > 0.001f) {
                 val overrideConfig = android.content.res.Configuration(newBase.resources.configuration)
                 val targetDpi = (newBase.resources.displayMetrics.densityDpi * scale).toInt().coerceAtLeast(1)
                 overrideConfig.densityDpi = targetDpi

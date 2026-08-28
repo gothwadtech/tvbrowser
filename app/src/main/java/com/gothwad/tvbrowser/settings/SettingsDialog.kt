@@ -3,63 +3,125 @@ package com.gothwad.tvbrowser.settings
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
-import android.content.res.ColorStateList
-import android.graphics.Typeface
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.view.Gravity
+import android.view.KeyEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.Button
 import android.widget.FrameLayout
-import androidx.core.content.ContextCompat
+import android.widget.ImageButton
+import android.widget.LinearLayout
+import android.widget.TextView
 import com.gothwad.tvbrowser.R
 
 class SettingsDialog(context: Context, val model: SettingsModel) :
-    Dialog(context, R.style.SettingsDialog),
+    Dialog(context, R.style.TvSettingsDrawerDialog),
     DialogInterface.OnDismissListener, VersionSettingsView.Callback {
 
     private var mainView: MainSettingsView? = null
     private var versionView: VersionSettingsView? = null
     private var shortcutsView: ShortcutsSettingsView? = null
-    private var flTabsContent: FrameLayout? = null
 
-    private lateinit var btnTabGeneral: Button
-    private lateinit var btnTabPrivacy: Button
-    private lateinit var btnTabBrowser: Button
-    private lateinit var btnTabTools: Button
-    private lateinit var btnTabRemote: Button
-    private lateinit var btnTabKeyboardMouse: Button
-    private lateinit var btnTabShortcuts: Button
-    private lateinit var btnTabAbout: Button
+    private lateinit var llSettingsPageCategories: LinearLayout
+    private lateinit var llSettingsPageDetail: LinearLayout
+    private lateinit var flTabsContent: FrameLayout
+    private lateinit var tvSettingsDetailTitle: TextView
+    private lateinit var tvSettingsDetailBadge: TextView
+    private lateinit var btnSettingsBackToCategories: ImageButton
+    private lateinit var ibCloseSettings: ImageButton
 
-    private val allButtons by lazy {
-        listOf(
-            btnTabGeneral,
-            btnTabPrivacy,
-            btnTabBrowser,
-            btnTabTools,
-            btnTabRemote,
-            btnTabKeyboardMouse,
-            btnTabShortcuts,
-            btnTabAbout
-        )
-    }
+    // Page 1 Category Items (17 Granular Sections)
+    private lateinit var itemCatDisplayScale: View
+    private lateinit var itemCatWebZoom: View
+    private lateinit var itemCatThemes: View
+    private lateinit var itemCatMediaPlayback: View
+    private lateinit var itemCatSearchEngine: View
+    private lateinit var itemCatHomePage: View
+    private lateinit var itemCatUserAgent: View
+    private lateinit var itemCatWebEngine: View
+    private lateinit var itemCatAdBlock: View
+    private lateinit var itemCatAppLock: View
+    private lateinit var itemCatCacheStorage: View
+    private lateinit var itemCatQuickTools: View
+    private lateinit var itemCatRemoteNav: View
+    private lateinit var itemCatCursorPhysics: View
+    private lateinit var itemCatKeyboardMouse: View
+    private lateinit var itemCatShortcuts: View
+    private lateinit var itemCatAbout: View
+
+    private var lastFocusedCategoryItem: View? = null
 
     init {
         setTitle(R.string.settings)
         setContentView(R.layout.dialog_settings)
 
+        bindViews()
+        initChildViews()
+        setupListeners()
+
+        setOnDismissListener(this)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        window?.apply {
+            setGravity(Gravity.END)
+            val dm = context.resources.displayMetrics
+            // Proportional slim width (26% of screen width) so it looks thin and sleek at all UI scale ratios
+            val panelWidth = (dm.widthPixels * 0.26f).toInt()
+            setLayout(panelWidth, ViewGroup.LayoutParams.MATCH_PARENT)
+            val lp = attributes ?: WindowManager.LayoutParams()
+            lp.gravity = Gravity.END
+            lp.x = 0
+            lp.y = 0
+            lp.width = panelWidth
+            lp.height = ViewGroup.LayoutParams.MATCH_PARENT
+            attributes = lp
+
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setDimAmount(0.55f)
+            addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+            setWindowAnimations(R.style.SideDrawerAnimation)
+        }
+        setCanceledOnTouchOutside(true)
+    }
+
+    private fun bindViews() {
+        llSettingsPageCategories = findViewById(R.id.llSettingsPageCategories)
+        llSettingsPageDetail = findViewById(R.id.llSettingsPageDetail)
         flTabsContent = findViewById(R.id.flTabsContent)
-        findViewById<View>(R.id.ibCloseSettings)?.setOnClickListener { dismiss() }
+        tvSettingsDetailTitle = findViewById(R.id.tvSettingsDetailTitle)
+        tvSettingsDetailBadge = findViewById(R.id.tvSettingsDetailBadge)
+        btnSettingsBackToCategories = findViewById(R.id.btnSettingsBackToCategories)
+        ibCloseSettings = findViewById(R.id.ibCloseSettings)
 
-        btnTabGeneral = findViewById(R.id.btnTabGeneral)
-        btnTabPrivacy = findViewById(R.id.btnTabPrivacy)
-        btnTabBrowser = findViewById(R.id.btnTabBrowser)
-        btnTabTools = findViewById(R.id.btnTabTools)
-        btnTabRemote = findViewById(R.id.btnTabRemote)
-        btnTabKeyboardMouse = findViewById(R.id.btnTabKeyboardMouse)
-        btnTabShortcuts = findViewById(R.id.btnTabShortcuts)
-        btnTabAbout = findViewById(R.id.btnTabAbout)
+        itemCatDisplayScale = findViewById(R.id.itemCatDisplayScale)
+        itemCatWebZoom = findViewById(R.id.itemCatWebZoom)
+        itemCatThemes = findViewById(R.id.itemCatThemes)
+        itemCatMediaPlayback = findViewById(R.id.itemCatMediaPlayback)
+        itemCatSearchEngine = findViewById(R.id.itemCatSearchEngine)
+        itemCatHomePage = findViewById(R.id.itemCatHomePage)
+        itemCatUserAgent = findViewById(R.id.itemCatUserAgent)
+        itemCatWebEngine = findViewById(R.id.itemCatWebEngine)
+        itemCatAdBlock = findViewById(R.id.itemCatAdBlock)
+        itemCatAppLock = findViewById(R.id.itemCatAppLock)
+        itemCatCacheStorage = findViewById(R.id.itemCatCacheStorage)
+        itemCatQuickTools = findViewById(R.id.itemCatQuickTools)
+        itemCatRemoteNav = findViewById(R.id.itemCatRemoteNav)
+        itemCatCursorPhysics = findViewById(R.id.itemCatCursorPhysics)
+        itemCatKeyboardMouse = findViewById(R.id.itemCatKeyboardMouse)
+        itemCatShortcuts = findViewById(R.id.itemCatShortcuts)
+        itemCatAbout = findViewById(R.id.itemCatAbout)
 
+        findViewById<View>(R.id.vSettingsBackdrop)?.setOnClickListener {
+            dismiss()
+        }
+    }
+
+    private fun initChildViews() {
         mainView = MainSettingsView(context).apply {
             onDismissDialog = { dismiss() }
         }
@@ -69,96 +131,160 @@ class SettingsDialog(context: Context, val model: SettingsModel) :
         }
 
         shortcutsView = ShortcutsSettingsView(context)
-
-        setupTabButtons()
-        selectCategory(btnTabGeneral, SettingsCategory.GENERAL)
-
-        setOnDismissListener(this)
     }
 
-    private fun setupTabButtons() {
-        btnTabGeneral.setOnClickListener { selectCategory(btnTabGeneral, SettingsCategory.GENERAL) }
-        btnTabPrivacy.setOnClickListener { selectCategory(btnTabPrivacy, SettingsCategory.PRIVACY) }
-        btnTabBrowser.setOnClickListener { selectCategory(btnTabBrowser, SettingsCategory.BROWSER) }
-        btnTabTools.setOnClickListener { selectCategory(btnTabTools, SettingsCategory.TOOLS) }
-        btnTabRemote.setOnClickListener { selectCategory(btnTabRemote, SettingsCategory.REMOTE) }
-        btnTabKeyboardMouse.setOnClickListener { selectCategory(btnTabKeyboardMouse, SettingsCategory.KEYBOARD_MOUSE) }
-        btnTabShortcuts.setOnClickListener { selectShortcutsTab(btnTabShortcuts) }
-        btnTabAbout.setOnClickListener { selectAboutTab(btnTabAbout) }
+    private fun setupListeners() {
+        ibCloseSettings.setOnClickListener { dismiss() }
+        btnSettingsBackToCategories.setOnClickListener { showCategoriesPage() }
 
-        btnTabGeneral.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) selectCategory(btnTabGeneral, SettingsCategory.GENERAL)
+        bindCategoryItem(itemCatDisplayScale) {
+            openMainCategory(itemCatDisplayScale, "Display & UI Scale", "Display & Layout", SettingsCategory.DISPLAY_SCALE)
         }
-        btnTabPrivacy.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) selectCategory(btnTabPrivacy, SettingsCategory.PRIVACY)
+        bindCategoryItem(itemCatWebZoom) {
+            openMainCategory(itemCatWebZoom, "Web Page Zoom", "Zoom Controls", SettingsCategory.WEB_ZOOM)
         }
-        btnTabBrowser.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) selectCategory(btnTabBrowser, SettingsCategory.BROWSER)
+        bindCategoryItem(itemCatThemes) {
+            openMainCategory(itemCatThemes, "Themes & Appearance", "Appearance & Dark Mode", SettingsCategory.THEMES)
         }
-        btnTabTools.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) selectCategory(btnTabTools, SettingsCategory.TOOLS)
+        bindCategoryItem(itemCatMediaPlayback) {
+            openMainCategory(itemCatMediaPlayback, "Media & Playback", "Video & Audio", SettingsCategory.MEDIA_PLAYBACK)
         }
-        btnTabRemote.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) selectCategory(btnTabRemote, SettingsCategory.REMOTE)
+        bindCategoryItem(itemCatSearchEngine) {
+            openMainCategory(itemCatSearchEngine, "Search Engine", "Default Engine", SettingsCategory.SEARCH_ENGINE)
         }
-        btnTabKeyboardMouse.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) selectCategory(btnTabKeyboardMouse, SettingsCategory.KEYBOARD_MOUSE)
+        bindCategoryItem(itemCatHomePage) {
+            openMainCategory(itemCatHomePage, "Home Page & Startup", "Startup & Bookmarks", SettingsCategory.HOME_PAGE)
         }
-        btnTabShortcuts.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) selectShortcutsTab(btnTabShortcuts)
+        bindCategoryItem(itemCatUserAgent) {
+            openMainCategory(itemCatUserAgent, "User Agent & Identity", "Desktop / Mobile Mode", SettingsCategory.USER_AGENT)
         }
-        btnTabAbout.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) selectAboutTab(btnTabAbout)
+        bindCategoryItem(itemCatWebEngine) {
+            openMainCategory(itemCatWebEngine, "Web Engine & Rendering", "Browser Core", SettingsCategory.WEB_ENGINE)
+        }
+        bindCategoryItem(itemCatAdBlock) {
+            openMainCategory(itemCatAdBlock, "Ad & Tracker Blocker", "Filters & Rules", SettingsCategory.AD_BLOCKER)
+        }
+        bindCategoryItem(itemCatAppLock) {
+            openMainCategory(itemCatAppLock, "App Lock & PIN Security", "Master Passcode", SettingsCategory.APP_LOCK)
+        }
+        bindCategoryItem(itemCatCacheStorage) {
+            openMainCategory(itemCatCacheStorage, "Cache & Storage", "Data & History", SettingsCategory.CACHE_STORAGE)
+        }
+        bindCategoryItem(itemCatQuickTools) {
+            openMainCategory(itemCatQuickTools, "Quick Tools & Utilities", "Toolbox & Actions", SettingsCategory.QUICK_TOOLS)
+        }
+        bindCategoryItem(itemCatRemoteNav) {
+            openMainCategory(itemCatRemoteNav, "Remote & Joystick", "Navigation Controls", SettingsCategory.REMOTE_NAV)
+        }
+        bindCategoryItem(itemCatCursorPhysics) {
+            openMainCategory(itemCatCursorPhysics, "Virtual Cursor & Physics", "Pointer Controls", SettingsCategory.CURSOR_PHYSICS)
+        }
+        bindCategoryItem(itemCatKeyboardMouse) {
+            openMainCategory(itemCatKeyboardMouse, "Keyboard & Mouse", "Hardware Devices", SettingsCategory.KEYBOARD_MOUSE)
+        }
+        bindCategoryItem(itemCatShortcuts) {
+            openShortcuts(itemCatShortcuts)
+        }
+        bindCategoryItem(itemCatAbout) {
+            openAbout(itemCatAbout)
         }
     }
 
-    private fun updateHighlight(activeButton: Button) {
-        allButtons.forEach { btn ->
-            val isActive = (btn == activeButton)
-            btn.isActivated = isActive
-            btn.setTypeface(null, if (isActive) Typeface.BOLD else Typeface.NORMAL)
+    private fun bindCategoryItem(view: View, action: () -> Unit) {
+        view.setOnClickListener { action() }
+        view.setOnKeyListener { _, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN) {
+                when (keyCode) {
+                    KeyEvent.KEYCODE_DPAD_CENTER,
+                    KeyEvent.KEYCODE_ENTER,
+                    KeyEvent.KEYCODE_NUMPAD_ENTER,
+                    KeyEvent.KEYCODE_BUTTON_A -> {
+                        action()
+                        true
+                    }
+                    else -> false
+                }
+            } else false
         }
     }
 
-    private fun selectCategory(button: Button, category: SettingsCategory) {
-        updateHighlight(button)
-        val container = flTabsContent ?: return
+    private fun openMainCategory(
+        clickedItem: View,
+        title: String,
+        badge: String,
+        category: SettingsCategory
+    ) {
+        lastFocusedCategoryItem = clickedItem
+        tvSettingsDetailTitle.text = title
+        tvSettingsDetailBadge.text = badge
+
         val mv = mainView ?: return
-
-        if (container.indexOfChild(mv) == -1) {
-            container.removeAllViews()
-            container.addView(mv)
-        }
+        flTabsContent.removeAllViews()
+        flTabsContent.addView(mv)
         mv.showCategory(category)
+
+        showDetailPage()
     }
 
-    private fun selectShortcutsTab(button: Button) {
-        updateHighlight(button)
-        val container = flTabsContent ?: return
+    private fun openShortcuts(clickedItem: View) {
+        lastFocusedCategoryItem = clickedItem
+        tvSettingsDetailTitle.text = context.getString(R.string.tab_shortcuts)
+        tvSettingsDetailBadge.text = "Navigation & Keys"
+
         val sv = shortcutsView ?: return
+        flTabsContent.removeAllViews()
+        flTabsContent.addView(sv)
 
-        container.removeAllViews()
-        container.addView(sv)
+        showDetailPage()
     }
 
-    private fun selectAboutTab(button: Button) {
-        updateHighlight(button)
-        val container = flTabsContent ?: return
+    private fun openAbout(clickedItem: View) {
+        lastFocusedCategoryItem = clickedItem
+        tvSettingsDetailTitle.text = "About & Version"
+        tvSettingsDetailBadge.text = "Build Information"
+
         val vv = versionView ?: return
+        flTabsContent.removeAllViews()
+        flTabsContent.addView(vv)
 
-        container.removeAllViews()
-        container.addView(vv)
+        showDetailPage()
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        window?.setLayout(
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT
-        )
-        window?.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-        window?.statusBarColor = ContextCompat.getColor(context, R.color.top_bar_background)
-        window?.navigationBarColor = ContextCompat.getColor(context, R.color.top_bar_background)
+    private fun showDetailPage() {
+        llSettingsPageCategories.visibility = View.GONE
+        llSettingsPageDetail.visibility = View.VISIBLE
+        btnSettingsBackToCategories.post {
+            btnSettingsBackToCategories.requestFocus()
+        }
+    }
+
+    fun showCategoriesPage() {
+        mainView?.save()
+        llSettingsPageDetail.visibility = View.GONE
+        llSettingsPageCategories.visibility = View.VISIBLE
+        val focusTarget = lastFocusedCategoryItem ?: itemCatDisplayScale
+        focusTarget.post {
+            focusTarget.requestFocus()
+        }
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.action == KeyEvent.ACTION_DOWN) {
+            when (event.keyCode) {
+                KeyEvent.KEYCODE_BACK,
+                KeyEvent.KEYCODE_ESCAPE,
+                KeyEvent.KEYCODE_BUTTON_B -> {
+                    if (llSettingsPageDetail.visibility == View.VISIBLE) {
+                        showCategoriesPage()
+                        return true
+                    } else {
+                        dismiss()
+                        return true
+                    }
+                }
+            }
+        }
+        return super.dispatchKeyEvent(event)
     }
 
     override fun onDismiss(dialog: DialogInterface?) {

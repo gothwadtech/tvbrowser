@@ -7,8 +7,6 @@ import com.gothwad.tvbrowser.R
 import com.gothwad.tvbrowser.model.HostConfig
 import com.gothwad.tvbrowser.model.WebTabState
 import com.gothwad.tvbrowser.widgets.NotificationView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 
 object MainActivityAdBlockHelper {
 
@@ -27,7 +25,7 @@ object MainActivityAdBlockHelper {
     }
 
     fun shouldBlockNewWindow(activity: MainActivity, tab: WebTabState, dialog: Boolean, userGesture: Boolean): Boolean {
-        val hostConfig = runBlocking(Dispatchers.Main.immediate) { activity.tabsModel.findHostConfig(tab, false) }
+        val hostConfig = activity.tabsModel.getCachedHostConfig(tab)
         val currentBlockPopupsLevelValue = hostConfig?.popupBlockLevel ?: HostConfig.DEFAULT_BLOCK_POPUPS_VALUE
         return when (currentBlockPopupsLevelValue) {
             HostConfig.POPUP_BLOCK_NONE -> false

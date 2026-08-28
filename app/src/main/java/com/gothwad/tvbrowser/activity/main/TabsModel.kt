@@ -170,30 +170,61 @@ class TabsModel : ActiveModel() {
         currentTab.value = newTab
     }
 
-    suspend fun findHostConfig(tab: WebTabState, createIfNotFound: Boolean): HostConfig? {
+    private val hostConfigCache = java.util.concurrent.ConcurrentHashMap<String, HostConfig>()
+
+    fun getCachedHostConfig(tab: WebTabState): HostConfig? {
+        val currentHostName = try {
+            java.net.URL(tab.url).host
+        } catch (e: Exception) {
+            null
+        } ?: return null
+
+        tab.cachedHostConfig?.let {
+            if (it.hostName == currentHostName) return it
+        }
+        hostConfigCache[currentHostName]?.let {
+            tab.cachedHostConfig = it
+            return it
+        }
+        modelScope.launch(Dispatchers.IO) {
+            findHostConfig(tab, false)
+        }
+        return null
+    }
+
+    suspend fun findHostConfig(tab: WebTabState, createIfNotFound: Boolean): HostConfig? = withContext(Dispatchers.IO) {
         Log.d(WebTabState.TAG, "findOrCreateHostConfig")
         val currentHostName = try {
-            URL(tab.url).host
+            java.net.URL(tab.url).host
         } catch (e: Exception) {
             Log.w(WebTabState.TAG, "Can not parse current url host: $e")
-            return null
+            return@withContext null
         }
         var hostConfig = tab.cachedHostConfig
         if (hostConfig == null || hostConfig.hostName != currentHostName) {
-            val db = com.gothwad.tvbrowser.singleton.AppDatabase.db.hostsDao()
-            hostConfig = db.findByHostName(currentHostName)
-            if (hostConfig == null && createIfNotFound) {
-                hostConfig = HostConfig(currentHostName)
-                hostConfig.id = db.insert(hostConfig)
+            hostConfig = hostConfigCache[currentHostName]
+            if (hostConfig == null) {
+                val db = com.gothwad.tvbrowser.singleton.AppDatabase.db.hostsDao()
+                hostConfig = db.findByHostName(currentHostName)
+                if (hostConfig == null && createIfNotFound) {
+                    hostConfig = HostConfig(currentHostName)
+                    hostConfig.id = db.insert(hostConfig)
+                }
+            }
+            if (hostConfig != null) {
+                hostConfigCache[currentHostName] = hostConfig
             }
             tab.cachedHostConfig = hostConfig
         }
-        return hostConfig
+        return@withContext hostConfig
     }
 
     suspend fun changePopupBlockingLevel(newLevel: Int, tab: WebTabState) {
         val hostConfig = findHostConfig(tab,true) ?: return
         hostConfig.popupBlockLevel = newLevel
-        AppDatabase.db.hostsDao().update(hostConfig)
+        hostConfigCache[hostConfig.hostName] = hostConfig
+        withContext(Dispatchers.IO) {
+            AppDatabase.db.hostsDao().update(hostConfig)
+        }
     }
 }

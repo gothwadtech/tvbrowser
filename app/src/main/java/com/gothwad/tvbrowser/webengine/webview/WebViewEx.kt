@@ -46,10 +46,12 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         const val INTERNAL_SCHEME_WARNING_DOMAIN = "warning"
         const val INTERNAL_SCHEME_WARNING_DOMAIN_TYPE_CERT = "certificate"
         val WIDEVINE_UUID = UUID(-0x121074568629b532L, -0x5c37d8232ae2de13L)
+
+        @Volatile
+        private var cachedGenericInjects: String? = null
     }
 
     private var virtualCursorMode: Boolean = true
-    private var genericInjects: String? = null
     private var webChromeClient_: WebChromeClient
     internal var fullscreenViewCallback: WebChromeClient.CustomViewCallback? = null
     internal var pickFileCallback: ValueCallback<Array<Uri>>? = null
@@ -100,9 +102,6 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     init {
         setLayerType(View.LAYER_TYPE_HARDWARE, null)
         with(settings) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                safeBrowsingEnabled = callback.isAdBlockingEnabled()
-            }
             javaScriptEnabled = true
             useWideViewPort = true
             loadWithOverviewMode = true
@@ -116,6 +115,9 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             allowContentAccess = true
             cacheMode = WebSettings.LOAD_DEFAULT
             setRenderPriority(WebSettings.RenderPriority.HIGH)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                safeBrowsingEnabled = false
+            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 offscreenPreRaster = true
             }
@@ -156,7 +158,16 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             }
         }
 
-        setOnLongClickListener { true }
+        isLongClickable = true
+        isFocusable = true
+        isFocusableInTouchMode = true
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            setOnContextClickListener { _ ->
+                showWebContextMenu(lastPointerX, lastPointerY)
+                true
+            }
+        }
 
         webChromeClient_ = WebViewExClients.createWebChromeClient(
             webViewEx = this,
@@ -237,10 +248,10 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     }
 
     internal fun getGenericJSInjects(): String {
-        var injects = genericInjects
+        var injects = cachedGenericInjects
         if (injects == null) {
             injects = context.assets.open("generic_injects.js").bufferedReader().use { it.readText() }
-            genericInjects = injects
+            cachedGenericInjects = injects
         }
         return injects
     }
@@ -312,9 +323,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     }
 
     fun onUpdateAdblockSetting(adblockEnabled: Boolean) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            settings.safeBrowsingEnabled = adblockEnabled
-        }
+        // Ad blocking engine removed for maximum loading throughput
     }
 
     fun setVirtualCursorMode(enabled: Boolean) {
@@ -348,9 +357,34 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         return super.dispatchKeyEvent(event)
     }
 
+    private var lastPointerX: Int = 0
+    private var lastPointerY: Int = 0
+
+    fun showWebContextMenu(x: Int, y: Int) {
+        val hit = hitTestResult
+        val linkUrl = if (hit != null && (hit.type == HitTestResult.SRC_ANCHOR_TYPE || hit.type == HitTestResult.SRC_IMAGE_ANCHOR_TYPE)) hit.extra else null
+        val srcUrl = if (hit != null && (hit.type == HitTestResult.IMAGE_TYPE || hit.type == HitTestResult.SRC_IMAGE_ANCHOR_TYPE)) hit.extra else null
+        callback.onContextMenu(
+            baseUrl = url,
+            href = linkUrl ?: srcUrl,
+            x = x,
+            y = y
+        )
+    }
+
     override fun onGenericMotionEvent(event: MotionEvent): Boolean {
         val hwInput = com.gothwad.tvbrowser.utils.HardwareInputManager.getInstance(context)
         if (hwInput.isDeviceBlocked(event)) return true
+
+        lastPointerX = event.x.toInt()
+        lastPointerY = event.y.toInt()
+
+        if ((event.actionMasked == MotionEvent.ACTION_BUTTON_PRESS && event.actionButton == MotionEvent.BUTTON_SECONDARY) ||
+            ((event.buttonState and MotionEvent.BUTTON_SECONDARY) != 0 && event.actionMasked == MotionEvent.ACTION_DOWN)) {
+            showWebContextMenu(lastPointerX, lastPointerY)
+            return true
+        }
+
         if (hwInput.processHardwareMouseEvent(event, this)) return true
         return super.onGenericMotionEvent(event)
     }
@@ -358,6 +392,16 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val hwInput = com.gothwad.tvbrowser.utils.HardwareInputManager.getInstance(context)
         if (hwInput.isDeviceBlocked(event)) return true
+
+        lastPointerX = event.x.toInt()
+        lastPointerY = event.y.toInt()
+
+        if ((event.actionMasked == MotionEvent.ACTION_BUTTON_PRESS && event.actionButton == MotionEvent.BUTTON_SECONDARY) ||
+            ((event.buttonState and MotionEvent.BUTTON_SECONDARY) != 0 && event.actionMasked == MotionEvent.ACTION_DOWN)) {
+            showWebContextMenu(lastPointerX, lastPointerY)
+            return true
+        }
+
         if (hwInput.processHardwareMouseEvent(event, this)) return true
         return super.onTouchEvent(event)
     }

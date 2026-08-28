@@ -214,6 +214,12 @@ class HardwareInputManager private constructor(private val context: Context) : I
                     return true
                 }
             }
+            MotionEvent.ACTION_MOVE -> {
+                if (lastHardwareMouseDownTime > 0L) {
+                    dispatchSyntheticTouchEvent(targetView, x, y, MotionEvent.ACTION_MOVE, lastHardwareMouseDownTime)
+                    return true
+                }
+            }
             MotionEvent.ACTION_DOWN -> {
                 lastHardwareMouseDownTime = event.downTime.takeIf { it > 0L } ?: SystemClock.uptimeMillis()
             }

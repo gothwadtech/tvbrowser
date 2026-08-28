@@ -11,12 +11,8 @@ import androidx.fragment.app.FragmentActivity
 import com.gothwad.tvbrowser.BrowserApp
 import com.gothwad.tvbrowser.Config
 import com.gothwad.tvbrowser.R
-import com.gothwad.tvbrowser.activity.main.AdblockModel
 import com.gothwad.tvbrowser.databinding.ViewSettingsMainBinding
 import com.gothwad.tvbrowser.webengine.WebEngineFactory
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 object SettingsEngineSection {
 
@@ -186,48 +182,43 @@ object SettingsEngineSection {
         context: Context,
         vb: ViewSettingsMainBinding,
         config: Config,
-        adblockModel: AdblockModel,
+        adblockModel: com.gothwad.tvbrowser.activity.main.AdblockModel,
         activity: Context?
     ) {
-        vb.scAdblock.isChecked = config.adBlockEnabled
-        vb.etAdBlockerListUrl.setText(config.adBlockListURL.value)
-        vb.llAdblock.setOnClickListener {
-            vb.scAdblock.isChecked = !vb.scAdblock.isChecked
-            config.adBlockEnabled = vb.scAdblock.isChecked
-            vb.llAdBlockerDetails.visibility = if (vb.scAdblock.isChecked) View.VISIBLE else View.GONE
+        vb.scAdBlock.isChecked = config.adBlockEnabled
+        vb.llAdBlock.setOnClickListener {
+            vb.scAdBlock.isChecked = !vb.scAdBlock.isChecked
         }
-        vb.llAdBlockerDetails.visibility = if (config.adBlockEnabled) View.VISIBLE else View.GONE
+        vb.scAdBlock.setOnCheckedChangeListener { _, isChecked ->
+            config.adBlockEnabled = isChecked
+        }
 
-        (activity as? FragmentActivity)?.let { fragAct ->
-            adblockModel.clientLoading.subscribe(fragAct) {
-                updateAdBlockInfo(context, vb, config, adblockModel)
+        vb.etAdBlockListUrl.setText(config.adBlockListURL.value)
+
+        adblockModel.clientLoading.subscribe(observer = { isLoading ->
+            vb.pbAdBlockLoading.visibility = if (isLoading) View.VISIBLE else View.GONE
+            vb.btnUpdateAdBlockList.isEnabled = !isLoading
+            vb.tvAdBlockStatus.text = if (isLoading) {
+                "Updating filter list..."
+            } else {
+                "Filter list active and cached"
             }
-        }
+        })
 
-        vb.btnAdBlockerUpdate.setOnClickListener {
-            if (adblockModel.clientLoading.value) return@setOnClickListener
-            saveAdBlockListUrl(vb, config)
-            adblockModel.loadAdBlockList(true)
-            it.isEnabled = false
+        vb.btnUpdateAdBlockList.setOnClickListener {
+            val url = vb.etAdBlockListUrl.text.toString().trim()
+            if (url.isNotEmpty()) {
+                config.adBlockListURL.value = url
+            }
+            adblockModel.loadAdBlockList(forceReload = true)
+            Toast.makeText(context, "Updating ad blocker filters...", Toast.LENGTH_SHORT).show()
         }
-
-        updateAdBlockInfo(context, vb, config, adblockModel)
     }
 
     fun saveAdBlockListUrl(vb: ViewSettingsMainBinding, config: Config) {
-        val value = vb.etAdBlockerListUrl.text.toString().trim()
-        config.adBlockListURL.value = value.ifEmpty { Config.DEFAULT_ADBLOCK_LIST_URL }
-    }
-
-    fun updateAdBlockInfo(context: Context, vb: ViewSettingsMainBinding, config: Config, adblockModel: AdblockModel) {
-        val dateFormat = SimpleDateFormat("hh:mm dd MMMM yyyy", Locale.getDefault())
-        val lastUpdate = if (config.adBlockListLastUpdate == 0L)
-            context.getString(R.string.never) else
-            dateFormat.format(Date(config.adBlockListLastUpdate))
-        val infoText = "${context.getString(R.string.last_update)}: $lastUpdate"
-        vb.tvAdBlockerListInfo.text = infoText
-        val loadingAdBlockList = adblockModel.clientLoading.value
-        vb.btnAdBlockerUpdate.visibility = if (loadingAdBlockList) View.GONE else View.VISIBLE
-        vb.pbAdBlockerListLoading.visibility = if (loadingAdBlockList) View.VISIBLE else View.GONE
+        val url = vb.etAdBlockListUrl.text.toString().trim()
+        if (url.isNotEmpty()) {
+            config.adBlockListURL.value = url
+        }
     }
 }

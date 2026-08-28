@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.gothwad.tvbrowser.AppContext
 import com.gothwad.tvbrowser.Config
-import com.gothwad.tvbrowser.activity.main.AdblockModel
 import com.gothwad.tvbrowser.activity.main.MainActivity
 import com.gothwad.tvbrowser.databinding.ViewSettingsMainBinding
 import com.gothwad.tvbrowser.utils.activemodel.ActiveModelsRepository
@@ -23,7 +22,7 @@ class MainSettingsView @JvmOverloads constructor(
 
     private var vb = ViewSettingsMainBinding.inflate(LayoutInflater.from(getContext()), this, true)
     var settingsModel = ActiveModelsRepository.get(SettingsModel::class, activity!!)
-    var adblockModel = ActiveModelsRepository.get(AdblockModel::class, activity!!)
+    var adblockModel = ActiveModelsRepository.get(com.gothwad.tvbrowser.activity.main.AdblockModel::class, activity!!)
     var config = AppContext.provideConfig()
     var onDismissDialog: (() -> Unit)? = null
 
@@ -88,23 +87,29 @@ class MainSettingsView @JvmOverloads constructor(
 
         val userAgent = vb.etUAString.text.toString().trim(' ')
         config.userAgentString.value = userAgent.ifEmpty { null }
+
         SettingsEngineSection.saveAdBlockListUrl(vb, config)
     }
 
     fun showCategory(category: SettingsCategory) {
-        vb.cardDisplayZoom.visibility = if (category == SettingsCategory.GENERAL) View.VISIBLE else View.GONE
-        vb.cardThemeMedia.visibility = if (category == SettingsCategory.GENERAL) View.VISIBLE else View.GONE
+        vb.cardDisplayScale.visibility = if (category == SettingsCategory.DISPLAY_SCALE) View.VISIBLE else View.GONE
+        vb.cardWebZoom.visibility = if (category == SettingsCategory.WEB_ZOOM) View.VISIBLE else View.GONE
+        vb.cardThemes.visibility = if (category == SettingsCategory.THEMES) View.VISIBLE else View.GONE
+        vb.cardMediaPlayback.visibility = if (category == SettingsCategory.MEDIA_PLAYBACK) View.VISIBLE else View.GONE
 
-        vb.cardAppLock.visibility = if (category == SettingsCategory.PRIVACY) View.VISIBLE else View.GONE
-        vb.cardCacheData.visibility = if (category == SettingsCategory.PRIVACY) View.VISIBLE else View.GONE
+        vb.cardSearchEngine.visibility = if (category == SettingsCategory.SEARCH_ENGINE) View.VISIBLE else View.GONE
+        vb.cardHomePage.visibility = if (category == SettingsCategory.HOME_PAGE) View.VISIBLE else View.GONE
+        vb.cardUserAgent.visibility = if (category == SettingsCategory.USER_AGENT) View.VISIBLE else View.GONE
+        vb.cardWebEngine.visibility = if (category == SettingsCategory.WEB_ENGINE) View.VISIBLE else View.GONE
 
-        vb.cardBrowserEngine.visibility = if (category == SettingsCategory.BROWSER) View.VISIBLE else View.GONE
+        vb.cardAdBlock.visibility = if (category == SettingsCategory.AD_BLOCKER) View.VISIBLE else View.GONE
+        vb.cardAppLock.visibility = if (category == SettingsCategory.APP_LOCK) View.VISIBLE else View.GONE
+        vb.cardCacheStorage.visibility = if (category == SettingsCategory.CACHE_STORAGE) View.VISIBLE else View.GONE
 
-        vb.cardQuickTools.visibility = if (category == SettingsCategory.TOOLS) View.VISIBLE else View.GONE
-        vb.cardAdBlockPrivacy.visibility = if (category == SettingsCategory.TOOLS) View.VISIBLE else View.GONE
+        vb.cardQuickTools.visibility = if (category == SettingsCategory.QUICK_TOOLS) View.VISIBLE else View.GONE
 
-        vb.cardRemoteCursor.visibility = if (category == SettingsCategory.REMOTE) View.VISIBLE else View.GONE
-
+        vb.cardRemoteNav.visibility = if (category == SettingsCategory.REMOTE_NAV) View.VISIBLE else View.GONE
+        vb.cardCursorPhysics.visibility = if (category == SettingsCategory.CURSOR_PHYSICS) View.VISIBLE else View.GONE
         vb.cardKeyboardMouse.visibility = if (category == SettingsCategory.KEYBOARD_MOUSE) View.VISIBLE else View.GONE
 
         post { fullScroll(ScrollView.FOCUS_UP) }

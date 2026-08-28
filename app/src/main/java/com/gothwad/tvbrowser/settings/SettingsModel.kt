@@ -6,11 +6,20 @@ import com.gothwad.tvbrowser.utils.activemodel.ActiveModel
 import com.gothwad.tvbrowser.utils.observable.ObservableValue
 
 enum class SettingsCategory {
-    GENERAL,
-    PRIVACY,
-    BROWSER,
-    TOOLS,
-    REMOTE,
+    DISPLAY_SCALE,
+    WEB_ZOOM,
+    THEMES,
+    MEDIA_PLAYBACK,
+    SEARCH_ENGINE,
+    HOME_PAGE,
+    USER_AGENT,
+    WEB_ENGINE,
+    AD_BLOCKER,
+    APP_LOCK,
+    CACHE_STORAGE,
+    QUICK_TOOLS,
+    REMOTE_NAV,
+    CURSOR_PHYSICS,
     KEYBOARD_MOUSE
 }
 
