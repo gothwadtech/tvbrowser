@@ -48,6 +48,7 @@
     <string name="open_folder">Open containing folder</string>
     <string name="no_file_explorer_msg">Seem there is no any suitable file explorer app installed on your device</string>
     <string name="shortcuts">Shortcuts</string>
+    <string name="page_crashed_and_reloaded">This page crashed and was reloaded</string>
     <string name="home_screen">Home Screen</string>
     <string name="favorites">Favorites</string>
     <string name="history">History</string>

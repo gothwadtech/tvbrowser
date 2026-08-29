@@ -19,6 +19,7 @@ import android.webkit.HttpAuthHandler
 import android.webkit.JsPromptResult
 import android.webkit.JsResult
 import android.webkit.PermissionRequest
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.SslErrorHandler
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
@@ -324,6 +325,13 @@ object WebViewExClients {
                         handler?.cancel()
                     }
                     .show()
+            }
+
+            override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
+                val didCrash = detail.didCrash()
+                val priority = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) detail.rendererPriorityAtExit() else -1
+                Log.e(WebViewEx.TAG, "onRenderProcessGone: didCrash=$didCrash, rendererPriority=$priority")
+                return webViewEx.handleRenderProcessGone(view, didCrash)
             }
         }
     }

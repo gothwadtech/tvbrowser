@@ -97,6 +97,11 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         fun onVisited(url: String)
         fun onContextMenu(baseUrl: String?, href: String?, x: Int, y: Int)
         fun onScrollChange(scrollY: Int, oldScrollY: Int, dy: Int) {}
+        fun onRenderProcessGone(view: WebView, didCrash: Boolean): Boolean = true
+    }
+
+    fun handleRenderProcessGone(view: WebView, didCrash: Boolean): Boolean {
+        return callback.onRenderProcessGone(view, didCrash)
     }
 
     init {

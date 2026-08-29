@@ -4,12 +4,14 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
 import androidx.webkit.WebViewCompat
 import com.gothwad.tvbrowser.AppContext
 import com.gothwad.tvbrowser.Config
+import com.gothwad.tvbrowser.R
 import com.gothwad.tvbrowser.model.WebTabState
 import com.gothwad.tvbrowser.utils.Utils
 import com.gothwad.tvbrowser.webengine.WebEngine
@@ -42,6 +44,9 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         },
         onPermissionRecord = { reqCode, isGeo ->
             permissionsRequests[reqCode] = isGeo
+        },
+        onRenderProcessGoneHandler = { view, didCrash ->
+            handleRenderProcessGone(view, didCrash)
         }
     )
 
@@ -171,8 +176,69 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     override fun trimMemory() {
         val wv = webView
         if (wv != null && !wv.isAttachedToWindow) {
+            try {
+                (wv.parent as? ViewGroup)?.removeView(wv)
+                wv.destroy()
+            } catch (e: Exception) {
+                Log.w("WebViewWebEngine", "Error destroying webView in trimMemory: $e")
+            }
             this.webView = null
         }
+    }
+
+    private fun handleRenderProcessGone(view: WebView, didCrash: Boolean): Boolean {
+        Log.e("WebViewWebEngine", "Handling renderProcessGone for tab=${tab.id}, url=${tab.url}, didCrash=$didCrash, selected=${tab.selected}")
+        val deadWv = webView
+        try {
+            (deadWv?.parent as? ViewGroup)?.removeView(deadWv)
+        } catch (e: Throwable) {
+            Log.w("WebViewWebEngine", "Error removing crashed WebView from parent: $e")
+        }
+        try {
+            deadWv?.destroy()
+        } catch (e: Throwable) {
+            Log.w("WebViewWebEngine", "Error destroying crashed WebView: $e")
+        }
+        webView = null
+
+        val isForeground = tab.selected && viewParent != null
+        if (isForeground || didCrash) {
+            val act = callback?.getActivity()
+            act?.runOnUiThread {
+                try {
+                    Utils.showToast(act.applicationContext, act.getString(R.string.page_crashed_and_reloaded))
+                } catch (e: Throwable) {
+                    Log.w("WebViewWebEngine", "Failed to show crash toast: $e")
+                }
+            }
+
+            if (isForeground) {
+                val vp = viewParent
+                val cb = callback
+                if (vp != null && cb != null) {
+                    try {
+                        val ctx = vp.context
+                        val freshWv = getOrCreateView(ctx)
+                        (freshWv.parent as? ViewGroup)?.removeView(freshWv)
+                        val lp = android.widget.FrameLayout.LayoutParams(
+                            android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                            android.widget.FrameLayout.LayoutParams.MATCH_PARENT
+                        )
+                        vp.addView(freshWv, lp)
+                        vp.cursorDrawerDelegate?.callback = this
+
+                        val reloadUrl = if (tab.url.isNotBlank() && tab.url != "about:blank") tab.url else Config.HOME_PAGE_URL
+                        loadUrl(reloadUrl)
+                    } catch (e: Throwable) {
+                        Log.e("WebViewWebEngine", "Error recovering from render process crash: $e")
+                    }
+                }
+            }
+        } else {
+            tab.savedState = null
+        }
+
+        return true
     }
 
     override fun onPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray): Boolean {

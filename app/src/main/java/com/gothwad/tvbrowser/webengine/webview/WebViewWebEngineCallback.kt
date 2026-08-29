@@ -15,7 +15,8 @@ class WebViewWebEngineCallback(
     private val getWebView: () -> WebViewEx?,
     private val getViewParent: () -> CursorLayout?,
     private val onCustomViewChanged: (View?, Boolean) -> Unit,
-    private val onPermissionRecord: (Int, Boolean) -> Unit
+    private val onPermissionRecord: (Int, Boolean) -> Unit,
+    private val onRenderProcessGoneHandler: (WebView, Boolean) -> Boolean = { _, _ -> true }
 ) : WebViewEx.Callback {
 
     override fun getActivity(): Activity? = getCallback()?.getActivity()
@@ -135,6 +136,10 @@ class WebViewWebEngineCallback(
 
     override fun onScrollChange(scrollY: Int, oldScrollY: Int, dy: Int) {
         getCallback()?.onScrollChange(scrollY, oldScrollY, dy)
+    }
+
+    override fun onRenderProcessGone(view: WebView, didCrash: Boolean): Boolean {
+        return onRenderProcessGoneHandler(view, didCrash)
     }
 
     override fun onContextMenu(baseUrl: String?, href: String?, x: Int, y: Int) {

@@ -34,7 +34,6 @@ fun MainActivity.getHeaderFocusableViews(): List<View> {
     if (vb.ibFileManager.isShown && vb.ibFileManager.visibility == View.VISIBLE) list.add(vb.ibFileManager)
     if (vb.ibBookmarks.isShown && vb.ibBookmarks.visibility == View.VISIBLE) list.add(vb.ibBookmarks)
     if (vb.ibIncognito.isShown && vb.ibIncognito.visibility == View.VISIBLE) list.add(vb.ibIncognito)
-    if (vb.ibMore.isShown && vb.ibMore.visibility == View.VISIBLE) list.add(vb.ibMore)
     if (vb.ibSettings.isShown && vb.ibSettings.visibility == View.VISIBLE) list.add(vb.ibSettings)
     return list
 }
@@ -58,10 +57,29 @@ fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
         if (event.action == KeyEvent.ACTION_DOWN) {
             when (keyCode) {
                 KeyEvent.KEYCODE_DPAD_DOWN -> {
-                    if (focus == vb.ibTopHistory) {
-                        vb.ibMenu.requestFocus()
+                    val headerViews = getHeaderFocusableViews()
+                    if (headerViews.isNotEmpty()) {
+                        if (focus == vb.ibTopNewTab) {
+                            headerViews.last().requestFocus()
+                        } else if (vb.rvTopTabs.childCount > 0) {
+                            val childIdx = (0 until vb.rvTopTabs.childCount).indexOfFirst { idx ->
+                                val child = vb.rvTopTabs.getChildAt(idx)
+                                child == focus || isDescendantOrSelf(focus, child)
+                            }
+                            if (childIdx >= 0 && vb.rvTopTabs.childCount > 1) {
+                                val ratio = childIdx.toFloat() / (vb.rvTopTabs.childCount - 1)
+                                val targetIdx = (ratio * (headerViews.size - 1)).toInt().coerceIn(0, headerViews.size - 1)
+                                headerViews[targetIdx].requestFocus()
+                            } else {
+                                headerViews.first().requestFocus()
+                            }
+                        } else {
+                            headerViews.first().requestFocus()
+                        }
+                    } else if (isNativeHomeVisible) {
+                        vb.vNativeHome.catchFocus()
                     } else {
-                        vb.ibHome.requestFocus()
+                        vb.flWebViewContainer.requestFocus()
                     }
                     return true
                 }
@@ -69,14 +87,6 @@ fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
                     return true
                 }
                 KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                    if (focus == vb.ibTopHistory) {
-                        if (vb.rvTopTabs.childCount > 0) {
-                            vb.rvTopTabs.getChildAt(0)?.requestFocus()
-                        } else if (vb.ibTopNewTab.isVisible) {
-                            vb.ibTopNewTab.requestFocus()
-                        }
-                        return true
-                    }
                     if (focus == vb.ibTopNewTab) {
                         return true
                     }
@@ -89,23 +99,16 @@ fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
                     return true
                 }
                 KeyEvent.KEYCODE_DPAD_LEFT -> {
-                    if (focus == vb.ibTopHistory) {
-                        return true
-                    }
                     if (focus == vb.ibTopNewTab) {
                         if (vb.rvTopTabs.childCount > 0) {
                             val lastChild = vb.rvTopTabs.getChildAt(vb.rvTopTabs.childCount - 1)
                             lastChild?.requestFocus()
-                        } else {
-                            vb.ibTopHistory.requestFocus()
                         }
                         return true
                     }
                     val next = focus.focusSearch(View.FOCUS_LEFT)
                     if (next != null && isTopTabBarView(next)) {
                         next.requestFocus()
-                    } else {
-                        vb.ibTopHistory.requestFocus()
                     }
                     return true
                 }
@@ -144,10 +147,6 @@ fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
                 }
                 KeyEvent.KEYCODE_DPAD_UP -> {
                     if (vb.llTopTabBar.isVisible) {
-                        if (focus == vb.ibMenu) {
-                            vb.ibTopHistory.requestFocus()
-                            return true
-                        }
                         if (vb.rvTopTabs.childCount > 0) {
                             val currentTab = tabsModel.currentTab.value
                             var targetView: View? = null
@@ -163,16 +162,18 @@ fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
                             }
                             targetView?.requestFocus()
                             return true
+                        } else if (vb.ibTopNewTab.isVisible) {
+                            vb.ibTopNewTab.requestFocus()
+                            return true
                         }
-                        vb.ibTopHistory.requestFocus()
                     }
                     return true
                 }
                 KeyEvent.KEYCODE_DPAD_DOWN -> {
                     if (isNativeHomeVisible) {
-                        val total = headerViews.size.coerceAtLeast(1)
-                        val ratio = if (currentIndex >= 0) currentIndex.toFloat() / total else 0f
-                        val targetCol = (ratio * 5).toInt().coerceIn(0, 4)
+                        val total = headerViews.size
+                        val ratio = if (currentIndex >= 0 && total > 1) currentIndex.toFloat() / (total - 1) else 0f
+                        val targetCol = (ratio * 4.99f).toInt().coerceIn(0, 4)
                         vb.vNativeHome.focusShortcutAtColumn(targetCol)
                     } else {
                         vb.flWebViewContainer.requestFocus()
@@ -203,13 +204,14 @@ fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
                     val canMoveUp = vb.vNativeHome.navigateFocus(KeyEvent.KEYCODE_DPAD_UP)
                     if (!canMoveUp) {
                         val col = vb.vNativeHome.getFocusedShortcutColumn()
-                        when (col) {
-                            0 -> vb.ibHome.requestFocus()
-                            1 -> vb.vActionBar.getUrlEditText().requestFocus()
-                            2 -> vb.flTabsSwitcher.requestFocus()
-                            3 -> vb.ibDownloads.requestFocus()
-                            4 -> vb.ibBookmarks.requestFocus()
-                            else -> vb.ibHome.requestFocus()
+                        val headerViews = getHeaderFocusableViews()
+                        if (headerViews.isNotEmpty()) {
+                            val targetHeaderIndex = ((col.toFloat() / 4f) * (headerViews.size - 1)).toInt().coerceIn(0, headerViews.size - 1)
+                            headerViews[targetHeaderIndex].requestFocus()
+                        } else if (vb.ibHome.isShown && vb.ibHome.visibility == View.VISIBLE) {
+                            vb.ibHome.requestFocus()
+                        } else {
+                            vb.ibMenu.requestFocus()
                         }
                         return true
                     }

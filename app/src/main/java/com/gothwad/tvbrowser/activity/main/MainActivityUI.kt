@@ -17,9 +17,7 @@ import com.gothwad.tvbrowser.R
 import com.gothwad.tvbrowser.activity.downloads.DownloadsActivity
 import com.gothwad.tvbrowser.activity.history.HistoryActivity
 import com.gothwad.tvbrowser.activity.main.dialogs.BrowserSidebarPopup
-import com.gothwad.tvbrowser.activity.main.dialogs.ChromeMenuPopup
 import com.gothwad.tvbrowser.activity.main.dialogs.ShortcutDialog
-import com.gothwad.tvbrowser.activity.main.dialogs.WebsiteMenuPopup
 import com.gothwad.tvbrowser.activity.main.dialogs.favorites.FavoriteEditorDialog
 import com.gothwad.tvbrowser.activity.main.dialogs.favorites.FavoritesDialog
 import com.gothwad.tvbrowser.filemanager.FileManagerActivity
@@ -85,7 +83,6 @@ internal fun MainActivity.setupHeaderClickListeners(incognitoMode: Boolean) {
     vb.ibFileManager.setOnClickListener { startActivity(Intent(this, FileManagerActivity::class.java)) }
     vb.ibBookmarks.setOnClickListener { showFavorites() }
     vb.ibIncognito.setOnClickListener { toggleIncognitoMode(true) }
-    vb.ibMore.setOnClickListener { showWebsiteMenu(vb.ibMore) }
     vb.ibSettings.setOnClickListener { showSettingsDialog() }
 
     if (incognitoMode) {
@@ -96,10 +93,10 @@ internal fun MainActivity.setupHeaderClickListeners(incognitoMode: Boolean) {
     vb.vActionBar.callback = this
 
     listOf(
-        vb.ibTopHistory, vb.ibTopNewTab,
+        vb.ibTopNewTab,
         vb.ibMenu, vb.ibHome, vb.ibBack, vb.ibForward, vb.ibRefresh,
         vb.ibNewTab, vb.flTabsSwitcher, vb.ibNotes, vb.ibDownloads,
-        vb.ibFileManager, vb.ibBookmarks, vb.ibIncognito, vb.ibMore, vb.ibSettings
+        vb.ibFileManager, vb.ibBookmarks, vb.ibIncognito, vb.ibSettings
     ).forEach {
         it.isFocusable = true
         it.isFocusableInTouchMode = true
@@ -194,14 +191,6 @@ internal fun MainActivity.showSettingsDialog(anchorView: View? = null) {
 
 internal fun MainActivity.showBrowserSidebar(anchorView: View? = null) {
     BrowserSidebarPopup(this).show(anchorView ?: vb.ibMenu)
-}
-
-internal fun MainActivity.showWebsiteMenu(anchorView: View? = null) {
-    WebsiteMenuPopup(this).show(anchorView ?: vb.ibMore)
-}
-
-internal fun MainActivity.showChromeMenu(anchorView: View? = null) {
-    WebsiteMenuPopup(this).show(anchorView ?: vb.ibMore)
 }
 
 internal fun MainActivity.showDownloadsActivity() {

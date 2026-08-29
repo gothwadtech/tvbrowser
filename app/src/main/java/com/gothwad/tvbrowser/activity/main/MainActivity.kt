@@ -46,8 +46,8 @@ import com.gothwad.tvbrowser.utils.BackNavigationEventsAdapter
 import com.gothwad.tvbrowser.utils.BaseAnimationListener
 import com.gothwad.tvbrowser.utils.VoiceSearchHelper
 import com.gothwad.tvbrowser.utils.activemodel.ActiveModelsRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     companion object {
@@ -240,7 +240,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     fun showFileManager() = startActivity(Intent(this, FileManagerActivity::class.java))
     override fun showHistory() = showHistoryActivity()
     override fun showFavorites() = showFavoritesDialog()
-    override fun showSettings() = showChromeMenu()
+    override fun showSettings() = showSettingsDialog()
     override fun onExtendedAddressBarMode() { vb.llBottomPanel.visibility = View.INVISIBLE }
     override fun onUrlInputDone() {}
     override fun toggleHeader() = toggleMenu()
@@ -261,17 +261,21 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     }
 
     override fun onTrimMemory(level: Int) {
-        if (::tabsModel.isInitialized) {
-            for (tab in tabsModel.tabsStates) {
-                if (!tab.selected) {
-                    tab.trimMemory()
-                }
-            }
-            if (level >= TRIM_MEMORY_RUNNING_LOW || level >= TRIM_MEMORY_MODERATE) {
-                FaviconsPool.clear()
-            }
-        }
         super.onTrimMemory(level)
+        if (::tabsModel.isInitialized) {
+            tabsModel.onTrimMemory()
+        }
+        if (level >= TRIM_MEMORY_RUNNING_LOW || level >= TRIM_MEMORY_MODERATE) {
+            FaviconsPool.clear()
+        }
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        if (::tabsModel.isInitialized) {
+            tabsModel.onTrimMemory()
+        }
+        FaviconsPool.clear()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
@@ -344,10 +348,12 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
     override fun onPause() {
         unregisterReceiver(mConnectivityChangeReceiver)
-        tabsModel.currentTab.value?.apply {
-            webEngine.onPause()
-            onPause()
-            runBlocking { tabsModel.saveTab(this@apply) }
+        tabsModel.currentTab.value?.let { tab ->
+            tab.webEngine.onPause()
+            tab.onPause()
+            lifecycleScope.launch(Dispatchers.IO) {
+                tabsModel.saveTab(tab)
+            }
         }
         super.onPause()
     }

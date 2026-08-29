@@ -220,10 +220,16 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
     }
 
     fun trimMemory() {
+        if (savedState == null) {
+            try {
+                savedState = webEngine.saveState()
+            } catch (e: Throwable) {
+                // ignore
+            }
+        }
         webEngine.trimMemory()
         thumbnail?.recycle()
         thumbnail = null
-        savedState = null
     }
 
     fun onPause() {

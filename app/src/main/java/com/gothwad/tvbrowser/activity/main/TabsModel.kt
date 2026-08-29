@@ -143,6 +143,7 @@ class TabsModel : ActiveModel() {
                     Log.w(TAG, "Error saving old tab: $e")
                 }
             }
+            pruneBackgroundWebViews(newTab)
         }
 
         tabsStates.forEach {
@@ -225,6 +226,28 @@ class TabsModel : ActiveModel() {
         hostConfigCache[hostConfig.hostName] = hostConfig
         withContext(Dispatchers.IO) {
             AppDatabase.db.hostsDao().update(hostConfig)
+        }
+    }
+
+    fun onTrimMemory() {
+        val active = currentTab.value
+        tabsStates.forEach { tab ->
+            if (tab != active) {
+                tab.trimMemory()
+            }
+        }
+    }
+
+    fun pruneBackgroundWebViews(activeTab: WebTabState) {
+        var liveBackgroundCount = 0
+        val maxLiveBackgroundTabs = 1
+        for (tab in tabsStates) {
+            if (tab != activeTab && tab.webEngine.getView() != null) {
+                liveBackgroundCount++
+                if (liveBackgroundCount > maxLiveBackgroundTabs) {
+                    tab.trimMemory()
+                }
+            }
         }
     }
 }

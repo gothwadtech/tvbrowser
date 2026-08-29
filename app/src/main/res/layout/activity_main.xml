@@ -35,20 +35,6 @@
             android:orientation="horizontal"
             android:clipChildren="false">
 
-            <!-- 0. Top History Button (Directly above 3-line Menu) -->
-            <ImageButton
-                android:id="@+id/ibTopHistory"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:layout_marginEnd="3dp"
-                android:background="@drawable/button_bg_selector"
-                android:contentDescription="@string/history"
-                android:focusable="true"
-                android:padding="6dp"
-                android:scaleType="fitCenter"
-                android:tint="@color/header_button_icon_tint"
-                android:src="@drawable/ic_history_grey_900_36dp" />
-
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvTopTabs"
                 android:layout_width="0dp"
@@ -60,13 +46,14 @@
 
             <ImageButton
                 android:id="@+id/ibTopNewTab"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:layout_marginStart="3dp"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginStart="4dp"
+                android:layout_gravity="center_vertical"
                 android:background="@drawable/button_bg_selector"
                 android:contentDescription="@string/open_new_tab"
                 android:focusable="true"
-                android:padding="6dp"
+                android:padding="5dp"
                 android:scaleType="fitCenter"
                 android:tint="@color/header_button_icon_tint"
                 android:src="@drawable/ic_add" />
@@ -267,21 +254,7 @@
                 android:tint="@color/header_button_icon_tint"
                 android:src="@drawable/ic_incognito" />
 
-            <!-- 13. 3-Dots More Options Icon -->
-            <ImageButton
-                android:id="@+id/ibMore"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:layout_marginEnd="3dp"
-                android:background="@drawable/button_bg_selector"
-                android:contentDescription="More Options"
-                android:focusable="true"
-                android:padding="6dp"
-                android:scaleType="fitCenter"
-                android:tint="@color/header_button_icon_tint"
-                android:src="@drawable/ic_more_vert" />
-
-            <!-- 14. Settings Icon (At the far right end) -->
+            <!-- 13. Settings Icon (At the far right end) -->
             <ImageButton
                 android:id="@+id/ibSettings"
                 android:layout_width="38dp"
