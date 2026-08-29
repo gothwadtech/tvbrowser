@@ -20,8 +20,24 @@ class ClipboardAdapter(
 ) : RecyclerView.Adapter<ClipboardAdapter.ClipboardViewHolder>() {
 
     fun updateItems(newItems: List<ClipboardItem>) {
+        val oldItems = this.items
         this.items = newItems
-        notifyDataSetChanged()
+        val diffResult = androidx.recyclerview.widget.DiffUtil.calculateDiff(object : androidx.recyclerview.widget.DiffUtil.Callback() {
+            override fun getOldListSize(): Int = oldItems.size
+            override fun getNewListSize(): Int = newItems.size
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return oldItems[oldItemPosition].id == newItems[newItemPosition].id
+            }
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                val old = oldItems[oldItemPosition]
+                val new = newItems[newItemPosition]
+                return old.text == new.text &&
+                        old.timestamp == new.timestamp &&
+                        old.copyCount == new.copyCount &&
+                        old.type == new.type
+            }
+        })
+        diffResult.dispatchUpdatesTo(this)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ClipboardViewHolder {

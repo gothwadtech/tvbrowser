@@ -53,8 +53,6 @@ class HardwareInputManager private constructor(private val context: Context) : I
     private val listeners = mutableListOf<InputDevicesListener>()
     private val mainHandler = Handler(Looper.getMainLooper())
 
-    private var lastHardwareMouseDownTime: Long = 0L
-
     init {
         try {
             inputManager.registerInputDeviceListener(this, mainHandler)
@@ -169,112 +167,5 @@ class HardwareInputManager private constructor(private val context: Context) : I
 
     fun isPhysicalKeyboardConnected(): Boolean {
         return getConnectedDevices().any { it.isKeyboard && !it.isVirtual }
-    }
-
-    /**
-     * Inspects MotionEvent for physical mouse click anomalies on Android TV / STB.
-     * Airtel Xstream and select TV boxes dispatch ACTION_BUTTON_PRESS or generic motion events
-     * without a corresponding proper ACTION_DOWN -> ACTION_UP stream to the WebView DOM.
-     *
-     * @return true if handled / synthesized touch sequence was dispatched to target view.
-     */
-    fun processHardwareMouseEvent(event: MotionEvent, targetView: View): Boolean {
-        if (isDeviceBlocked(event)) {
-            return true // Consume and discard blocked device event
-        }
-
-        val config = AppContext.provideConfig()
-        if (!config.mouseCompatibilityMode) {
-            return false
-        }
-
-        val isMouseSource = (event.source and InputDevice.SOURCE_MOUSE) != 0 ||
-                (event.source and InputDevice.SOURCE_TOUCHPAD) != 0 ||
-                (event.source and InputDevice.SOURCE_TRACKBALL) != 0 ||
-                event.getToolType(0) == MotionEvent.TOOL_TYPE_MOUSE
-
-        if (!isMouseSource) return false
-
-        val x = event.x
-        val y = event.y
-
-        when (event.actionMasked) {
-            MotionEvent.ACTION_BUTTON_PRESS -> {
-                if (event.actionButton == MotionEvent.BUTTON_PRIMARY) {
-                    lastHardwareMouseDownTime = SystemClock.uptimeMillis()
-                    dispatchSyntheticTouchEvent(targetView, x, y, MotionEvent.ACTION_DOWN, lastHardwareMouseDownTime)
-                    return true
-                }
-            }
-            MotionEvent.ACTION_BUTTON_RELEASE -> {
-                if (event.actionButton == MotionEvent.BUTTON_PRIMARY) {
-                    val downTime = if (lastHardwareMouseDownTime > 0L) lastHardwareMouseDownTime else SystemClock.uptimeMillis()
-                    dispatchSyntheticTouchEvent(targetView, x, y, MotionEvent.ACTION_UP, downTime)
-                    lastHardwareMouseDownTime = 0L
-                    return true
-                }
-            }
-            MotionEvent.ACTION_MOVE -> {
-                if (lastHardwareMouseDownTime > 0L) {
-                    dispatchSyntheticTouchEvent(targetView, x, y, MotionEvent.ACTION_MOVE, lastHardwareMouseDownTime)
-                    return true
-                }
-            }
-            MotionEvent.ACTION_DOWN -> {
-                lastHardwareMouseDownTime = event.downTime.takeIf { it > 0L } ?: SystemClock.uptimeMillis()
-            }
-            MotionEvent.ACTION_UP -> {
-                lastHardwareMouseDownTime = 0L
-            }
-        }
-        return false
-    }
-
-    /**
-     * Synthesizes standard touch events for Android WebView so that Chromium pointer / touch / click
-     * DOM listeners execute seamlessly even on buggy Android TV mouse drivers.
-     */
-    fun dispatchSyntheticTouchEvent(targetView: View, x: Float, y: Float, action: Int, explicitDownTime: Long = 0L) {
-        val now = SystemClock.uptimeMillis()
-        val downTime = if (explicitDownTime > 0L) explicitDownTime else if (action == MotionEvent.ACTION_DOWN) now else lastHardwareMouseDownTime.takeIf { it > 0L } ?: now
-        val eventTime = now
-
-        val properties = arrayOfNulls<MotionEvent.PointerProperties>(1)
-        val pp = MotionEvent.PointerProperties()
-        pp.id = 0
-        pp.toolType = MotionEvent.TOOL_TYPE_FINGER
-        properties[0] = pp
-
-        val coords = arrayOfNulls<MotionEvent.PointerCoords>(1)
-        val pc = MotionEvent.PointerCoords()
-        pc.x = x
-        pc.y = y
-        pc.pressure = 1.0f
-        pc.size = 1.0f
-        coords[0] = pc
-
-        val motionEvent = MotionEvent.obtain(
-            downTime,
-            eventTime,
-            action,
-            1,
-            properties,
-            coords,
-            0,
-            0,
-            1.0f,
-            1.0f,
-            0,
-            0,
-            InputDevice.SOURCE_TOUCHSCREEN,
-            0
-        )
-        try {
-            targetView.dispatchTouchEvent(motionEvent)
-        } catch (t: Throwable) {
-            t.printStackTrace()
-        } finally {
-            motionEvent.recycle()
-        }
     }
 }

@@ -25,11 +25,30 @@ class NotesAdapter(
     val selectedIds = mutableSetOf<String>()
 
     fun updateItems(newItems: List<NoteItem>) {
+        val oldItems = this.items
         this.items = newItems
         // Remove ids that no longer exist
         val currentIds = newItems.map { it.id }.toSet()
         selectedIds.retainAll(currentIds)
-        notifyDataSetChanged()
+        val diffResult = androidx.recyclerview.widget.DiffUtil.calculateDiff(object : androidx.recyclerview.widget.DiffUtil.Callback() {
+            override fun getOldListSize(): Int = oldItems.size
+            override fun getNewListSize(): Int = newItems.size
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return oldItems[oldItemPosition].id == newItems[newItemPosition].id
+            }
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                val old = oldItems[oldItemPosition]
+                val new = newItems[newItemPosition]
+                return old.title == new.title &&
+                        old.content == new.content &&
+                        old.timestamp == new.timestamp &&
+                        old.isPinned == new.isPinned &&
+                        old.isArchived == new.isArchived &&
+                        old.colorHex == new.colorHex &&
+                        (selectedIds.contains(old.id) == selectedIds.contains(new.id))
+            }
+        })
+        diffResult.dispatchUpdatesTo(this)
     }
 
     fun setSelectionMode(enabled: Boolean) {
@@ -39,31 +58,36 @@ class NotesAdapter(
                 selectedIds.clear()
             }
             onSelectionCountChanged(selectedIds.size)
-            notifyDataSetChanged()
+            notifyItemRangeChanged(0, items.size)
         }
     }
 
     fun toggleSelection(noteId: String) {
+        val pos = items.indexOfFirst { it.id == noteId }
         if (selectedIds.contains(noteId)) {
             selectedIds.remove(noteId)
         } else {
             selectedIds.add(noteId)
         }
         onSelectionCountChanged(selectedIds.size)
-        notifyDataSetChanged()
+        if (pos != -1) {
+            notifyItemChanged(pos)
+        } else {
+            notifyItemRangeChanged(0, items.size)
+        }
     }
 
     fun selectAll() {
         selectedIds.clear()
         selectedIds.addAll(items.map { it.id })
         onSelectionCountChanged(selectedIds.size)
-        notifyDataSetChanged()
+        notifyItemRangeChanged(0, items.size)
     }
 
     fun deselectAll() {
         selectedIds.clear()
         onSelectionCountChanged(0)
-        notifyDataSetChanged()
+        notifyItemRangeChanged(0, items.size)
     }
 
     fun getSelectedCount(): Int = selectedIds.size

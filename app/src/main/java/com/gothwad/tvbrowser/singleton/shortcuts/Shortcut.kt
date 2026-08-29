@@ -67,6 +67,25 @@ enum class Shortcut private constructor(
     MEDIA_FAST_FORWARD(R.string.media_fast_forward, "shortcut_media_fast_forward", KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, 0);
 
     companion object {
+        val PURE_MODIFIER_KEYS: Set<Int> = setOf(
+            KeyEvent.KEYCODE_CTRL_LEFT,
+            KeyEvent.KEYCODE_CTRL_RIGHT,
+            KeyEvent.KEYCODE_ALT_LEFT,
+            KeyEvent.KEYCODE_ALT_RIGHT,
+            KeyEvent.KEYCODE_SHIFT_LEFT,
+            KeyEvent.KEYCODE_SHIFT_RIGHT,
+            KeyEvent.KEYCODE_META_LEFT,
+            KeyEvent.KEYCODE_META_RIGHT,
+            KeyEvent.KEYCODE_FUNCTION,
+            KeyEvent.KEYCODE_SYM,
+            KeyEvent.KEYCODE_NUM_LOCK,
+            KeyEvent.KEYCODE_CAPS_LOCK
+        )
+
+        fun isPureModifierKey(keyCode: Int): Boolean {
+            return keyCode in PURE_MODIFIER_KEYS || (android.os.Build.VERSION.SDK_INT >= 11 && KeyEvent.isModifierKey(keyCode))
+        }
+
         fun resetToDefaults() {
             for (s in entries) {
                 s.keyCode = s.defaultKeyCode

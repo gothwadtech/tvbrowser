@@ -72,6 +72,10 @@ class ShortcutDialog(context: Context, private val shortcut: Shortcut) : Dialog(
         if (!keyListenMode) {
             return super.onKeyDown(keyCode, event)
         }
+        val resolved = resolveKeyCode(keyCode, event)
+        if (Shortcut.isPureModifierKey(resolved)) {
+            return true
+        }
         Log.d(TAG, "onKeyDown: keyCode = $keyCode, event = $event")
         event.startTracking()
         shortcut.longPressFlag = false
@@ -82,8 +86,12 @@ class ShortcutDialog(context: Context, private val shortcut: Shortcut) : Dialog(
         if (!keyListenMode) {
             return super.onKeyUp(keyCode, event)
         }
-        Log.d(TAG, "onKeyUp: keyCode = $keyCode, event = $event")
         val resolved = resolveKeyCode(keyCode, event)
+        if (Shortcut.isPureModifierKey(resolved)) {
+            Log.d(TAG, "onKeyUp: ignoring pure modifier key release: keyCode = $keyCode")
+            return true
+        }
+        Log.d(TAG, "onKeyUp: keyCode = $keyCode, event = $event")
         if (resolved in NavigationReservedShortcutKeyCodes.reservedForUserShortcuts) {
             Toast.makeText(context, R.string.shortcut_key_reserved_for_navigation, Toast.LENGTH_SHORT).show()
             toggleKeyListenState()
@@ -101,8 +109,11 @@ class ShortcutDialog(context: Context, private val shortcut: Shortcut) : Dialog(
         if (!keyListenMode) {
             return super.onKeyLongPress(keyCode, event)
         }
-        Log.d(TAG, "onKeyLongPress: keyCode = $keyCode, event = $event")
         val resolved = resolveKeyCode(keyCode, event)
+        if (Shortcut.isPureModifierKey(resolved)) {
+            return true
+        }
+        Log.d(TAG, "onKeyLongPress: keyCode = $keyCode, event = $event")
         if (resolved in NavigationReservedShortcutKeyCodes.reservedForUserShortcuts) {
             Toast.makeText(context, R.string.shortcut_key_reserved_for_navigation, Toast.LENGTH_SHORT).show()
             toggleKeyListenState()

@@ -4,17 +4,27 @@ import android.app.Activity
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ProcessLifecycleOwner
+import com.gothwad.tvbrowser.activity.IncognitoModeMainActivity
 import com.gothwad.tvbrowser.activity.main.MainActivity
 import com.gothwad.tvbrowser.model.HostConfig
+import com.gothwad.tvbrowser.notes.clipboard.ClipboardRepository
+import com.gothwad.tvbrowser.service.keepalive.BrowserKeepAliveService
 import com.gothwad.tvbrowser.singleton.AppDatabase
 import com.gothwad.tvbrowser.singleton.FaviconsPool
 import com.gothwad.tvbrowser.utils.activemodel.ActiveModelsRepository
 import com.gothwad.tvbrowser.webengine.webview.WebViewWebEngine
+import java.lang.ref.WeakReference
 import java.net.CookieHandler
 import java.net.CookieManager
 import java.util.concurrent.ArrayBlockingQueue
@@ -38,6 +48,14 @@ class BrowserApp : Application(), Application.ActivityLifecycleCallbacks {
 
     var needToExitProcessAfterMainActivityFinish = false
     var needRestartMainActivityAfterExitingProcess = false
+
+    var isAppInForeground: Boolean = false
+        private set
+    private var currentActivityRef: WeakReference<Activity>? = null
+
+    val currentActivity: Activity?
+        get() = currentActivityRef?.get()
+
     override fun onCreate() {
         Log.i(TAG, "onCreate")
         super.onCreate()
@@ -73,6 +91,89 @@ class BrowserApp : Application(), Application.ActivityLifecycleCallbacks {
         }
 
         registerActivityLifecycleCallbacks(this)
+
+        ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
+            override fun onStart(owner: LifecycleOwner) {
+                isAppInForeground = true
+                Log.d(TAG, "Process entered foreground -> stopping keep-alive service")
+                BrowserKeepAliveService.stop(this@BrowserApp)
+            }
+
+            override fun onStop(owner: LifecycleOwner) {
+                isAppInForeground = false
+                Log.d(TAG, "Process entered background -> starting keep-alive service")
+                BrowserKeepAliveService.start(this@BrowserApp)
+            }
+        })
+
+        initClipboardListener()
+    }
+
+    private fun initClipboardListener() {
+        try {
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return
+            clipboard.addPrimaryClipChangedListener {
+                handlePrimaryClipChanged()
+            }
+        } catch (t: Throwable) {
+            Log.e(TAG, "Failed to register OnPrimaryClipChangedListener: ${t.message}")
+        }
+    }
+
+    private fun handlePrimaryClipChanged() {
+        // Android 10+ background restriction & focus check
+        if (!isAppInForeground) {
+            return
+        }
+
+        // Respect incognito mode: do not record if active session is incognito
+        if (isCurrentSessionIncognito()) {
+            return
+        }
+
+        // Prevent feedback loops when the app's own code writes to clipboard
+        if (ClipboardRepository.isInternalClipboardWrite) {
+            return
+        }
+
+        try {
+            val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return
+            val clip = clipboard.primaryClip ?: return
+            if (clip.itemCount <= 0) return
+            val clipItem = clip.getItemAt(0) ?: return
+            val rawText = clipItem.coerceToText(this)?.toString() ?: return
+            val text = rawText.trim()
+            if (text.isEmpty()) return
+
+            val now = SystemClock.uptimeMillis()
+            if (text == ClipboardRepository.lastCopiedByAppText && (now - ClipboardRepository.lastCopiedByAppTime < 3000L)) {
+                return
+            }
+
+            val repo = ClipboardRepository(this)
+            val allItems = repo.getAllItems()
+            val mostRecent = allItems.firstOrNull()?.text?.trim()
+            if (mostRecent != null && mostRecent == text) {
+                return
+            }
+
+            repo.recordCopiedText(text)
+            Log.d(TAG, "Captured native text copy into ClipboardRepository (${text.take(30)}...)")
+        } catch (e: SecurityException) {
+            Log.w(TAG, "Clipboard access denied (SecurityException): ${e.message}")
+        } catch (t: Throwable) {
+            Log.e(TAG, "Error processing primary clip changed: ${t.message}")
+        }
+    }
+
+    fun isCurrentSessionIncognito(): Boolean {
+        val act = currentActivity
+        if (act is IncognitoModeMainActivity) return true
+        if (act is MainActivity) {
+            if (act.config.incognitoMode) return true
+            if (act.tabsModel.currentTab.value?.incognito == true) return true
+        }
+        return AppContext.provideConfig().incognitoMode
     }
 
     @Suppress("KotlinConstantConditions")
@@ -116,8 +217,14 @@ class BrowserApp : Application(), Application.ActivityLifecycleCallbacks {
 
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
     override fun onActivityStarted(activity: Activity) {}
-    override fun onActivityResumed(activity: Activity) {}
-    override fun onActivityPaused(activity: Activity) {}
+    override fun onActivityResumed(activity: Activity) {
+        currentActivityRef = WeakReference(activity)
+    }
+    override fun onActivityPaused(activity: Activity) {
+        if (currentActivityRef?.get() === activity) {
+            currentActivityRef = null
+        }
+    }
     override fun onActivityStopped(activity: Activity) {}
     override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 

@@ -91,8 +91,24 @@ class BookmarksGridAdapter(
     override fun getItemCount(): Int = items.size
 
     fun updateData(newItems: List<FavoriteItem>) {
+        val oldItems = items
         items = newItems
-        notifyDataSetChanged()
+        val diffResult = androidx.recyclerview.widget.DiffUtil.calculateDiff(object : androidx.recyclerview.widget.DiffUtil.Callback() {
+            override fun getOldListSize(): Int = oldItems.size
+            override fun getNewListSize(): Int = newItems.size
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return oldItems[oldItemPosition].id == newItems[newItemPosition].id
+            }
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                val old = oldItems[oldItemPosition]
+                val new = newItems[newItemPosition]
+                return old.title == new.title &&
+                        old.url == new.url &&
+                        old.isFolder == new.isFolder &&
+                        old.order == new.order
+            }
+        })
+        diffResult.dispatchUpdatesTo(this)
     }
 
     private fun getLogoForUrl(url: String): Int {

@@ -49,6 +49,10 @@
     <string name="no_file_explorer_msg">Seem there is no any suitable file explorer app installed on your device</string>
     <string name="shortcuts">Shortcuts</string>
     <string name="page_crashed_and_reloaded">This page crashed and was reloaded</string>
+    <string name="background_keepalive_channel_name">Background Persistence</string>
+    <string name="background_keepalive_channel_desc">Keeps the browser and tabs active when backgrounded</string>
+    <string name="background_keepalive_desc">Running in background to preserve active tabs</string>
+    <string name="keep_alive_in_background">Keep Alive in Background</string>
     <string name="home_screen">Home Screen</string>
     <string name="favorites">Favorites</string>
     <string name="history">History</string>

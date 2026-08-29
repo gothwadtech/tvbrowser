@@ -37,18 +37,39 @@ class ShortcutMgr private constructor() {
     private val uiHandler = Handler(Looper.getMainLooper())
 
     init {
+        var migratedCorruptCount = 0
         for (shortcut in Shortcut.entries) {
-            shortcut.keyCode = prefs.getInt(shortcut.prefsKey, shortcut.keyCode)
-            shortcut.modifiers = prefs.getInt(shortcut.prefsKey + "_mod", shortcut.modifiers)
-            shortcut.longPressFlag = prefs.getBoolean(shortcut.prefsKey + "_lp", shortcut.longPressFlag)
-            if (shortcut.keyCode != 0) {
+            val savedKey = prefs.getInt(shortcut.prefsKey, shortcut.defaultKeyCode)
+            val savedMod = prefs.getInt(shortcut.prefsKey + "_mod", shortcut.defaultModifiers)
+            val savedLp = prefs.getBoolean(shortcut.prefsKey + "_lp", shortcut.defaultLongPress)
+
+            if (Shortcut.isPureModifierKey(savedKey)) {
+                android.util.Log.w(TAG, "Migration: Clearing corrupt pure modifier shortcut for ${shortcut.name} (keyCode=$savedKey)")
+                prefs.edit()
+                    .remove(shortcut.prefsKey)
+                    .remove(shortcut.prefsKey + "_mod")
+                    .remove(shortcut.prefsKey + "_lp")
+                    .apply()
+                shortcut.keyCode = shortcut.defaultKeyCode
+                shortcut.modifiers = shortcut.defaultModifiers
+                shortcut.longPressFlag = shortcut.defaultLongPress
+                migratedCorruptCount++
+            } else {
+                shortcut.keyCode = savedKey
+                shortcut.modifiers = savedMod
+                shortcut.longPressFlag = savedLp
+            }
+            if (shortcut.keyCode != 0 && !Shortcut.isPureModifierKey(shortcut.keyCode)) {
                 shortcuts.add(shortcut)
             }
+        }
+        if (migratedCorruptCount > 0) {
+            android.util.Log.i(TAG, "Shortcut migration completed: cleared $migratedCorruptCount corrupted pure-modifier shortcut(s).")
         }
     }
 
     fun save(shortcut: Shortcut) {
-        if (shortcut.keyCode == 0) {
+        if (shortcut.keyCode == 0 || Shortcut.isPureModifierKey(shortcut.keyCode)) {
             prefs.edit()
                     .remove(shortcut.prefsKey)
                     .remove(shortcut.prefsKey + "_mod")
@@ -227,6 +248,7 @@ class ShortcutMgr private constructor() {
     }
 
     private fun shortCutsForEvent(keyCode: Int, modifiers: Int): List<Shortcut> {
+        if (Shortcut.isPureModifierKey(keyCode)) return emptyList()
         val findings = ArrayList<Shortcut>()
         for (shortcut in shortcuts) {
             if (shortcut.keyCode == keyCode) {
@@ -239,6 +261,7 @@ class ShortcutMgr private constructor() {
     }
 
     private fun onKeyDown(event: KeyEvent, mainActivity: MainActivity, tab: WebTabState?): Boolean {
+        if (Shortcut.isPureModifierKey(event.keyCode)) return false
         val shortcuts = shortCutsForEvent(event.keyCode, event.modifiers)
         if (shortcuts.isEmpty()) return false
         trackingShortcuts = shortcuts
@@ -252,9 +275,10 @@ class ShortcutMgr private constructor() {
     }
 
     private fun onKeyUp(event: KeyEvent, mainActivity: MainActivity, tab: WebTabState?): Boolean {
+        if (Shortcut.isPureModifierKey(event.keyCode)) return false
         val trackingShortcuts = trackingShortcuts ?: return false
         for (shortcut in trackingShortcuts) {
-            if (shortcut.longPressFlag || event.modifiers != shortcut.modifiers) {
+            if (Shortcut.isPureModifierKey(shortcut.keyCode) || shortcut.longPressFlag || event.modifiers != shortcut.modifiers) {
                 continue
             }
             uiHandler.post { process(shortcut, mainActivity, tab?.webEngine) }
@@ -265,9 +289,10 @@ class ShortcutMgr private constructor() {
     }
 
     private fun onKeyLongPress(event: KeyEvent, mainActivity: MainActivity, tab: WebTabState?): Boolean {
+        if (Shortcut.isPureModifierKey(event.keyCode)) return false
         val trackingShortcuts = trackingShortcuts ?: return false
         for (shortcut in trackingShortcuts) {
-            if (!shortcut.longPressFlag || event.modifiers != shortcut.modifiers) {
+            if (Shortcut.isPureModifierKey(shortcut.keyCode) || !shortcut.longPressFlag || event.modifiers != shortcut.modifiers) {
                 continue
             }
             uiHandler.post { process(shortcut, mainActivity, tab?.webEngine) }
@@ -286,6 +311,7 @@ class ShortcutMgr private constructor() {
     }
 
     fun tryHandleEmulatedSimpleKeyPress(keyCode: Int, mainActivity: MainActivity, tab: WebTabState?): Boolean {
+        if (Shortcut.isPureModifierKey(keyCode)) return false
         val shortcuts = shortCutsForEvent(keyCode, 0)
         if (shortcuts.isEmpty()) return false
         uiHandler.post { process(shortcuts.first(), mainActivity, tab?.webEngine) }
@@ -293,6 +319,7 @@ class ShortcutMgr private constructor() {
     }
 
     companion object {
+        const val TAG = "ShortcutMgr"
         const val PREFS_SHORTCUTS = "shortcuts"
 
         private var instance: ShortcutMgr? = null

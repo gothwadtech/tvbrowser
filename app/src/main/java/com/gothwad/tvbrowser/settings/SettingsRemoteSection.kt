@@ -108,16 +108,6 @@ object SettingsRemoteSection {
             vb.scDisableVirtualKeyboardKm.toggle()
         }
 
-        // TV Box Mouse Compatibility Setting
-        vb.scMouseCompatibility.isChecked = config.mouseCompatibilityMode
-        vb.scMouseCompatibility.setOnCheckedChangeListener { _, isChecked ->
-            config.mouseCompatibilityMode = isChecked
-        }
-
-        vb.llMouseCompatibility.setOnClickListener {
-            vb.scMouseCompatibility.toggle()
-        }
-
         val hwInput = HardwareInputManager.getInstance(context)
 
         val renderDeviceItem: (HardwareInputManager.DeviceInfo) -> View = { dev ->

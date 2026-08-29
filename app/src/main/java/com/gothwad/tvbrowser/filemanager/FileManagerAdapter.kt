@@ -99,7 +99,24 @@ class FileManagerAdapter(
     override fun getItemCount(): Int = items.size
 
     fun updateItems(newItems: List<FileItem>) {
+        val oldItems = this.items
         this.items = newItems
-        notifyDataSetChanged()
+        val diffResult = androidx.recyclerview.widget.DiffUtil.calculateDiff(object : androidx.recyclerview.widget.DiffUtil.Callback() {
+            override fun getOldListSize(): Int = oldItems.size
+            override fun getNewListSize(): Int = newItems.size
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return oldItems[oldItemPosition].file.absolutePath == newItems[newItemPosition].file.absolutePath
+            }
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                val old = oldItems[oldItemPosition]
+                val new = newItems[newItemPosition]
+                return old.name == new.name &&
+                        old.formattedSize == new.formattedSize &&
+                        old.formattedDate == new.formattedDate &&
+                        old.isDirectory == new.isDirectory &&
+                        old.iconRes == new.iconRes
+            }
+        })
+        diffResult.dispatchUpdatesTo(this)
     }
 }

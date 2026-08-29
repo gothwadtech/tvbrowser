@@ -11,12 +11,40 @@ import androidx.recyclerview.widget.RecyclerView
 import com.gothwad.tvbrowser.R
 
 class HomeCardAdapter(
-    private val items: List<HomeShortcutItem>,
+    private var items: List<HomeShortcutItem>,
     private val onItemClick: (HomeShortcutItem) -> Unit,
     private val onAddClick: () -> Unit,
     private val onRemoveClick: () -> Unit,
     private val onItemLongClick: ((HomeShortcutItem) -> Boolean)? = null
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    fun updateItems(newItems: List<HomeShortcutItem>) {
+        val oldItems = this.items
+        this.items = newItems
+        val diffResult = androidx.recyclerview.widget.DiffUtil.calculateDiff(object : androidx.recyclerview.widget.DiffUtil.Callback() {
+            override fun getOldListSize(): Int = oldItems.size
+            override fun getNewListSize(): Int = newItems.size
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                val old = oldItems[oldItemPosition]
+                val new = newItems[newItemPosition]
+                return if (old.isHeader && new.isHeader) {
+                    old.title == new.title
+                } else if (old.isAddButton && new.isAddButton) {
+                    true
+                } else if (old.isDeleteButton && new.isDeleteButton) {
+                    true
+                } else {
+                    old.url == new.url && old.title == new.title
+                }
+            }
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                val old = oldItems[oldItemPosition]
+                val new = newItems[newItemPosition]
+                return old == new
+            }
+        })
+        diffResult.dispatchUpdatesTo(this)
+    }
 
     companion object {
         const val VIEW_TYPE_SHORTCUT = 0

@@ -187,7 +187,7 @@ class NativeHomeView @JvmOverloads constructor(
 
     private fun reloadShortcuts() {
         populateBookmarkItemsList()
-        bookmarksAdapter?.notifyDataSetChanged()
+        bookmarksAdapter?.updateItems(ArrayList(bookmarkItems))
     }
 
     private fun loadUserBookmarks(): List<HomeShortcutItem> {

@@ -390,7 +390,6 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             return true
         }
 
-        if (hwInput.processHardwareMouseEvent(event, this)) return true
         return super.onGenericMotionEvent(event)
     }
 
@@ -407,7 +406,6 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             return true
         }
 
-        if (hwInput.processHardwareMouseEvent(event, this)) return true
         return super.onTouchEvent(event)
     }
 

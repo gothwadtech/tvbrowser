@@ -54,6 +54,10 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
     var thumbnail: Bitmap? = null
     @Ignore
     var savedState: Any? = null
+    @Ignore
+    var lastActiveTimestamp: Long = System.currentTimeMillis()
+    @Ignore
+    var isPageLoading: Boolean = false
     @delegate:Ignore
     val webEngine by lazy { WebEngineFactory.createWebEngine(this) }
     @Ignore

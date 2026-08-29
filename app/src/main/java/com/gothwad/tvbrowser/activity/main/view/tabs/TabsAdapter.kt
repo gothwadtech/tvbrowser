@@ -29,7 +29,18 @@ class TabsAdapter(
     override fun getItemCount(): Int = tabs.size
 
     fun updateTabs(newTabs: List<WebTabState>) {
+        val oldTabs = this.tabs
         this.tabs = newTabs
-        notifyDataSetChanged()
+        val diffResult = androidx.recyclerview.widget.DiffUtil.calculateDiff(object : androidx.recyclerview.widget.DiffUtil.Callback() {
+            override fun getOldListSize(): Int = oldTabs.size
+            override fun getNewListSize(): Int = newTabs.size
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return oldTabs[oldItemPosition].id == newTabs[newItemPosition].id
+            }
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return oldTabs[oldItemPosition] == newTabs[newItemPosition]
+            }
+        })
+        diffResult.dispatchUpdatesTo(this)
     }
 }

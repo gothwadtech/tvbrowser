@@ -20,7 +20,13 @@ object MainActivityWebContextMenuHelper {
     fun handleCopyTextToClipboard(activity: MainActivity, url: String) {
         val clipBoard = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clipData = ClipData.newPlainText("URL", url)
-        clipBoard.setPrimaryClip(clipData)
+        ClipboardRepository.markCopiedByApp(url)
+        ClipboardRepository.isInternalClipboardWrite = true
+        try {
+            clipBoard.setPrimaryClip(clipData)
+        } finally {
+            ClipboardRepository.isInternalClipboardWrite = false
+        }
         try {
             ClipboardRepository(activity).recordCopiedText(url)
         } catch (e: Exception) {

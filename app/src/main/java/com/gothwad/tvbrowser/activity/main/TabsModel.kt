@@ -150,6 +150,7 @@ class TabsModel : ActiveModel() {
             it.selected = (it == newTab)
         }
         newTab.selected = true
+        newTab.lastActiveTimestamp = System.currentTimeMillis()
 
         var wv = newTab.webEngine.getView()
         var needReloadUrl = false
@@ -229,6 +230,21 @@ class TabsModel : ActiveModel() {
         }
     }
 
+    /**
+     * Memory Management Strategy:
+     * 1. Process Persistence: BrowserKeepAliveService (foreground service) keeps the process priority elevated
+     *    when backgrounded on Android TV (where no swipe-to-kill UI exists), preventing the OS from prematurely
+     *    killing the browser process and dropping tabs/session state.
+     * 2. Tab-Level Proactive LRU Policy: Keeps up to [Config.maxLiveTabs] (default 6) tab WebViews simultaneously
+     *    live in memory. 6 is balanced for typical Android TV hardware (1.5GB - 3GB RAM), providing instantaneous
+     *    switching between recent tabs without risking OutOfMemory errors.
+     *    When live tabs exceed this cap, least-recently-used background tabs (excluding actively loading tabs)
+     *    are proactively trimmed (saving their state bundle and destroying their detached WebView).
+     * 3. Seamless Restoration: When a trimmed tab is re-selected, it transparently restores its full state and
+     *    history via [WebTabState.restoreWebView] or reloads its URL.
+     * 4. Hard Safety Net: ComponentCallbacks2 [onTrimMemory] and [onLowMemory] are retained as emergency fallbacks
+     *    to trim all inactive tabs and clear image caches under severe OS memory pressure.
+     */
     fun onTrimMemory() {
         val active = currentTab.value
         tabsStates.forEach { tab ->
@@ -239,14 +255,21 @@ class TabsModel : ActiveModel() {
     }
 
     fun pruneBackgroundWebViews(activeTab: WebTabState) {
-        var liveBackgroundCount = 0
-        val maxLiveBackgroundTabs = 1
-        for (tab in tabsStates) {
-            if (tab != activeTab && tab.webEngine.getView() != null) {
-                liveBackgroundCount++
-                if (liveBackgroundCount > maxLiveBackgroundTabs) {
-                    tab.trimMemory()
-                }
+        if (tabsStates.size <= 1) return
+
+        val maxLive = config.maxLiveTabs
+        val liveTabs = tabsStates.filter { it.webEngine.getView() != null }
+        if (liveTabs.size <= maxLive) return
+
+        val countToTrim = liveTabs.size - maxLive
+        val candidatesToTrim = liveTabs
+            .filter { it != activeTab && !it.isPageLoading }
+            .sortedBy { it.lastActiveTimestamp }
+            .take(countToTrim)
+
+        for (tab in candidatesToTrim) {
+            if (tab != currentTab.value && !tab.isPageLoading) {
+                tab.trimMemory()
             }
         }
     }

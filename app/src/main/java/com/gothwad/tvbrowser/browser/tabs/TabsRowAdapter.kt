@@ -136,8 +136,60 @@ class TabsRowAdapter(
     }
 
     fun updateTabs(newTabs: List<WebTabState>, newCurrentTab: WebTabState?) {
+        val oldTabs = tabs
+        val oldCurrentTab = currentTab
         tabs = newTabs.toMutableList()
         currentTab = newCurrentTab
-        notifyDataSetChanged()
+
+        if (oldTabs == newTabs) {
+            if (oldCurrentTab != newCurrentTab) {
+                val oldPos = oldTabs.indexOf(oldCurrentTab)
+                val newPos = newTabs.indexOf(newCurrentTab)
+                if (oldPos != -1) notifyItemChanged(oldPos)
+                if (newPos != -1) notifyItemChanged(newPos)
+            }
+            return
+        }
+
+        if (newTabs.size == oldTabs.size + 1 && oldTabs == newTabs.subList(0, oldTabs.size)) {
+            val insertedPos = oldTabs.size
+            notifyItemInserted(insertedPos)
+            if (oldCurrentTab != newCurrentTab) {
+                val oldPos = oldTabs.indexOf(oldCurrentTab)
+                if (oldPos != -1) notifyItemChanged(oldPos)
+            }
+            return
+        }
+
+        if (newTabs.size == oldTabs.size - 1) {
+            val removedIndex = oldTabs.indexOfFirst { !newTabs.contains(it) }
+            if (removedIndex != -1) {
+                notifyItemRemoved(removedIndex)
+                if (oldCurrentTab != newCurrentTab) {
+                    val newPos = newTabs.indexOf(newCurrentTab)
+                    if (newPos != -1) notifyItemChanged(newPos)
+                }
+                return
+            }
+        }
+
+        val diffResult = androidx.recyclerview.widget.DiffUtil.calculateDiff(object : androidx.recyclerview.widget.DiffUtil.Callback() {
+            override fun getOldListSize(): Int = oldTabs.size
+            override fun getNewListSize(): Int = newTabs.size
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return oldTabs[oldItemPosition].id == newTabs[newItemPosition].id
+            }
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                val oldItem = oldTabs[oldItemPosition]
+                val newItem = newTabs[newItemPosition]
+                val oldIsActive = oldItem == oldCurrentTab
+                val newIsActive = newItem == newCurrentTab
+                return oldItem.title == newItem.title &&
+                        oldItem.url == newItem.url &&
+                        oldItem.thumbnail == newItem.thumbnail &&
+                        oldIsActive == newIsActive
+            }
+        })
+        diffResult.dispatchUpdatesTo(this)
     }
 }

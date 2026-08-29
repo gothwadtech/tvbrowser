@@ -94,7 +94,14 @@ class ClipboardRepository(private val context: Context) {
         try {
             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip = ClipData.newPlainText(item.displayTitle, item.text)
-            clipboard.setPrimaryClip(clip)
+
+            markCopiedByApp(item.text)
+            isInternalClipboardWrite = true
+            try {
+                clipboard.setPrimaryClip(clip)
+            } finally {
+                isInternalClipboardWrite = false
+            }
 
             item.copyCount += 1
             item.timestamp = System.currentTimeMillis()
@@ -115,6 +122,22 @@ class ClipboardRepository(private val context: Context) {
             if (showToast) {
                 Toast.makeText(context, "Failed to copy", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    companion object {
+        @Volatile
+        var isInternalClipboardWrite: Boolean = false
+
+        @Volatile
+        var lastCopiedByAppText: String? = null
+
+        @Volatile
+        var lastCopiedByAppTime: Long = 0L
+
+        fun markCopiedByApp(text: String) {
+            lastCopiedByAppText = text.trim()
+            lastCopiedByAppTime = android.os.SystemClock.uptimeMillis()
         }
     }
 }

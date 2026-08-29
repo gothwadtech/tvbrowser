@@ -156,6 +156,8 @@ internal class WebEngineCallback(val activity: MainActivity, val tab: WebTabStat
     }
 
     override fun onPageStarted(url: String?) {
+        tab.isPageLoading = true
+        tab.lastActiveTimestamp = System.currentTimeMillis()
         val isCurrent = activity.tabsModel.currentTab.value == tab
         if (isCurrent) {
             activity.vb.progressBar.visibility = View.VISIBLE
@@ -176,6 +178,8 @@ internal class WebEngineCallback(val activity: MainActivity, val tab: WebTabStat
     }
 
     override fun onPageFinished(url: String?) {
+        tab.isPageLoading = false
+        tab.lastActiveTimestamp = System.currentTimeMillis()
         val isCurrent = activity.tabsModel.currentTab.value == tab
         if (isCurrent) {
             activity.vb.progressBarGeneric.visibility = View.GONE

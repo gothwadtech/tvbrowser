@@ -75,6 +75,8 @@ class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeS
 
     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
         Log.d("CursorLayout", "dispatchGenericMotionEvent: $event")
+        val hwInput = com.gothwad.tvbrowser.utils.HardwareInputManager.getInstance(context)
+        if (hwInput.isDeviceBlocked(event)) return true
 
         val isMouseOrTouch = (event.source and InputDevice.SOURCE_MOUSE) != 0 ||
                 (event.source and InputDevice.SOURCE_TOUCHPAD) != 0 ||
@@ -84,12 +86,6 @@ class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeS
         if (isMouseOrTouch) {
             cursorDrawerDelegate.hideCursor()
             return super.dispatchGenericMotionEvent(event)
-        }
-
-        // Handle hardware mouse click / button press anomalies (Airtel STB fix)
-        val hwInput = com.gothwad.tvbrowser.utils.HardwareInputManager.getInstance(context)
-        if (hwInput.processHardwareMouseEvent(event, this)) {
-            return true
         }
 
         if (willNotDraw() || !AppContext.provideConfig().enableVirtualCursor) return super.dispatchGenericMotionEvent(event)
@@ -102,12 +98,9 @@ class CursorLayout @JvmOverloads constructor(context: Context, attrs: AttributeS
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
-        cursorDrawerDelegate.hideCursor()
-        // Direct hardware mouse click routing
         val hwInput = com.gothwad.tvbrowser.utils.HardwareInputManager.getInstance(context)
-        if (hwInput.processHardwareMouseEvent(ev, this)) {
-            return true
-        }
+        if (hwInput.isDeviceBlocked(ev)) return true
+        cursorDrawerDelegate.hideCursor()
         return super.dispatchTouchEvent(ev)
     }
 

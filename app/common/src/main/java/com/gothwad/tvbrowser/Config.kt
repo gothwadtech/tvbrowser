@@ -28,7 +28,6 @@ class Config(val prefs: SharedPreferences) {
         const val CURSOR_SIZE_PERCENT_KEY = "cursor_size_percent"
         const val CURSOR_STYLE_KEY = "cursor_style"
         const val BLOCKED_INPUT_DEVICES_KEY = "blocked_input_devices"
-        const val MOUSE_COMPATIBILITY_MODE_KEY = "mouse_compatibility_mode"
 
         const val CURSOR_SIZE_PERCENT_MIN = 50
         const val CURSOR_SIZE_PERCENT_MAX = 200
@@ -66,6 +65,14 @@ class Config(val prefs: SharedPreferences) {
         const val NOTIFICATION_ABOUT_ENGINE_CHANGE_SHOWN_KEY = "notification_about_engine_change_shown"
         const val APP_VERSION_CODE_MARK_KEY = "app_version_code_mark"
         const val SHOW_TOP_TAB_BAR_KEY = "show_top_tab_bar"
+        const val KEEP_ALIVE_IN_BACKGROUND_KEY = "keep_alive_in_background"
+        const val MAX_LIVE_TABS_KEY = "max_live_tabs"
+        /**
+         * Maximum number of tab WebViews kept fully live in memory simultaneously.
+         * Default is 6: balanced for typical Android TV boxes (1.5GB - 3GB RAM) to allow
+         * fast tab switching without exhausting system memory.
+         */
+        const val DEFAULT_MAX_LIVE_TABS = 6
         const val DESKTOP_MODE_KEY = "desktop_mode"
         const val DESKTOP_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
@@ -138,12 +145,6 @@ class Config(val prefs: SharedPreferences) {
         get() = prefs.getBoolean(DISABLE_VIRTUAL_KEYBOARD_KEY, false)
         set(value) {
             prefs.edit().putBoolean(DISABLE_VIRTUAL_KEYBOARD_KEY, value).apply()
-        }
-
-    var mouseCompatibilityMode: Boolean
-        get() = prefs.getBoolean(MOUSE_COMPATIBILITY_MODE_KEY, true)
-        set(value) {
-            prefs.edit().putBoolean(MOUSE_COMPATIBILITY_MODE_KEY, value).apply()
         }
 
     var blockedInputDeviceIds: Set<String>
@@ -334,6 +335,13 @@ class Config(val prefs: SharedPreferences) {
     var userAgentString = ObservableOptStringPreference(null, USER_AGENT_PREF_KEY)
     var desktopMode = ObservableBooleanPreference(false, DESKTOP_MODE_KEY)
     var showTopTabBar = ObservableBooleanPreference(true, SHOW_TOP_TAB_BAR_KEY)
+    var keepAliveInBackground = ObservableBooleanPreference(true, KEEP_ALIVE_IN_BACKGROUND_KEY)
+
+    var maxLiveTabs: Int
+        get() = prefs.getInt(MAX_LIVE_TABS_KEY, DEFAULT_MAX_LIVE_TABS).coerceIn(2, 20)
+        set(value) {
+            prefs.edit().putInt(MAX_LIVE_TABS_KEY, value.coerceIn(2, 20)).apply()
+        }
 
     var adBlockEnabled: Boolean = prefs.getBoolean(ADBLOCK_ENABLED_PREF_KEY, true)
         set(value) {

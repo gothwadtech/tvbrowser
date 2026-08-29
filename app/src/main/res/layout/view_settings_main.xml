@@ -1887,63 +1887,6 @@
                 android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Hardware Mouse Click Compatibility Mode (Airtel STB Fix) -->
-        <LinearLayout
-            android:id="@+id/llMouseCompatibility"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:background="@drawable/bg_tv_setting_item"
-            android:clickable="true"
-            android:focusable="true"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:contentDescription="@null"
-                    android:duplicateParentState="true"
-                    android:src="@drawable/ic_move_remote"
-                    android:tint="@color/selector_tv_setting_item_icon" />
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="14dp"
-                    android:layout_weight="1"
-                    android:duplicateParentState="true"
-                    android:text="TV Box Precision Mouse Click Fix"
-                    android:textColor="@color/selector_tv_setting_item_text"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/scMouseCompatibility"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:clickable="false"
-                    android:duplicateParentState="true"
-                    android:focusable="false" />
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:duplicateParentState="true"
-                android:text="Fixes dropped clicks on Airtel Xstream &amp; Set-top boxes when tapping search bars, buttons (e.g., PW.live, Google sign-in)."
-                android:textColor="@color/selector_tv_setting_item_desc"
-                android:textSize="12sp" />
-        </LinearLayout>
-
         <!-- Disable Virtual Keyboard Setting (KM) -->
         <LinearLayout
             android:id="@+id/llDisableVirtualKeyboardKm"
