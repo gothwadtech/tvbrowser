@@ -10,13 +10,16 @@ import com.gothwad.tvbrowser.BrowserApp
 import com.gothwad.tvbrowser.model.*
 import com.gothwad.tvbrowser.model.dao.*
 import com.gothwad.tvbrowser.model.util.Converters
+import com.gothwad.tvbrowser.notes.NoteItem
+import com.gothwad.tvbrowser.notes.clipboard.ClipboardItem
 
 @Database(entities = [
     Download::class, FavoriteItem::class,
     HistoryItem::class, WebTabState::class,
-    HostConfig::class
+    HostConfig::class, NoteItem::class,
+    ClipboardItem::class
                      ],
-    version = 19, exportSchema = false)
+    version = 20, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun downloadDao(): DownloadDao
@@ -24,6 +27,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun favoritesDao(): FavoritesDao
     abstract fun tabsDao(): TabsDao
     abstract fun hostsDao(): HostsDao
+    abstract fun notesDao(): NotesDao
+    abstract fun clipboardDao(): ClipboardDao
 
     companion object {
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -159,6 +164,25 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_19_20 = object : Migration(19, 20) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                createNotesTable(db)
+                createClipboardTable(db)
+            }
+        }
+
+        private fun createNotesTable(db: SupportSQLiteDatabase) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS `notes` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, `colorHex` TEXT NOT NULL, `isPinned` INTEGER NOT NULL, `isArchived` INTEGER NOT NULL, PRIMARY KEY(`id`))")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `notes_timestamp_idx` ON `notes` (`timestamp`)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `notes_pinned_idx` ON `notes` (`isPinned`)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `notes_archived_idx` ON `notes` (`isArchived`)")
+        }
+
+        private fun createClipboardTable(db: SupportSQLiteDatabase) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS `clipboard_history` (`id` TEXT NOT NULL, `text` TEXT NOT NULL, `title` TEXT NOT NULL, `type` TEXT NOT NULL, `timestamp` INTEGER NOT NULL, `copyCount` INTEGER NOT NULL, `colorHex` TEXT NOT NULL, PRIMARY KEY(`id`))")
+            db.execSQL("CREATE INDEX IF NOT EXISTS `clipboard_timestamp_idx` ON `clipboard_history` (`timestamp`)")
+        }
+
         private fun createHostsTable(db: SupportSQLiteDatabase) {
             db.execSQL("CREATE TABLE IF NOT EXISTS `hosts` (`host_name` TEXT NOT NULL, `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `popup_block_level` INTEGER)")
             db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `hosts_name_idx` ON `hosts` (`host_name`)")
@@ -203,7 +227,8 @@ abstract class AppDatabase : RoomDatabase() {
             ).addMigrations(
                 MIGRATION_1_2, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_8, MIGRATION_8_9,
                 MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14,
-                MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19
+                MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19,
+                MIGRATION_19_20
             )
             .allowMainThreadQueries()
                 .build()

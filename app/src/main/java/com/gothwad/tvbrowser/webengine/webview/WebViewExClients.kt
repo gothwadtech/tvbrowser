@@ -32,6 +32,7 @@ import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.webkit.WebViewFeature
 import com.gothwad.tvbrowser.Config
 import com.gothwad.tvbrowser.R
 
@@ -80,6 +81,9 @@ object WebViewExClients {
 
             override fun onProgressChanged(view: WebView, newProgress: Int) {
                 callback.onProgressChanged(newProgress)
+                if (newProgress in 10..30 && webViewEx.config.webPageZoomPercent != 100) {
+                    webViewEx.applyWebPageZoom()
+                }
             }
 
             override fun onReceivedTitle(view: WebView, title: String) {
@@ -229,7 +233,7 @@ object WebViewExClients {
                         return it
                     }
                 }
-                if (callback.isAdBlockingEnabled()) {
+                if (webViewEx.isAdBlockingEnabled()) {
                     val ad = currentPageUrl?.let { callback.isAd(request, it) } ?: false
                     if (ad) {
                         uiHandler.post { callback.onBlockedAd(request.url) }
@@ -243,16 +247,22 @@ object WebViewExClients {
                 super.onPageStarted(view, url, favicon)
                 webViewEx.currentOriginalUrl = url.toUri()
                 callback.onPageStarted(url)
-                val config = webViewEx.config
-                if (config.desktopMode.value || config.userAgentString.value?.contains("Windows") == true) {
-                    webViewEx.evaluateJavascript("""
-                        (function() {
-                            var metas = document.querySelectorAll('meta[name="viewport"]');
-                            for (var i = 0; i < metas.length; i++) {
-                                metas[i].parentNode.removeChild(metas[i]);
-                            }
-                        })();
-                    """.trimIndent(), null)
+                if (webViewEx.config.webPageZoomPercent != 100) {
+                    webViewEx.applyWebPageZoom()
+                }
+                if (webViewEx.isDesktopModeEnabled()) {
+                    if (!WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+                        webViewEx.evaluateJavascript("""
+                            (function() {
+                                var metas = document.querySelectorAll('meta[name="viewport"]');
+                                for (var i = 0; i < metas.length; i++) {
+                                    if (metas[i] && metas[i].parentNode) {
+                                        metas[i].parentNode.removeChild(metas[i]);
+                                    }
+                                }
+                            })();
+                        """.trimIndent(), null)
+                    }
                 }
             }
 
@@ -260,10 +270,8 @@ object WebViewExClients {
                 super.onPageFinished(view, url)
                 callback.onPageFinished(url)
                 webViewEx.evaluateJavascript(webViewEx.getGenericJSInjects(), null)
-                val zoom = webViewEx.config.webPageZoomPercent
-                if (zoom != 100) {
-                    val scale = zoom / 100f
-                    webViewEx.evaluateJavascript("document.documentElement.style.zoom = '$scale';", null)
+                if (webViewEx.config.webPageZoomPercent != 100) {
+                    webViewEx.applyWebPageZoom()
                 }
             }
 

@@ -36,7 +36,7 @@ object MainActivityAdBlockHelper {
     }
 
     fun onBlockedAd(activity: MainActivity, tab: WebTabState, uri: String) {
-        if (!activity.config.adBlockEnabled) return
+        if (!isAdBlockingEnabled(activity, tab)) return
         tab.blockedAds++
     }
 

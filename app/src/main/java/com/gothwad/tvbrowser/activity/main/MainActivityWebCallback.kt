@@ -29,10 +29,13 @@ import com.gothwad.tvbrowser.webengine.WebEngine
 import com.gothwad.tvbrowser.webengine.WebEngineWindowProviderCallback
 import com.gothwad.tvbrowser.widgets.cursor.CursorDrawerDelegate
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.io.InputStream
 
 internal class WebEngineCallback(val activity: MainActivity, val tab: WebTabState) : WebEngineWindowProviderCallback {
+    private var thumbnailJob: Job? = null
+
     override fun getActivity(): Activity = activity
 
     override fun onOpenInNewTabRequested(url: String, navigateImmediately: Boolean): WebEngine? {
@@ -190,7 +193,8 @@ internal class WebEngineCallback(val activity: MainActivity, val tab: WebTabStat
         if (isCurrent) {
             activity.vb.vActionBar.setAddressBoxText(tab.url)
         }
-        activity.lifecycleScope.launch(Dispatchers.IO) {
+        thumbnailJob?.cancel()
+        thumbnailJob = activity.lifecycleScope.launch {
             try {
                 val newThumbnail = tab.webEngine.renderThumbnail(tab.thumbnail)
                 if (newThumbnail != null) {

@@ -17,10 +17,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.gothwad.tvbrowser.R
 import com.gothwad.tvbrowser.notes.clipboard.ClipboardActivity
+import kotlinx.coroutines.launch
 
 class NotesActivity : AppCompatActivity() {
 
@@ -179,11 +181,13 @@ class NotesActivity : AppCompatActivity() {
             }
 
             val willArchive = (currentTab == NoteTab.ALL_NOTES)
-            notesRepository.archiveNotes(selectedIds, willArchive)
-            val actionText = if (willArchive) "Archived" else "Unarchived"
-            Toast.makeText(this, "$actionText ${selectedIds.size} notes", Toast.LENGTH_SHORT).show()
-            exitSelectionMode()
-            loadNotes()
+            lifecycleScope.launch {
+                notesRepository.archiveNotes(selectedIds, willArchive)
+                val actionText = if (willArchive) "Archived" else "Unarchived"
+                Toast.makeText(this@NotesActivity, "$actionText ${selectedIds.size} notes", Toast.LENGTH_SHORT).show()
+                exitSelectionMode()
+                loadNotes()
+            }
         }
 
         btnDeleteSelected.setOnClickListener {
@@ -197,10 +201,12 @@ class NotesActivity : AppCompatActivity() {
                 .setTitle("Delete Notes")
                 .setMessage("Are you sure you want to delete ${selectedIds.size} selected note(s)?")
                 .setPositiveButton("Delete") { _, _ ->
-                    notesRepository.deleteNotes(selectedIds)
-                    Toast.makeText(this, "Deleted ${selectedIds.size} note(s)", Toast.LENGTH_SHORT).show()
-                    exitSelectionMode()
-                    loadNotes()
+                    lifecycleScope.launch {
+                        notesRepository.deleteNotes(selectedIds)
+                        Toast.makeText(this@NotesActivity, "Deleted ${selectedIds.size} note(s)", Toast.LENGTH_SHORT).show()
+                        exitSelectionMode()
+                        loadNotes()
+                    }
                 }
                 .setNegativeButton("Cancel", null)
                 .show()
@@ -280,8 +286,10 @@ class NotesActivity : AppCompatActivity() {
     }
 
     private fun loadNotes() {
-        allNotesList = notesRepository.getAllNotes()
-        applyFilterAndDisplay(etSearchNotes.text.toString())
+        lifecycleScope.launch {
+            allNotesList = notesRepository.getAllNotes().toMutableList()
+            applyFilterAndDisplay(etSearchNotes.text.toString())
+        }
     }
 
     private fun getCurrentFilteredNotes(): List<NoteItem> {
@@ -377,9 +385,11 @@ class NotesActivity : AppCompatActivity() {
                         timestamp = System.currentTimeMillis()
                     )
 
-                    notesRepository.addOrUpdateNote(noteToSave)
-                    loadNotes()
-                    Toast.makeText(this, "Note saved successfully", Toast.LENGTH_SHORT).show()
+                    lifecycleScope.launch {
+                        notesRepository.addOrUpdateNote(noteToSave)
+                        loadNotes()
+                        Toast.makeText(this@NotesActivity, "Note saved successfully", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
             .setNegativeButton("Cancel", null)

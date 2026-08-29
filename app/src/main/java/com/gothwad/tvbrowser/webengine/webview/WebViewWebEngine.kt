@@ -21,6 +21,8 @@ import com.gothwad.tvbrowser.webengine.WebEngineProviderCallback
 import com.gothwad.tvbrowser.webengine.WebEngineWindowProviderCallback
 import com.gothwad.tvbrowser.widgets.cursor.CursorDrawerDelegate
 import com.gothwad.tvbrowser.widgets.cursor.CursorLayout
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.Callback {
     private var webView: WebViewEx? = null
@@ -60,6 +62,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
         set(value) {
             field = value
             webView?.settings?.userAgentString = value
+            webView?.applyDesktopMode()
         }
 
     override fun saveState(): Any {
@@ -86,6 +89,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     override fun zoomIn() {
         val cfg = AppContext.provideConfig()
         val next = (cfg.webPageZoomPercent + 10).coerceAtMost(Config.WEB_PAGE_ZOOM_PERCENT_MAX)
+        cfg.webPageZoomPercent = next
         setPageZoom(next)
     }
 
@@ -94,19 +98,14 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     override fun zoomOut() {
         val cfg = AppContext.provideConfig()
         val next = (cfg.webPageZoomPercent - 10).coerceAtLeast(Config.WEB_PAGE_ZOOM_PERCENT_MIN)
+        cfg.webPageZoomPercent = next
         setPageZoom(next)
     }
 
     override fun zoomBy(zoomBy: Float) { webView?.zoomBy(zoomBy) }
 
     override fun setPageZoom(percent: Int) {
-        webView?.settings?.textZoom = 100
-        val scale = percent / 100f
-        webView?.evaluateJavascript("""
-            (function() {
-                document.documentElement.style.zoom = '$scale';
-            })();
-        """.trimIndent(), null)
+        webView?.applyWebPageZoom(percent)
     }
 
     override fun evaluateJavascript(script: String) { webView?.evaluateJavascript(script, null) }
@@ -117,6 +116,7 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     override fun getOrCreateView(activityContext: Context): View {
         if (webView == null) {
             webView = WebViewEx(activityContext, webViewCallback, jsInterface)
+            tab.adblock?.let { webView?.onUpdateAdblockSetting(it) }
             val cfg = AppContext.provideConfig()
             val effectiveUa = userAgentString ?: cfg.userAgentString.value ?: if (cfg.desktopMode.value) Config.DESKTOP_UA else null
             if (effectiveUa != null) {
@@ -139,13 +139,19 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
 
     override fun onResume() { webView?.onResume() }
     override fun onPause() { webView?.onPause() }
-    override fun onUpdateAdblockSetting(newState: Boolean) { webView?.onUpdateAdblockSetting(newState) }
+    override fun onUpdateAdblockSetting(newState: Boolean) {
+        tab.adblock = newState
+        webView?.onUpdateAdblockSetting(newState)
+    }
     override fun hideFullscreenView() { webView?.hideCustomView() }
     override fun togglePlayback() { webView?.evaluateJavascript("tvBroTogglePlayback()", null) }
     override fun stopPlayback() { webView?.evaluateJavascript("tvBroStopPlayback()", null) }
     override fun rewind() { webView?.evaluateJavascript("tvBroRewind()", null) }
     override fun fastForward() { webView?.evaluateJavascript("tvBroFastForward()", null) }
-    override suspend fun renderThumbnail(bitmap: Bitmap?): Bitmap? = webView?.renderThumbnail(bitmap)
+    override suspend fun renderThumbnail(bitmap: Bitmap?): Bitmap? =
+        withContext(Dispatchers.Main.immediate) {
+            webView?.renderThumbnail(bitmap)
+        }
 
     override fun onAttachToWindow(callback: WebEngineWindowProviderCallback, parent: ViewGroup) {
         this.callback = callback

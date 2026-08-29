@@ -14,9 +14,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.gothwad.tvbrowser.R
 import com.gothwad.tvbrowser.databinding.ActivityClipboardBinding
+import kotlinx.coroutines.launch
 
 class ClipboardActivity : AppCompatActivity() {
 
@@ -57,7 +59,10 @@ class ClipboardActivity : AppCompatActivity() {
                     val item = clip.getItemAt(0)
                     val text = item.text?.toString() ?: item.uri?.toString()
                     if (!text.isNullOrBlank()) {
-                        repository.recordCopiedText(text)
+                        lifecycleScope.launch {
+                            repository.recordCopiedText(text)
+                            loadData()
+                        }
                     }
                 }
             }
@@ -72,8 +77,10 @@ class ClipboardActivity : AppCompatActivity() {
             items = emptyList(),
             onItemClick = { item -> showDetailDialog(item) },
             onCopyClick = { item ->
-                repository.copyToSystemClipboard(item, showToast = true)
-                loadData()
+                lifecycleScope.launch {
+                    repository.copyToSystemClipboard(item, showToast = true)
+                    loadData()
+                }
             },
             onDeleteClick = { item ->
                 confirmDeleteItem(item)
@@ -99,8 +106,10 @@ class ClipboardActivity : AppCompatActivity() {
     }
 
     private fun loadData() {
-        allItems = repository.getAllItems()
-        applySearchFilter()
+        lifecycleScope.launch {
+            allItems = repository.getAllItems().toMutableList()
+            applySearchFilter()
+        }
     }
 
     private fun applySearchFilter() {
@@ -152,9 +161,11 @@ class ClipboardActivity : AppCompatActivity() {
         btnOpenUrl.visibility = if (item.isUrl) View.VISIBLE else View.GONE
 
         btnCopy.setOnClickListener {
-            repository.copyToSystemClipboard(item, showToast = true)
-            loadData()
-            dialog.dismiss()
+            lifecycleScope.launch {
+                repository.copyToSystemClipboard(item, showToast = true)
+                loadData()
+                dialog.dismiss()
+            }
         }
 
         btnOpenUrl.setOnClickListener {
@@ -192,9 +203,11 @@ class ClipboardActivity : AppCompatActivity() {
             .setTitle("Delete Clipboard Item")
             .setMessage("Are you sure you want to delete this item from history?\n\n\"${item.displayTitle}\"")
             .setPositiveButton("Delete") { _, _ ->
-                repository.deleteItem(item.id)
-                loadData()
-                Toast.makeText(this, "Item deleted", Toast.LENGTH_SHORT).show()
+                lifecycleScope.launch {
+                    repository.deleteItem(item.id)
+                    loadData()
+                    Toast.makeText(this@ClipboardActivity, "Item deleted", Toast.LENGTH_SHORT).show()
+                }
             }
             .setNegativeButton("Cancel", null)
             .show()
@@ -210,9 +223,11 @@ class ClipboardActivity : AppCompatActivity() {
             .setTitle("Clear All Clipboard History")
             .setMessage("Do you want to permanently clear all clipboard history?")
             .setPositiveButton("Clear All") { _, _ ->
-                repository.clearAll()
-                loadData()
-                Toast.makeText(this, "All clipboard history cleared", Toast.LENGTH_SHORT).show()
+                lifecycleScope.launch {
+                    repository.clearAll()
+                    loadData()
+                    Toast.makeText(this@ClipboardActivity, "All clipboard history cleared", Toast.LENGTH_SHORT).show()
+                }
             }
             .setNegativeButton("Cancel", null)
             .show()

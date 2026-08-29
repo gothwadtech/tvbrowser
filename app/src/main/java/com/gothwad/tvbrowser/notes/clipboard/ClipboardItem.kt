@@ -1,14 +1,24 @@
 package com.gothwad.tvbrowser.notes.clipboard
 
+import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
 
+@Entity(
+    tableName = "clipboard_history",
+    indices = [
+        Index(value = ["timestamp"], name = "clipboard_timestamp_idx")
+    ]
+)
 data class ClipboardItem(
-    val id: String = UUID.randomUUID().toString(),
-    var text: String,
+    @PrimaryKey
+    var id: String = UUID.randomUUID().toString(),
+    var text: String = "",
     var title: String = "",
     var type: String = TYPE_TEXT,
     var timestamp: Long = System.currentTimeMillis(),

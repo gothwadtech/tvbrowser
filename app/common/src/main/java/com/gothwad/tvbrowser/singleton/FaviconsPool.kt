@@ -36,15 +36,62 @@ object FaviconsPool {
         }
     }
 
+    // In-memory LRU cache mapping host to favicon filename (or empty string if known to not exist)
+    private val hostFileCache: LruCache<String, String> = LruCache(500)
+
+    fun getFaviconFile(host: String): File? {
+        val cachedFileName = hostFileCache.get(host)
+        val favIconsDir = File(favIconsDir())
+
+        if (cachedFileName != null) {
+            if (cachedFileName.isEmpty()) {
+                return null
+            }
+            val file = File(favIconsDir, cachedFileName)
+            if (file.exists() && file.length() > 0) {
+                return file
+            }
+        }
+
+        try {
+            val hostConfig = databaseDelegate.findByHostName(host)
+            val faviconFileName = hostConfig?.favicon ?: (host.hashCode().toString() + ".png")
+            val faviconFile = File(favIconsDir, faviconFileName)
+            if (faviconFile.exists() && faviconFile.length() > 0) {
+                hostFileCache.put(host, faviconFileName)
+                return faviconFile
+            } else {
+                hostFileCache.put(host, "")
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed finding favicon file for $host: ${e.message}")
+        }
+
+        // Trigger background fetch if not found
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                get(host)
+            } catch (_: Exception) {}
+        }
+        return null
+    }
+
+    fun getFaviconFileInputStream(host: String): java.io.InputStream? {
+        val file = getFaviconFile(host) ?: return null
+        return try {
+            java.io.FileInputStream(file)
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed opening favicon stream for $host: ${e.message}")
+            null
+        }
+    }
+
     fun getFromMemoryOrDisk(host: String): Bitmap? {
         val cached = cache.get(host)
         if (cached != null) return cached
         try {
-            val hostConfig = databaseDelegate.findByHostName(host)
-            val faviconFileName = hostConfig?.favicon ?: (host.hashCode().toString() + ".png")
-            val favIconsDir = File(favIconsDir())
-            val faviconFile = File(favIconsDir, faviconFileName)
-            if (faviconFile.exists() && faviconFile.length() > 0) {
+            val faviconFile = getFaviconFile(host)
+            if (faviconFile != null && faviconFile.exists() && faviconFile.length() > 0) {
                 val bitmap = BitmapFactory.decodeFile(faviconFile.absolutePath)
                 if (bitmap != null) {
                     cache.put(host, bitmap)
@@ -53,14 +100,6 @@ object FaviconsPool {
             }
         } catch (e: Exception) {
             Log.w(TAG, "Fast favicon disk read failed for $host: ${e.message}")
-        }
-        // If not found, trigger background fetch without blocking the caller
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                get(host)
-            } catch (e: Exception) {
-                // Ignore background fetch error
-            }
         }
         return null
     }
@@ -166,6 +205,7 @@ object FaviconsPool {
 
     fun clear() {
         cache.evictAll()
+        hostFileCache.evictAll()
     }
 
     fun favIconsDir(): String {
@@ -184,6 +224,7 @@ object FaviconsPool {
         faviconFile.outputStream().use {
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
         }
+        hostFileCache.put(host, faviconFileName)
         if (hostConfig != null) {
             hostConfig.favicon = faviconFileName
             databaseDelegate.update(hostConfig)

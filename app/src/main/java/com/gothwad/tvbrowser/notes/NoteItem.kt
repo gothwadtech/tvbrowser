@@ -1,13 +1,26 @@
 package com.gothwad.tvbrowser.notes
 
+import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
 import org.json.JSONObject
 import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 
+@Entity(
+    tableName = "notes",
+    indices = [
+        Index(value = ["timestamp"], name = "notes_timestamp_idx"),
+        Index(value = ["isPinned"], name = "notes_pinned_idx"),
+        Index(value = ["isArchived"], name = "notes_archived_idx")
+    ]
+)
 data class NoteItem(
-    val id: String = System.currentTimeMillis().toString(),
+    @PrimaryKey
+    var id: String = UUID.randomUUID().toString(),
     var title: String = "",
     var content: String = "",
     var timestamp: Long = System.currentTimeMillis(),
@@ -37,7 +50,7 @@ data class NoteItem(
     companion object {
         fun fromJsonObject(obj: JSONObject): NoteItem {
             return NoteItem(
-                id = obj.optString("id", System.currentTimeMillis().toString()),
+                id = obj.optString("id", UUID.randomUUID().toString()),
                 title = obj.optString("title", ""),
                 content = obj.optString("content", ""),
                 timestamp = obj.optLong("timestamp", System.currentTimeMillis()),

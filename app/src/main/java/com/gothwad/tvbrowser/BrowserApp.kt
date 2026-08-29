@@ -24,6 +24,9 @@ import com.gothwad.tvbrowser.singleton.AppDatabase
 import com.gothwad.tvbrowser.singleton.FaviconsPool
 import com.gothwad.tvbrowser.utils.activemodel.ActiveModelsRepository
 import com.gothwad.tvbrowser.webengine.webview.WebViewWebEngine
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 import java.net.CookieHandler
 import java.net.CookieManager
@@ -150,15 +153,21 @@ class BrowserApp : Application(), Application.ActivityLifecycleCallbacks {
                 return
             }
 
-            val repo = ClipboardRepository(this)
-            val allItems = repo.getAllItems()
-            val mostRecent = allItems.firstOrNull()?.text?.trim()
-            if (mostRecent != null && mostRecent == text) {
-                return
-            }
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val repo = ClipboardRepository(this@BrowserApp)
+                    val allItems = repo.getAllItems()
+                    val mostRecent = allItems.firstOrNull()?.text?.trim()
+                    if (mostRecent != null && mostRecent == text) {
+                        return@launch
+                    }
 
-            repo.recordCopiedText(text)
-            Log.d(TAG, "Captured native text copy into ClipboardRepository (${text.take(30)}...)")
+                    repo.recordCopiedText(text)
+                    Log.d(TAG, "Captured native text copy into ClipboardRepository (${text.take(30)}...)")
+                } catch (t: Throwable) {
+                    Log.e(TAG, "Error recording clipboard text: ${t.message}")
+                }
+            }
         } catch (e: SecurityException) {
             Log.w(TAG, "Clipboard access denied (SecurityException): ${e.message}")
         } catch (t: Throwable) {

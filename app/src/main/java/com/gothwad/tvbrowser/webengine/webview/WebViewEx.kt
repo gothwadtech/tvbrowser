@@ -29,6 +29,8 @@ import android.webkit.WebView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
+import androidx.webkit.ScriptHandler
+import androidx.webkit.WebViewCompat
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import com.gothwad.tvbrowser.AppContext
@@ -65,6 +67,8 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     var currentOriginalUrl: Uri? = null
     private val uiHandler = Handler(Looper.getMainLooper())
     internal val config = AppContext.provideConfig()
+    private var documentStartZoomScriptRef: ScriptHandler? = null
+    private var documentStartDesktopScriptRef: ScriptHandler? = null
 
     interface Callback {
         fun getActivity(): Activity?
@@ -196,6 +200,8 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         }
 
         addJavascriptInterface(jsInterface, "BrowserApp")
+        applyWebPageZoom()
+        applyDesktopMode()
     }
 
     override fun restoreState(inState: Bundle): WebBackForwardList? {
@@ -327,8 +333,14 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         }
     }
 
+    private var perTabAdblockOverride: Boolean? = null
+
     fun onUpdateAdblockSetting(adblockEnabled: Boolean) {
-        // Ad blocking engine removed for maximum loading throughput
+        this.perTabAdblockOverride = adblockEnabled
+    }
+
+    fun isAdBlockingEnabled(): Boolean {
+        return perTabAdblockOverride ?: callback.isAdBlockingEnabled()
     }
 
     fun setVirtualCursorMode(enabled: Boolean) {
@@ -414,6 +426,125 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         val dy = t - oldt
         if (Math.abs(dy) > 4 || t <= 5) {
             callback.onScrollChange(t, oldt, dy)
+        }
+    }
+
+    fun applyWebPageZoom(percent: Int = config.webPageZoomPercent) {
+        val scale = percent / 100f
+        val zoomScript = """
+            (function() {
+                var css = 'html { zoom: $scale !important; }';
+                var head = document.head || document.getElementsByTagName('head')[0];
+                if (head) {
+                    var s = document.getElementById('__tvb_zoom_style__');
+                    if (!s) {
+                        s = document.createElement('style');
+                        s.id = '__tvb_zoom_style__';
+                        head.appendChild(s);
+                    }
+                    s.textContent = css;
+                }
+                if (document.documentElement) {
+                    document.documentElement.style.zoom = '$scale';
+                }
+            })();
+        """.trimIndent()
+
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+            try {
+                documentStartZoomScriptRef?.remove()
+                documentStartZoomScriptRef = null
+            } catch (e: Throwable) {
+                Log.w(TAG, "Failed to remove previous document-start zoom script: ", e)
+            }
+            if (percent != 100) {
+                try {
+                    documentStartZoomScriptRef = WebViewCompat.addDocumentStartJavaScript(
+                        this,
+                        zoomScript,
+                        setOf("*")
+                    )
+                } catch (e: Throwable) {
+                    Log.w(TAG, "Failed to add document-start zoom script: ", e)
+                }
+            }
+        }
+
+        if (percent != 100) {
+            evaluateJavascript(zoomScript, null)
+        } else {
+            evaluateJavascript("""
+                (function() {
+                    var s = document.getElementById('__tvb_zoom_style__');
+                    if (s && s.parentNode) s.parentNode.removeChild(s);
+                    if (document.documentElement) document.documentElement.style.zoom = '1';
+                })();
+            """.trimIndent(), null)
+        }
+    }
+
+    fun isDesktopModeEnabled(): Boolean {
+        val effectiveUa = settings.userAgentString ?: ""
+        return config.desktopMode.value ||
+               config.userAgentString.value?.contains("Windows") == true ||
+               effectiveUa.contains("Windows") ||
+               effectiveUa.contains("X11; Linux x86_64") ||
+               effectiveUa.contains("Macintosh")
+    }
+
+    fun applyDesktopMode() {
+        val isDesktop = isDesktopModeEnabled()
+
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+            try {
+                documentStartDesktopScriptRef?.remove()
+                documentStartDesktopScriptRef = null
+            } catch (e: Throwable) {
+                Log.w(TAG, "Failed to remove previous document-start desktop script: ", e)
+            }
+
+            if (isDesktop) {
+                try {
+                    val desktopViewportScript = """
+                        (function() {
+                            function removeViewportMeta() {
+                                var metas = document.querySelectorAll('meta[name="viewport"]');
+                                for (var i = 0; i < metas.length; i++) {
+                                    if (metas[i] && metas[i].parentNode) {
+                                        metas[i].parentNode.removeChild(metas[i]);
+                                    }
+                                }
+                            }
+                            removeViewportMeta();
+                            if (window.MutationObserver) {
+                                var observer = new MutationObserver(function(mutations) {
+                                    removeViewportMeta();
+                                });
+                                if (document.documentElement) {
+                                    observer.observe(document.documentElement, { childList: true, subtree: true });
+                                } else {
+                                    document.addEventListener('DOMContentLoaded', function() {
+                                        removeViewportMeta();
+                                        if (document.documentElement) {
+                                            observer.observe(document.documentElement, { childList: true, subtree: true });
+                                        }
+                                    });
+                                }
+                            }
+                            document.addEventListener('DOMContentLoaded', removeViewportMeta);
+                            window.addEventListener('load', removeViewportMeta);
+                        })();
+                    """.trimIndent()
+
+                    documentStartDesktopScriptRef = WebViewCompat.addDocumentStartJavaScript(
+                        this,
+                        desktopViewportScript,
+                        setOf("*")
+                    )
+                } catch (e: Throwable) {
+                    Log.w(TAG, "Failed to add document-start desktop script: ", e)
+                }
+            }
         }
     }
 }

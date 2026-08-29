@@ -3,14 +3,18 @@ package com.gothwad.tvbrowser.filemanager
 import android.Manifest
 import android.content.ClipData
 import android.content.ClipDescription
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.StatFs
+import android.provider.Settings
 import android.text.format.Formatter
 import android.view.DragEvent
 import android.view.View
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -52,7 +56,11 @@ class FileManagerActivity : AppCompatActivity() {
     private lateinit var tvItemCountBadge: TextView
     private lateinit var ivPathTypeIcon: ImageView
     private lateinit var llEmptyView: LinearLayout
+    private lateinit var llPermissionPrompt: LinearLayout
+    private lateinit var btnGrantPermission: Button
     private lateinit var pbLoading: ProgressBar
+
+    private val STORAGE_PERMISSION_REQUEST_CODE = 1001
 
     private lateinit var ibNavHistoryBack: ImageButton
     private lateinit var ibNavHistoryForward: ImageButton
@@ -90,6 +98,8 @@ class FileManagerActivity : AppCompatActivity() {
         tvItemCountBadge = findViewById(R.id.tvItemCountBadge)
         ivPathTypeIcon = findViewById(R.id.ivPathTypeIcon)
         llEmptyView = findViewById(R.id.llEmptyView)
+        llPermissionPrompt = findViewById(R.id.llPermissionPrompt)
+        btnGrantPermission = findViewById(R.id.btnGrantPermission)
         pbLoading = findViewById(R.id.pbLoading)
 
         ibNavHistoryBack = findViewById(R.id.ibNavHistoryBack)
@@ -242,6 +252,10 @@ class FileManagerActivity : AppCompatActivity() {
 
         btnCatDocs.setOnClickListener {
             switchCategoryView(Category.DOCS)
+        }
+
+        btnGrantPermission.setOnClickListener {
+            requestStoragePermission()
         }
     }
 
@@ -406,19 +420,83 @@ class FileManagerActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkPermissionsAndLoad() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE), 1001)
-                return
+    override fun onResume() {
+        super.onResume()
+        if (hasStoragePermission()) {
+            if (llPermissionPrompt.visibility == View.VISIBLE) {
+                llPermissionPrompt.visibility = View.GONE
+                loadCurrentCategory()
+                loadSidebarStorageStats()
             }
         }
-        loadCurrentCategory()
+    }
+
+    private fun hasStoragePermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Environment.isExternalStorageManager()
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+    }
+
+    private fun requestStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            try {
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                    data = Uri.parse("package:$packageName")
+                }
+                startActivity(intent)
+            } catch (e: Exception) {
+                try {
+                    val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                    startActivity(intent)
+                } catch (e2: Exception) {
+                    Toast.makeText(this, "Unable to open storage settings: ${e2.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ),
+                STORAGE_PERMISSION_REQUEST_CODE
+            )
+        }
+    }
+
+    private fun checkPermissionsAndLoad(promptUser: Boolean = true) {
+        if (hasStoragePermission()) {
+            llPermissionPrompt.visibility = View.GONE
+            loadCurrentCategory()
+            loadSidebarStorageStats()
+        } else {
+            pbLoading.visibility = View.GONE
+            llEmptyView.visibility = View.GONE
+            adapter.updateItems(emptyList())
+            llPermissionPrompt.visibility = View.VISIBLE
+            btnGrantPermission.requestFocus()
+            if (promptUser) {
+                requestStoragePermission()
+            }
+        }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        loadCurrentCategory()
+        if (requestCode == STORAGE_PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                llPermissionPrompt.visibility = View.GONE
+                loadCurrentCategory()
+                loadSidebarStorageStats()
+            } else {
+                llPermissionPrompt.visibility = View.VISIBLE
+                Toast.makeText(this, "Storage permission is required to browse files", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun loadCurrentCategory() {

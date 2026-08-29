@@ -14,6 +14,9 @@ import com.gothwad.tvbrowser.model.WebTabState
 import com.gothwad.tvbrowser.notes.clipboard.ClipboardRepository
 import com.gothwad.tvbrowser.webengine.WebEngineWindowProviderCallback
 import com.gothwad.tvbrowser.widgets.cursor.CursorDrawerDelegate
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 object MainActivityWebContextMenuHelper {
 
@@ -27,10 +30,12 @@ object MainActivityWebContextMenuHelper {
         } finally {
             ClipboardRepository.isInternalClipboardWrite = false
         }
-        try {
-            ClipboardRepository(activity).recordCopiedText(url)
-        } catch (e: Exception) {
-            e.printStackTrace()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                ClipboardRepository(activity).recordCopiedText(url)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
         Toast.makeText(activity, activity.getString(R.string.copied_to_clipboard), Toast.LENGTH_SHORT).show()
     }
