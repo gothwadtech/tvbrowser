@@ -2,6 +2,7 @@ package com.gothwad.tvbrowser.notes
 
 import android.content.Intent
 import android.os.Bundle
+import com.gothwad.tvbrowser.utils.setupAsSidebar
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -68,6 +69,7 @@ class NotesActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setupAsSidebar(true)
         setContentView(R.layout.activity_notes)
 
         notesRepository = NotesRepository(this)

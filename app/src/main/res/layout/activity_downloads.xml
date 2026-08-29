@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
-    android:background="#0D111A"
+    android:background="@drawable/bg_tv_right_sidebar"
     tools:context="com.gothwad.tvbrowser.activity.downloads.DownloadsActivity">
 
     <!-- Top Header Area -->

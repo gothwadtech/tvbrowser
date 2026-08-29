@@ -3,15 +3,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/flTabsRowContainer"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="#D90B0E17"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_tv_right_sidebar"
     android:paddingTop="14dp"
     android:paddingBottom="18dp"
     android:elevation="24dp">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical">
 
         <!-- Top Header Bar for Tabs -->
@@ -34,7 +34,6 @@
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
-            <!-- New Tab Action Button -->
             <Button
                 android:id="@+id/btnNewTabAction"
                 android:layout_width="wrap_content"
@@ -50,7 +49,6 @@
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
-            <!-- Close All Action Button -->
             <Button
                 android:id="@+id/btnCloseAllTabs"
                 android:layout_width="wrap_content"
@@ -65,7 +63,6 @@
                 android:textColor="#94A3B8"
                 android:textSize="12sp" />
 
-            <!-- Close Dialog (X) -->
             <ImageButton
                 android:id="@+id/btnDoneTabs"
                 android:layout_width="36dp"
@@ -79,20 +76,19 @@
                 android:tint="#FFFFFF" />
         </LinearLayout>
 
-        <!-- Horizontal RecyclerView for Open Tabs -->
+        <!-- Vertical Grid RecyclerView for Open Tabs -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvTabsRow"
             android:layout_width="match_parent"
-            android:layout_height="170dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:clipChildren="false"
             android:clipToPadding="false"
             android:focusable="true"
-            android:orientation="horizontal"
             android:paddingStart="24dp"
             android:paddingEnd="24dp"
-            android:scrollbars="none" />
+            android:scrollbars="vertical" />
 
-        <!-- Floating Quick Action Controls centered below carousel (Image 3) -->
         <LinearLayout
             android:id="@+id/llTabBottomControls"
             android:layout_width="wrap_content"

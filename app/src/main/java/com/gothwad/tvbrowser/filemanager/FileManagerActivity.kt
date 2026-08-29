@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import com.gothwad.tvbrowser.utils.setupAsSidebar
 import android.os.Environment
 import android.os.StatFs
 import android.provider.Settings
@@ -83,6 +84,7 @@ class FileManagerActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setupAsSidebar(true)
         setContentView(R.layout.activity_file_manager)
 
         initViews()

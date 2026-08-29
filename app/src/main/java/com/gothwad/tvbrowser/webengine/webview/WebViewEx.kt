@@ -110,6 +110,11 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
     init {
         setLayerType(View.LAYER_TYPE_HARDWARE, null)
+        overScrollMode = View.OVER_SCROLL_NEVER
+        isVerticalScrollBarEnabled = false
+        isHorizontalScrollBarEnabled = false
+        isScrollbarFadingEnabled = true
+        
         with(settings) {
             javaScriptEnabled = true
             useWideViewPort = true

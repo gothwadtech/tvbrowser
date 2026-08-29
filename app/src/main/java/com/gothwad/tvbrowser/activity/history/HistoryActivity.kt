@@ -24,6 +24,7 @@ import com.gothwad.tvbrowser.databinding.ActivityHistoryBinding
 import com.gothwad.tvbrowser.model.HistoryItem
 import com.gothwad.tvbrowser.singleton.AppDatabase
 import com.gothwad.tvbrowser.utils.Utils
+import com.gothwad.tvbrowser.utils.setupAsSidebar
 import com.gothwad.tvbrowser.utils.VoiceSearchHelper
 import com.gothwad.tvbrowser.utils.activemodel.ActiveModelsRepository
 import kotlinx.coroutines.Dispatchers
@@ -52,6 +53,7 @@ class HistoryActivity : AppCompatActivity(), AdapterView.OnItemClickListener, Ad
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setupAsSidebar(false)
         vb = ActivityHistoryBinding.inflate(layoutInflater)
         setContentView(vb.root)
 

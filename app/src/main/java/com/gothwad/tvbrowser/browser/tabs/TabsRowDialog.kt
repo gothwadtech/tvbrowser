@@ -21,7 +21,7 @@ class TabsRowDialog(
     private val onNewTabRequested: () -> Unit,
     private val onCloseTabRequested: (WebTabState) -> Unit,
     private val onCloseAllTabsRequested: () -> Unit
-) : Dialog(activity, R.style.BottomTabsDialog) {
+) : Dialog(activity, R.style.TvSettingsDrawerDialog) {
 
     private lateinit var tvTabsHeaderTitle: TextView
     private lateinit var btnNewTabAction: Button
@@ -40,10 +40,12 @@ class TabsRowDialog(
         setContentView(R.layout.dialog_tabs_row)
 
         window?.apply {
-            setGravity(Gravity.BOTTOM)
+            val dm = activity.resources.displayMetrics
+            val popupWidth = (dm.widthPixels * 0.45f).toInt().coerceIn(400, 800)
+            setGravity(Gravity.END)
             setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
+                popupWidth,
+                ViewGroup.LayoutParams.MATCH_PARENT
             )
         }
 
@@ -69,7 +71,7 @@ class TabsRowDialog(
 
         updateTitle(tabs.size)
 
-        val layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+        val layoutManager = androidx.recyclerview.widget.GridLayoutManager(context, 2)
         rvTabsRow.layoutManager = layoutManager
         adapter = TabsRowAdapter(
             tabs = tabs.toMutableList(),

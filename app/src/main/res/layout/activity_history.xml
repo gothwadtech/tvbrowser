@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
-    android:background="#0A0D14"
+    android:background="@drawable/bg_tv_left_sidebar"
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
     android:paddingTop="12dp"

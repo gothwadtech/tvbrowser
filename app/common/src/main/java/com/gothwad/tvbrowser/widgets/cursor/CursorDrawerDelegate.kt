@@ -52,8 +52,8 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
         // active pointer while dpadCenterPressed is false — scroll-hack or the next frame can inject
         // another ACTION_DOWN, which yields ACTION_CANCEL + ACTION_DOWN and a spurious tap.
         if (dpadCenterPressed) {
-            dispatchMotionEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_CANCEL)
             dpadCenterPressed = false
+            dispatchMotionEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_CANCEL)
         }
         surface.keyDispatcherState.reset(this@CursorDrawerDelegate)
         grabMode = false
@@ -217,8 +217,8 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
                         scheduleCursorHide()
                     } else {
                         if (dpadCenterPressed) {
-                            dispatchMotionEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_UP)
                             dpadCenterPressed = false
+                            dispatchMotionEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_UP)
                         }
                         surface.postInvalidate()
                     }
@@ -630,8 +630,8 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
 
     fun hideCursor() {
         if (dpadCenterPressed) {
-            dispatchMotionEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_UP)
             dpadCenterPressed = false
+            dispatchMotionEvent(cursorPosition.x, cursorPosition.y, MotionEvent.ACTION_UP)
         }
         grabMode = false
         lastCursorUpdate = System.currentTimeMillis() - CURSOR_DISAPPEAR_TIMEOUT

@@ -4,7 +4,7 @@
     android:id="@+id/llNotesRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/day_night_background_color"
+    android:background="@drawable/bg_tv_right_sidebar"
     android:fitsSystemWindows="true"
     android:orientation="vertical">
 

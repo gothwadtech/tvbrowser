@@ -109,30 +109,35 @@
         </activity>
         <activity
             android:name=".activity.history.HistoryActivity"
+            android:theme="@style/Theme.SidebarLeft"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:screenOrientation="behind"
             android:windowSoftInputMode="adjustResize"
             tools:ignore="DiscouragedApi" />
 
         <activity android:name=".activity.downloads.DownloadsActivity"
+            android:theme="@style/Theme.SidebarRight"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:screenOrientation="behind"
             android:windowSoftInputMode="adjustResize"
             tools:ignore="DiscouragedApi"/>
 
         <activity android:name=".filemanager.FileManagerActivity"
+            android:theme="@style/Theme.SidebarRight"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:screenOrientation="behind"
             android:windowSoftInputMode="adjustResize"
             tools:ignore="DiscouragedApi"/>
 
         <activity android:name=".notes.NotesActivity"
+            android:theme="@style/Theme.SidebarRight"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:screenOrientation="behind"
             android:windowSoftInputMode="adjustResize"
             tools:ignore="DiscouragedApi"/>
 
         <activity android:name=".notes.clipboard.ClipboardActivity"
+            android:theme="@style/Theme.SidebarRight"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:screenOrientation="behind"
             android:windowSoftInputMode="adjustResize"
@@ -158,6 +163,10 @@
         <meta-data
             android:name="android.webkit.WebView.MetricsOptOut"
             android:value="true" />
+            
+        <meta-data
+            android:name="android.webkit.WebView.EnableSafeBrowsing"
+            android:value="false" />
 
         <service
             android:name=".service.downloads.DownloadService"

@@ -25,7 +25,7 @@ class FavoritesDialog(
     private val callback: Callback,
     private val currentPageTitle: String?,
     private val currentPageUrl: String?
-) : Dialog(context, R.style.TvFullScreenDialog) {
+) : Dialog(context, R.style.TvSideDrawerDialog) {
 
     private var allItems: MutableList<FavoriteItem> = ArrayList()
     private var displayedItems: MutableList<FavoriteItem> = ArrayList()
@@ -48,7 +48,10 @@ class FavoritesDialog(
     init {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(R.layout.dialog_favorites)
-        window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        val dm = context.resources.displayMetrics
+        val popupWidth = (dm.widthPixels * 0.45f).toInt().coerceIn(400, 800)
+        window?.setLayout(popupWidth, ViewGroup.LayoutParams.MATCH_PARENT)
+        window?.setGravity(android.view.Gravity.START)
 
         initViews()
         setupListeners()
@@ -66,7 +69,7 @@ class FavoritesDialog(
         llEmptyBookmarks = findViewById(R.id.llEmptyBookmarks)
         pbLoading = findViewById(R.id.pbLoading)
 
-        rvBookmarksGrid.layoutManager = GridLayoutManager(context, 4)
+        rvBookmarksGrid.layoutManager = GridLayoutManager(context, 2)
         adapter = BookmarksGridAdapter(
             displayedItems,
             onItemClick = { item ->

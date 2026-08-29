@@ -5,6 +5,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import com.gothwad.tvbrowser.utils.setupAsSidebar
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -33,6 +34,7 @@ class ClipboardActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setupAsSidebar(true)
         vb = ActivityClipboardBinding.inflate(layoutInflater)
         setContentView(vb.root)
 

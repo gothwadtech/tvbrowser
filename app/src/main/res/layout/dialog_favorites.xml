@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#0D111A"
+    android:background="@drawable/bg_tv_left_sidebar"
     android:paddingStart="24dp"
     android:paddingEnd="24dp"
     android:paddingTop="20dp"

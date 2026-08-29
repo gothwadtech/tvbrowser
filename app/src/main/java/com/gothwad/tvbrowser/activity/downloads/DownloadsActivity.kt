@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import com.gothwad.tvbrowser.utils.setupAsSidebar
 import android.os.Environment
 import android.provider.Settings
 import android.util.Log
@@ -25,6 +26,7 @@ import com.gothwad.tvbrowser.R
 import com.gothwad.tvbrowser.databinding.ActivityDownloadsBinding
 import com.gothwad.tvbrowser.model.Download
 import com.gothwad.tvbrowser.utils.Utils
+import com.gothwad.tvbrowser.utils.setupAsSidebar
 import com.gothwad.tvbrowser.utils.activemodel.ActiveModelsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -53,6 +55,7 @@ class DownloadsActivity : AppCompatActivity(), AdapterView.OnItemClickListener, 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setupAsSidebar(true)
         Log.d(TAG, "onCreate this:" + System.identityHashCode(this))
         vb = ActivityDownloadsBinding.inflate(layoutInflater)
         setContentView(vb.root)
