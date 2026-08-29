@@ -3,6 +3,7 @@ package com.gothwad.tvbrowser.activity.main
 import android.content.Intent
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.gothwad.tvbrowser.activity.main.dialogs.TabsSidebarPopup
 import com.gothwad.tvbrowser.browser.tabs.TabsRowDialog
 import com.gothwad.tvbrowser.browser.tabs.TopTabsAdapter
 import com.gothwad.tvbrowser.model.WebTabState
@@ -53,10 +54,7 @@ fun MainActivity.refreshTopTabs() {
 }
 
 fun MainActivity.showTabsRowDialog() {
-    val existing = currentTabsDialog
-    if (existing?.isShowing == true) return
-
-    val dialog = TabsRowDialog(
+    TabsSidebarPopup(
         activity = this,
         onTabSelected = { tab ->
             switchToTab(tab)
@@ -70,9 +68,7 @@ fun MainActivity.showTabsRowDialog() {
         onCloseAllTabsRequested = {
             closeAllTabs()
         }
-    )
-    currentTabsDialog = dialog
-    dialog.show()
+    ).show(vb.flTabsSwitcher)
 }
 
 fun MainActivity.updateTabCountBadge() {

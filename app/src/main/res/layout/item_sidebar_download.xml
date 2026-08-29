@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/llDownloadItemRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/bg_card_sleek"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <!-- Top Row: Icon + Filename + Delete/Cancel -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/ivDownloadIcon"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/ic_file_generic"
+            android:contentDescription="@null" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvDownloadFilename"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="middle"
+                android:maxLines="1"
+                android:text="sample_video.mp4"
+                android:textColor="@color/day_night_text_color_contrast"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvDownloadStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Completed • 14.2 MB"
+                android:textColor="#94A3B8"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btnDownloadDelete"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:background="@drawable/bg_tv_side_back_btn"
+            android:clickable="true"
+            android:contentDescription="Delete download"
+            android:focusable="true"
+            android:padding="6dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_delete_grey_400_24dp"
+            android:tint="@color/day_night_text_color_contrast" />
+    </LinearLayout>
+
+    <!-- Active Download Progress Bar (visible only when downloading) -->
+    <ProgressBar
+        android:id="@+id/pbDownloadProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_marginTop="8dp"
+        android:progress="60"
+        android:visibility="gone" />
+</LinearLayout>

@@ -17,18 +17,17 @@ import android.widget.Toast
 import com.gothwad.tvbrowser.BuildConfig
 import com.gothwad.tvbrowser.Config
 import com.gothwad.tvbrowser.R
-import com.gothwad.tvbrowser.activity.downloads.DownloadsActivity
-import com.gothwad.tvbrowser.activity.history.HistoryActivity
 import com.gothwad.tvbrowser.activity.lock.AppLockActivity
 import com.gothwad.tvbrowser.activity.lock.TvPinDialog
 import com.gothwad.tvbrowser.activity.main.MainActivity
 import com.gothwad.tvbrowser.activity.main.showClipboardActivity
+import com.gothwad.tvbrowser.activity.main.showDownloads
 import com.gothwad.tvbrowser.activity.main.showFavoritesDialog
+import com.gothwad.tvbrowser.activity.main.showFileManager
 import com.gothwad.tvbrowser.activity.main.showHistoryActivity
+import com.gothwad.tvbrowser.activity.main.showNotes
 import com.gothwad.tvbrowser.activity.main.showSettingsDialog
 import com.gothwad.tvbrowser.activity.main.toggleIncognitoMode
-import com.gothwad.tvbrowser.filemanager.FileManagerActivity
-import com.gothwad.tvbrowser.notes.NotesActivity
 import com.gothwad.tvbrowser.singleton.AppLockManager
 
 class BrowserSidebarPopup(private val activity: MainActivity) {
@@ -184,42 +183,42 @@ class BrowserSidebarPopup(private val activity: MainActivity) {
             }
         }
 
-        // 4. Bookmarks
+        // 4. Bookmarks (Left Sidebar)
         contentView.findViewById<View>(R.id.btnSideBookmarks)?.let { btn ->
             bindItem(btn) {
-                activity.showFavoritesDialog()
+                activity.showFavoritesDialog(btn)
             }
         }
 
-        // 5. History
+        // 5. History (Left Sidebar)
         contentView.findViewById<View>(R.id.btnSideHistory)?.let { btn ->
             bindItem(btn) {
-                activity.showHistoryActivity()
+                activity.showHistoryActivity(btn)
             }
         }
 
-        // 6. Downloads
+        // 6. Downloads (Right Sidebar)
         contentView.findViewById<View>(R.id.btnSideDownloads)?.let { btn ->
             bindItem(btn) {
-                activity.startActivity(Intent(activity, DownloadsActivity::class.java))
+                activity.showDownloads()
             }
         }
 
-        // 7. File Manager
+        // 7. File Manager (Right Sidebar)
         contentView.findViewById<View>(R.id.btnSideFileManager)?.let { btn ->
             bindItem(btn) {
-                activity.startActivity(Intent(activity, FileManagerActivity::class.java))
+                activity.showFileManager()
             }
         }
 
-        // 8. Notes
+        // 8. Notes (Right Sidebar)
         contentView.findViewById<View>(R.id.btnSideNotes)?.let { btn ->
             bindItem(btn) {
-                activity.startActivity(Intent(activity, NotesActivity::class.java))
+                activity.showNotes()
             }
         }
 
-        // 9. Native Clipboard
+        // 9. Native Clipboard (Right Sidebar)
         contentView.findViewById<View>(R.id.btnSideClipboard)?.let { btn ->
             bindItem(btn) {
                 activity.showClipboardActivity()

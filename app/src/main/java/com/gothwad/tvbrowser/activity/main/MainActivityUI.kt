@@ -14,16 +14,16 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.gothwad.tvbrowser.Config
 import com.gothwad.tvbrowser.R
-import com.gothwad.tvbrowser.activity.downloads.DownloadsActivity
-import com.gothwad.tvbrowser.activity.history.HistoryActivity
 import com.gothwad.tvbrowser.activity.main.dialogs.BrowserSidebarPopup
+import com.gothwad.tvbrowser.activity.main.dialogs.ClipboardSidebarPopup
+import com.gothwad.tvbrowser.activity.main.dialogs.DownloadsSidebarPopup
+import com.gothwad.tvbrowser.activity.main.dialogs.FavoritesSidebarPopup
+import com.gothwad.tvbrowser.activity.main.dialogs.FileManagerSidebarPopup
+import com.gothwad.tvbrowser.activity.main.dialogs.HistorySidebarPopup
+import com.gothwad.tvbrowser.activity.main.dialogs.NotesSidebarPopup
 import com.gothwad.tvbrowser.activity.main.dialogs.ShortcutDialog
 import com.gothwad.tvbrowser.activity.main.dialogs.favorites.FavoriteEditorDialog
-import com.gothwad.tvbrowser.activity.main.dialogs.favorites.FavoritesDialog
-import com.gothwad.tvbrowser.filemanager.FileManagerActivity
 import com.gothwad.tvbrowser.model.FavoriteItem
-import com.gothwad.tvbrowser.notes.NotesActivity
-import com.gothwad.tvbrowser.notes.clipboard.ClipboardActivity
 import com.gothwad.tvbrowser.settings.SettingsDialog
 import com.gothwad.tvbrowser.singleton.shortcuts.Shortcut
 import com.gothwad.tvbrowser.utils.Utils
@@ -65,7 +65,7 @@ internal fun MainActivity.setupHeaderClickListeners(incognitoMode: Boolean) {
         openInNewTab(settingsModel.homePage, tabsModel.tabsStates.size, needToHideMenuOverlay = false, navigateImmediately = true)
     }
     vb.flTabsSwitcher.setOnClickListener { showTabsRowDialog() }
-    vb.ibNotes.setOnClickListener { startActivity(Intent(this, NotesActivity::class.java)) }
+    vb.ibNotes.setOnClickListener { showNotes(vb.ibNotes) }
     vb.ibBack.setOnClickListener { navigateBack() }
     vb.ibForward.setOnClickListener {
         val tab = tabsModel.currentTab.value ?: return@setOnClickListener
@@ -79,9 +79,9 @@ internal fun MainActivity.setupHeaderClickListeners(incognitoMode: Boolean) {
         }
     }
     vb.ibRefresh.setOnClickListener { refresh() }
-    vb.ibDownloads.setOnClickListener { showDownloads() }
-    vb.ibFileManager.setOnClickListener { startActivity(Intent(this, FileManagerActivity::class.java)) }
-    vb.ibBookmarks.setOnClickListener { showFavorites() }
+    vb.ibDownloads.setOnClickListener { showDownloads(vb.ibDownloads) }
+    vb.ibFileManager.setOnClickListener { showFileManager(vb.ibFileManager) }
+    vb.ibBookmarks.setOnClickListener { showFavoritesDialog(vb.ibBookmarks) }
     vb.ibIncognito.setOnClickListener { toggleIncognitoMode(true) }
     vb.ibSettings.setOnClickListener { showSettingsDialog() }
 
@@ -164,24 +164,21 @@ internal fun MainActivity.onEditHomePageBookmark(favoriteItem: FavoriteItem) {
     }, favoriteItem).show()
 }
 
-internal fun MainActivity.showFavoritesDialog() {
-    val tab = tabsModel.currentTab.value
-    FavoritesDialog(
-        this,
-        lifecycleScope,
-        object : FavoritesDialog.Callback {
-            override fun onFavoriteChoosen(item: FavoriteItem?) {
-                item?.url?.let { navigate(it) }
-            }
-        },
-        tab?.title,
-        tab?.url
-    ).show()
+internal fun MainActivity.showFavoritesDialog(anchorView: View? = null) {
+    FavoritesSidebarPopup(this) { item ->
+        item.url?.let { navigate(it) }
+    }.show(anchorView ?: vb.ibBookmarks)
     hideMenuOverlay()
 }
 
-internal fun MainActivity.showHistoryActivity() {
-    startActivityForResult(Intent(this, HistoryActivity::class.java), MainActivity.REQUEST_CODE_HISTORY_ACTIVITY)
+internal fun MainActivity.showFavorites(anchorView: View? = null) {
+    showFavoritesDialog(anchorView)
+}
+
+internal fun MainActivity.showHistoryActivity(anchorView: View? = null) {
+    HistorySidebarPopup(this) { item ->
+        item.url?.let { navigate(it) }
+    }.show(anchorView ?: vb.ibMenu)
     hideMenuOverlay()
 }
 
@@ -193,12 +190,24 @@ internal fun MainActivity.showBrowserSidebar(anchorView: View? = null) {
     BrowserSidebarPopup(this).show(anchorView ?: vb.ibMenu)
 }
 
-internal fun MainActivity.showDownloadsActivity() {
-    startActivity(Intent(this, DownloadsActivity::class.java))
+internal fun MainActivity.showDownloads(anchorView: View? = null) {
+    DownloadsSidebarPopup(this).show(anchorView ?: vb.ibDownloads)
 }
 
-internal fun MainActivity.showClipboardActivity() {
-    startActivityForResult(Intent(this, ClipboardActivity::class.java), MainActivity.REQUEST_CODE_CLIPBOARD_ACTIVITY)
+internal fun MainActivity.showDownloadsActivity(anchorView: View? = null) {
+    showDownloads(anchorView)
+}
+
+internal fun MainActivity.showFileManager(anchorView: View? = null) {
+    FileManagerSidebarPopup(this).show(anchorView ?: vb.ibFileManager)
+}
+
+internal fun MainActivity.showNotes(anchorView: View? = null) {
+    NotesSidebarPopup(this).show(anchorView ?: vb.ibNotes)
+}
+
+internal fun MainActivity.showClipboardActivity(anchorView: View? = null) {
+    ClipboardSidebarPopup(this).show(anchorView)
     hideMenuOverlay()
 }
 

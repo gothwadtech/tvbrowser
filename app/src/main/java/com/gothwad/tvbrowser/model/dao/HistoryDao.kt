@@ -19,6 +19,9 @@ interface HistoryDao {
     @Delete
     suspend fun delete(vararg item: HistoryItem)
 
+    @Query("DELETE FROM history")
+    suspend fun deleteAll()
+
     @Query("DELETE FROM history WHERE time < :time")
     suspend fun deleteWhereTimeLessThan(time: Long)
 
