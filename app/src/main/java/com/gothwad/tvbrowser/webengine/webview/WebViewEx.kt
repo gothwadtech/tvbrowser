@@ -117,6 +117,8 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             setSupportZoom(true)
             builtInZoomControls = true
             displayZoomControls = false
+            layoutAlgorithm = WebSettings.LayoutAlgorithm.NORMAL
+            defaultTextEncodingName = "UTF-8"
             textZoom = 100
             domStorageEnabled = true
             databaseEnabled = true
@@ -430,10 +432,11 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     }
 
     fun applyWebPageZoom(percent: Int = config.webPageZoomPercent) {
+        settings.textZoom = percent
         val scale = percent / 100f
         val zoomScript = """
             (function() {
-                var css = 'html { zoom: $scale !important; }';
+                var css = 'html { zoom: $scale !important; min-width: ${(100f / scale)}% !important; min-height: ${(100f / scale)}% !important; width: ${(100f / scale)}% !important; transform-origin: 0 0; } body { min-width: 100% !important; }';
                 var head = document.head || document.getElementsByTagName('head')[0];
                 if (head) {
                     var s = document.getElementById('__tvb_zoom_style__');
@@ -446,6 +449,8 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 }
                 if (document.documentElement) {
                     document.documentElement.style.zoom = '$scale';
+                    document.documentElement.style.minWidth = '${(100f / scale)}%';
+                    document.documentElement.style.width = '${(100f / scale)}%';
                 }
             })();
         """.trimIndent()
@@ -477,7 +482,11 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 (function() {
                     var s = document.getElementById('__tvb_zoom_style__');
                     if (s && s.parentNode) s.parentNode.removeChild(s);
-                    if (document.documentElement) document.documentElement.style.zoom = '1';
+                    if (document.documentElement) {
+                        document.documentElement.style.zoom = '';
+                        document.documentElement.style.minWidth = '';
+                        document.documentElement.style.width = '';
+                    }
                 })();
             """.trimIndent(), null)
         }
