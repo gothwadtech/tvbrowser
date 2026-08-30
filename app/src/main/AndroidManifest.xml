@@ -144,6 +144,7 @@
             tools:ignore="DiscouragedApi"/>
 
         <activity android:name=".activity.lock.AppLockActivity"
+            android:theme="@style/Theme.BrowserApp"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
             android:screenOrientation="behind"
             android:windowSoftInputMode="adjustResize"

@@ -65,6 +65,7 @@ internal fun MainActivity.setupHeaderClickListeners(incognitoMode: Boolean) {
         openInNewTab(settingsModel.homePage, tabsModel.tabsStates.size, needToHideMenuOverlay = false, navigateImmediately = true)
     }
     vb.flTabsSwitcher.setOnClickListener { showTabsRowDialog() }
+    vb.tvTabCountBadge.setOnClickListener { showTabsRowDialog() }
     vb.ibNotes.setOnClickListener { showNotes(vb.ibNotes) }
     vb.ibBack.setOnClickListener { navigateBack() }
     vb.ibForward.setOnClickListener {

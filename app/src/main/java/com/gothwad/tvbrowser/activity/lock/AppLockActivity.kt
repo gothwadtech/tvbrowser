@@ -1,16 +1,20 @@
 package com.gothwad.tvbrowser.activity.lock
 
-import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import com.gothwad.tvbrowser.AppContext
+import com.gothwad.tvbrowser.Config
 import com.gothwad.tvbrowser.R
 import com.gothwad.tvbrowser.singleton.AppLockManager
 
-class AppLockActivity : Activity() {
+class AppLockActivity : AppCompatActivity() {
 
     private val inputPin = StringBuilder()
     private lateinit var dot1: View
@@ -21,6 +25,7 @@ class AppLockActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        applyThemeMode()
         if (!AppLockManager.isLockEnabled(this) || !AppLockManager.hasPinSet(this)) {
             AppLockManager.setSessionUnlocked(true)
             setResult(RESULT_OK)
@@ -36,6 +41,34 @@ class AppLockActivity : Activity() {
         dotsContainer = findViewById(R.id.llDotsContainer)
 
         setupKeypad()
+    }
+
+    private fun applyThemeMode() {
+        when (AppContext.provideConfig().theme.value) {
+            Config.Theme.BLACK_AMOLED,
+            Config.Theme.BLACK_CHARCOAL,
+            Config.Theme.BLACK_MIDNIGHT -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            Config.Theme.WHITE_PURE,
+            Config.Theme.WHITE_WARM,
+            Config.Theme.WHITE_COOL -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+        }
+    }
+
+    override fun attachBaseContext(newBase: Context?) {
+        if (newBase != null) {
+            val cfg = AppContext.provideConfig()
+            val scale = cfg.getUiScaleDensityMultiplier()
+            if (kotlin.math.abs(scale - 1.0f) > 0.001f) {
+                val overrideConfig = android.content.res.Configuration(newBase.resources.configuration)
+                val targetDpi = (newBase.resources.displayMetrics.densityDpi * scale).toInt().coerceAtLeast(1)
+                overrideConfig.densityDpi = targetDpi
+                val scaledContext = newBase.createConfigurationContext(overrideConfig)
+                super.attachBaseContext(scaledContext)
+                return
+            }
+        }
+        super.attachBaseContext(newBase)
     }
 
     private fun setupKeypad() {

@@ -11,7 +11,7 @@ object AppLockManager {
     private var isSessionUnlocked = false
 
     private fun getPrefs(context: Context): SharedPreferences {
-        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_MULTI_PROCESS)
     }
 
     fun hasPinSet(context: Context): Boolean {

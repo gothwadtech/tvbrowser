@@ -107,7 +107,7 @@ class TabsSidebarPopup(
         rvTabsGrid.layoutManager = layoutManager
 
         adapter = TabsSidebarAdapter(
-            tabs = tabsList,
+            initialTabs = tabsList,
             currentTab = activity.tabsModel.currentTab.value,
             onTabClick = { tab ->
                 dismiss()
@@ -190,19 +190,17 @@ class TabsSidebarPopup(
         tvTabsTitle.text = "Open Tabs (${tabsList.size})"
 
         adapter.update(tabsList, currentTab)
-
-        if (tabsList.isEmpty()) {
-            dismiss()
-        }
     }
 }
 
 class TabsSidebarAdapter(
-    private var tabs: MutableList<WebTabState>,
+    initialTabs: List<WebTabState>,
     private var currentTab: WebTabState?,
     private val onTabClick: (WebTabState) -> Unit,
     private val onCloseTabClick: (WebTabState) -> Unit
 ) : RecyclerView.Adapter<TabsSidebarAdapter.ViewHolder>() {
+
+    private val tabs = initialTabs.toMutableList()
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val root: LinearLayout = view.findViewById(R.id.llTabItemRoot)
