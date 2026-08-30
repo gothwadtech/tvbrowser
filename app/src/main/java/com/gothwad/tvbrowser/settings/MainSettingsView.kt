@@ -49,11 +49,6 @@ class MainSettingsView @JvmOverloads constructor(
     }
 
     private fun initSimpleToggles() {
-        vb.scWebViewAlgorithmicDarkeningWithDarkUiMode.isChecked = config.webviewUseAlgorithmicDarkeningWithDarkUiMode
-        vb.scWebViewAlgorithmicDarkeningWithDarkUiMode.setOnCheckedChangeListener { _, isChecked ->
-            config.webviewUseAlgorithmicDarkeningWithDarkUiMode = isChecked
-        }
-
         vb.scAllowAutoplayMedia.isChecked = config.allowAutoplayMedia
         vb.scAllowAutoplayMedia.setOnCheckedChangeListener { _, isChecked ->
             config.allowAutoplayMedia = isChecked

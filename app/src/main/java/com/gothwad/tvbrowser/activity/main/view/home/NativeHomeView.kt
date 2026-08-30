@@ -371,26 +371,17 @@ class NativeHomeView @JvmOverloads constructor(
                 return false
             }
             KeyEvent.KEYCODE_DPAD_UP -> {
-                // Move 1 row up (5 items back in grid), skipping headers if encountered
+                // Look for item 5 columns back in the grid layout (1 row up)
                 var targetPos = currentPos - 5
-                while (targetPos >= 0 && targetPos < bookmarkItems.size && bookmarkItems[targetPos].isHeader) {
+                while (targetPos >= 0 && bookmarkItems[targetPos].isHeader) {
                     targetPos--
                 }
-                if (targetPos >= 0 && targetPos < bookmarkItems.size && !bookmarkItems[targetPos].isHeader) {
+                if (targetPos >= 0 && !bookmarkItems[targetPos].isHeader) {
                     focusPosition(targetPos)
                     return true
-                } else if (currentPos > 0) {
-                    // Check if there is any item above currentPos before top header
-                    var checkPos = currentPos - 1
-                    while (checkPos >= 0 && bookmarkItems[checkPos].isHeader) {
-                        checkPos--
-                    }
-                    if (checkPos >= 0 && !bookmarkItems[checkPos].isHeader) {
-                        focusPosition(checkPos)
-                        return true
-                    }
                 }
-                return false // Cannot move up further -> navigate up to header
+                // No item 1 row above -> return false to transition focus to toolbar header
+                return false
             }
             KeyEvent.KEYCODE_DPAD_DOWN -> {
                 // Move 1 row down (5 items forward in grid), skipping headers
@@ -422,6 +413,7 @@ class NativeHomeView @JvmOverloads constructor(
 
     fun focusPosition(pos: Int) {
         if (pos !in bookmarkItems.indices) return
+        if (bookmarkItems[pos].isHeader) return
         rvBookmarks.smoothScrollToPosition(pos)
         val view = rvBookmarks.layoutManager?.findViewByPosition(pos)
         if (view != null) {
@@ -442,14 +434,12 @@ class NativeHomeView @JvmOverloads constructor(
         }
         val count = bookmarkItems.size
         if (count <= 1) return
-        // Skip position 0 (Header), row 1 begins at index 1
-        val targetPos = (1 + col).coerceIn(1, count - 1)
-        val itemView = rvBookmarks.layoutManager?.findViewByPosition(targetPos)
-        if (itemView != null) {
-            itemView.requestFocus()
-        } else {
-            catchFocus()
+        var targetPos = (1 + col).coerceIn(1, count - 1)
+        if (targetPos < bookmarkItems.size && bookmarkItems[targetPos].isHeader) {
+            targetPos = if (targetPos + 1 < bookmarkItems.size) targetPos + 1 else targetPos - 1
         }
+        targetPos = targetPos.coerceIn(1, count - 1)
+        focusPosition(targetPos)
     }
 
     fun catchFocus() {

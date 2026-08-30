@@ -298,28 +298,7 @@ class SettingsDialog(private val context: Context, val model: SettingsModel) :
         val screenWidth = if (decorView.width > 0) decorView.width else context.resources.displayMetrics.widthPixels
         val screenHeight = if (decorView.height > 0) decorView.height else context.resources.displayMetrics.heightPixels
 
-        // Anchor width dynamically to header geometry:
-        // Sidebar's left edge aligns between Search Bar end and Plus icon start (ibNewTab)
-        val plusIcon = activity.findViewById<View>(R.id.ibNewTab)
-        val searchBar = activity.findViewById<View>(R.id.vActionBar)
-        val dynamicWidth: Int = if (plusIcon != null && searchBar != null && plusIcon.width > 0 && searchBar.width > 0) {
-            val plusLoc = IntArray(2)
-            val searchLoc = IntArray(2)
-            plusIcon.getLocationInWindow(plusLoc)
-            searchBar.getLocationInWindow(searchLoc)
-            val searchEnd = searchLoc[0] + searchBar.width
-            val plusStart = plusLoc[0]
-            val boundaryX = (searchEnd + plusStart) / 2
-            (screenWidth - boundaryX).coerceIn(240, (screenWidth * 0.45f).toInt())
-        } else if (plusIcon != null && plusIcon.width > 0) {
-            val plusLoc = IntArray(2)
-            plusIcon.getLocationInWindow(plusLoc)
-            (screenWidth - plusLoc[0]).coerceIn(240, (screenWidth * 0.45f).toInt())
-        } else {
-            (screenWidth * 0.28f).toInt().coerceIn(260, 520)
-        }
-
-        val popupWidth = dynamicWidth
+        val popupWidth = com.gothwad.tvbrowser.activity.main.dialogs.SidebarHelper.calculateSidebarWidth(activity)
         val popupHeight = (screenHeight - headerBottom).coerceAtLeast(100)
 
         popupWindow.width = popupWidth

@@ -67,7 +67,6 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     var currentOriginalUrl: Uri? = null
     private val uiHandler = Handler(Looper.getMainLooper())
     internal val config = AppContext.provideConfig()
-    private var documentStartZoomScriptRef: ScriptHandler? = null
     private var documentStartDesktopScriptRef: ScriptHandler? = null
 
     interface Callback {
@@ -110,7 +109,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
 
     init {
         setLayerType(View.LAYER_TYPE_HARDWARE, null)
-        overScrollMode = View.OVER_SCROLL_NEVER
+        overScrollMode = View.OVER_SCROLL_IF_CONTENT_SCROLLS
         isVerticalScrollBarEnabled = false
         isHorizontalScrollBarEnabled = false
         isScrollbarFadingEnabled = true
@@ -159,19 +158,6 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             if (config.webEngineDebug) {
                 setWebContentsDebuggingEnabled(true)
             }
-
-            val allowDarkening = config.webviewUseAlgorithmicDarkeningWithDarkUiMode
-            val uiNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
-                    WebSettingsCompat.setAlgorithmicDarkeningAllowed(this, uiNightMode == Configuration.UI_MODE_NIGHT_YES && allowDarkening)
-                }
-            } else {
-                if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
-                    val forceDark = if (uiNightMode == Configuration.UI_MODE_NIGHT_YES && allowDarkening) WebSettingsCompat.FORCE_DARK_ON else WebSettingsCompat.FORCE_DARK_OFF
-                    WebSettingsCompat.setForceDark(this, forceDark)
-                }
-            }
         }
 
         isLongClickable = true
@@ -207,7 +193,6 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         }
 
         addJavascriptInterface(jsInterface, "BrowserApp")
-        applyWebPageZoom()
         applyDesktopMode()
     }
 
@@ -433,67 +418,6 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
         val dy = t - oldt
         if (Math.abs(dy) > 4 || t <= 5) {
             callback.onScrollChange(t, oldt, dy)
-        }
-    }
-
-    fun applyWebPageZoom(percent: Int = config.webPageZoomPercent) {
-        settings.textZoom = percent
-        val scale = percent / 100f
-        val zoomScript = """
-            (function() {
-                var css = 'html { zoom: $scale !important; min-width: ${(100f / scale)}% !important; min-height: ${(100f / scale)}% !important; width: ${(100f / scale)}% !important; transform-origin: 0 0; } body { min-width: 100% !important; }';
-                var head = document.head || document.getElementsByTagName('head')[0];
-                if (head) {
-                    var s = document.getElementById('__tvb_zoom_style__');
-                    if (!s) {
-                        s = document.createElement('style');
-                        s.id = '__tvb_zoom_style__';
-                        head.appendChild(s);
-                    }
-                    s.textContent = css;
-                }
-                if (document.documentElement) {
-                    document.documentElement.style.zoom = '$scale';
-                    document.documentElement.style.minWidth = '${(100f / scale)}%';
-                    document.documentElement.style.width = '${(100f / scale)}%';
-                }
-            })();
-        """.trimIndent()
-
-        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
-            try {
-                documentStartZoomScriptRef?.remove()
-                documentStartZoomScriptRef = null
-            } catch (e: Throwable) {
-                Log.w(TAG, "Failed to remove previous document-start zoom script: ", e)
-            }
-            if (percent != 100) {
-                try {
-                    documentStartZoomScriptRef = WebViewCompat.addDocumentStartJavaScript(
-                        this,
-                        zoomScript,
-                        setOf("*")
-                    )
-                } catch (e: Throwable) {
-                    Log.w(TAG, "Failed to add document-start zoom script: ", e)
-                }
-            }
-        }
-
-        if (percent != 100) {
-            evaluateJavascript(zoomScript, null)
-        } else {
-            evaluateJavascript("""
-                (function() {
-                    var s = document.getElementById('__tvb_zoom_style__');
-                    if (s && s.parentNode) s.parentNode.removeChild(s);
-                    if (document.documentElement) {
-                        document.documentElement.style.zoom = '';
-                        document.documentElement.style.minWidth = '';
-                        document.documentElement.style.width = '';
-                    }
-                })();
-            """.trimIndent(), null)
         }
     }
 

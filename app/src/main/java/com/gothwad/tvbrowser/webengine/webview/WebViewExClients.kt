@@ -81,9 +81,6 @@ object WebViewExClients {
 
             override fun onProgressChanged(view: WebView, newProgress: Int) {
                 callback.onProgressChanged(newProgress)
-                if (newProgress in 10..30 && webViewEx.config.webPageZoomPercent != 100) {
-                    webViewEx.applyWebPageZoom()
-                }
             }
 
             override fun onReceivedTitle(view: WebView, title: String) {
@@ -247,9 +244,6 @@ object WebViewExClients {
                 super.onPageStarted(view, url, favicon)
                 webViewEx.currentOriginalUrl = url.toUri()
                 callback.onPageStarted(url)
-                if (webViewEx.config.webPageZoomPercent != 100) {
-                    webViewEx.applyWebPageZoom()
-                }
                 if (webViewEx.isDesktopModeEnabled()) {
                     if (!WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
                         webViewEx.evaluateJavascript("""
@@ -270,9 +264,6 @@ object WebViewExClients {
                 super.onPageFinished(view, url)
                 callback.onPageFinished(url)
                 webViewEx.evaluateJavascript(webViewEx.getGenericJSInjects(), null)
-                if (webViewEx.config.webPageZoomPercent != 100) {
-                    webViewEx.applyWebPageZoom()
-                }
             }
 
             override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {

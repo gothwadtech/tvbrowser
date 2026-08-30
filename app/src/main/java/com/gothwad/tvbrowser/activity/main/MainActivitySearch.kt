@@ -31,17 +31,13 @@ fun MainActivity.handleSearch(aText: String) {
 
 fun MainActivity.applyWebPageZoom(percent: Int) {
     config.webPageZoomPercent = percent
-    tabsModel.tabsStates.forEach { tabState ->
-        tabState.webEngine.setPageZoom(percent)
-    }
+    tabsModel.currentTab.value?.webEngine?.setPageZoom(percent)
 }
 
 fun MainActivity.zoomWebIn() {
-    val next = (config.webPageZoomPercent + 10).coerceAtMost(Config.WEB_PAGE_ZOOM_PERCENT_MAX)
-    applyWebPageZoom(next)
+    tabsModel.currentTab.value?.webEngine?.zoomIn()
 }
 
 fun MainActivity.zoomWebOut() {
-    val next = (config.webPageZoomPercent - 10).coerceAtLeast(Config.WEB_PAGE_ZOOM_PERCENT_MIN)
-    applyWebPageZoom(next)
+    tabsModel.currentTab.value?.webEngine?.zoomOut()
 }

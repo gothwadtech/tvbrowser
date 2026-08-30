@@ -60,8 +60,7 @@ class BrowserSidebarPopup(private val activity: MainActivity) {
 
         contentView = LayoutInflater.from(activity).inflate(R.layout.dialog_browser_side_menu, rootContainer, true)
 
-        val dm = activity.resources.displayMetrics
-        val popupWidth = (dm.widthPixels * 0.26f).toInt()
+        val popupWidth = SidebarHelper.calculateSidebarWidth(activity)
 
         popupWindow = PopupWindow(
             rootContainer,
@@ -154,10 +153,13 @@ class BrowserSidebarPopup(private val activity: MainActivity) {
 
         // 2. Incognito Mode
         val tvIncognito = contentView.findViewById<TextView>(R.id.tvSideIncognitoTitle)
+        val tvIncognitoSub = contentView.findViewById<TextView>(R.id.tvSideIncognitoSub)
         if (config.incognitoMode) {
             tvIncognito?.text = "Exit incognito"
+            tvIncognitoSub?.text = "Switch to regular browsing mode"
         } else {
             tvIncognito?.text = "Start incognito"
+            tvIncognitoSub?.text = "Private browsing without history"
         }
         contentView.findViewById<View>(R.id.btnSideIncognito)?.let { btn ->
             bindItem(btn) {
@@ -266,7 +268,7 @@ class BrowserSidebarPopup(private val activity: MainActivity) {
         val screenWidth = if (decorView.width > 0) decorView.width else activity.resources.displayMetrics.widthPixels
         val screenHeight = if (decorView.height > 0) decorView.height else activity.resources.displayMetrics.heightPixels
 
-        val popupWidth = (screenWidth * 0.26f).toInt().coerceIn(240, 520)
+        val popupWidth = SidebarHelper.calculateSidebarWidth(activity)
         val popupHeight = (screenHeight - headerBottom).coerceAtLeast(100)
 
         popupWindow.width = popupWidth

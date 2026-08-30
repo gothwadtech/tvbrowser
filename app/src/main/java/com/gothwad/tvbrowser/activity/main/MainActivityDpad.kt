@@ -19,9 +19,9 @@ fun MainActivity.getHeaderFocusableViews(): List<View> {
     // Menu and Home are always focusable in toolbar
     if (vb.ibMenu.isShown && vb.ibMenu.visibility == View.VISIBLE) list.add(vb.ibMenu)
     if (vb.ibHome.isShown && vb.ibHome.visibility == View.VISIBLE) list.add(vb.ibHome)
-    // Only include Back/Forward if enabled, or if disabled allow navigation to pass through
-    if (vb.ibBack.isShown && vb.ibBack.visibility == View.VISIBLE && vb.ibBack.isEnabled) list.add(vb.ibBack)
-    if (vb.ibForward.isShown && vb.ibForward.visibility == View.VISIBLE && vb.ibForward.isEnabled) list.add(vb.ibForward)
+    // Include Back and Forward so sequential D-Pad navigation steps through without skipping
+    if (vb.ibBack.isShown && vb.ibBack.visibility == View.VISIBLE) list.add(vb.ibBack)
+    if (vb.ibForward.isShown && vb.ibForward.visibility == View.VISIBLE) list.add(vb.ibForward)
     if (vb.ibRefresh.isShown && vb.ibRefresh.visibility == View.VISIBLE) list.add(vb.ibRefresh)
     val etUrl = vb.vActionBar.getUrlEditText()
     if (etUrl.isShown && etUrl.visibility == View.VISIBLE) list.add(etUrl)
@@ -36,6 +36,34 @@ fun MainActivity.getHeaderFocusableViews(): List<View> {
     if (vb.ibIncognito.isShown && vb.ibIncognito.visibility == View.VISIBLE) list.add(vb.ibIncognito)
     if (vb.ibSettings.isShown && vb.ibSettings.visibility == View.VISIBLE) list.add(vb.ibSettings)
     return list
+}
+
+fun MainActivity.focusHeaderViewNearX(cursorX: Float) {
+    val headerViews = getHeaderFocusableViews()
+    if (headerViews.isEmpty()) {
+        vb.ibHome.requestFocus()
+        return
+    }
+
+    val loc = IntArray(2)
+    var closestView: View = headerViews.first()
+    var minDiff = Float.MAX_VALUE
+
+    for (v in headerViews) {
+        if (!v.isShown || v.visibility != View.VISIBLE) continue
+        v.getLocationInWindow(loc)
+        val centerX = loc[0] + v.width / 2.0f
+        val diff = Math.abs(centerX - cursorX)
+        if (diff < minDiff) {
+            minDiff = diff
+            closestView = v
+        }
+    }
+
+    vb.flWebViewContainer.cursorDrawerDelegate.hideCursor()
+    closestView.post {
+        closestView.requestFocus()
+    }
 }
 
 fun MainActivity.isTopTabBarView(view: View): Boolean {
@@ -178,6 +206,13 @@ fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
                     } else {
                         vb.flWebViewContainer.requestFocus()
                         if (config.enableVirtualCursor) {
+                            val loc = IntArray(2)
+                            focus?.let { f ->
+                                f.getLocationInWindow(loc)
+                                val headerCenterX = loc[0] + f.width / 2.0f
+                                vb.flWebViewContainer.cursorDrawerDelegate.cursorPosition.set(headerCenterX, 50f)
+                            }
+                            vb.flWebViewContainer.cursorDrawerDelegate.showCursor()
                             vb.flWebViewContainer.cursorDrawerDelegate.dispatchKeyEvent(event)
                         }
                     }
@@ -253,7 +288,7 @@ fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
         if (config.enableVirtualCursor) {
             // If cursor is at the very top edge and user presses DPAD UP, navigate into Toolbar
             if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_DPAD_UP && vb.flWebViewContainer.cursorDrawerDelegate.isCursorNearTop()) {
-                vb.ibHome.requestFocus()
+                focusHeaderViewNearX(vb.flWebViewContainer.cursorDrawerDelegate.cursorPosition.x)
                 return true
             }
             // Dispatch live stream (DOWN & UP) to virtual cursor

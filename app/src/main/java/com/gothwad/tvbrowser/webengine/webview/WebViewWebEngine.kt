@@ -87,25 +87,26 @@ class WebViewWebEngine(val tab: WebTabState) : WebEngine, CursorDrawerDelegate.C
     override fun canZoomIn(): Boolean = webView?.canZoomIn() ?: false
 
     override fun zoomIn() {
-        val cfg = AppContext.provideConfig()
-        val next = (cfg.webPageZoomPercent + 10).coerceAtMost(Config.WEB_PAGE_ZOOM_PERCENT_MAX)
-        cfg.webPageZoomPercent = next
-        setPageZoom(next)
+        webView?.zoomIn()
     }
 
     override fun canZoomOut(): Boolean = webView?.canZoomOut() ?: false
 
     override fun zoomOut() {
-        val cfg = AppContext.provideConfig()
-        val next = (cfg.webPageZoomPercent - 10).coerceAtLeast(Config.WEB_PAGE_ZOOM_PERCENT_MIN)
-        cfg.webPageZoomPercent = next
-        setPageZoom(next)
+        webView?.zoomOut()
     }
 
     override fun zoomBy(zoomBy: Float) { webView?.zoomBy(zoomBy) }
 
     override fun setPageZoom(percent: Int) {
-        webView?.applyWebPageZoom(percent)
+        val currentScale = tab.scale ?: 1.0f
+        val targetScale = percent / 100f
+        if (currentScale > 0f && targetScale > 0f) {
+            val factor = targetScale / currentScale
+            if (Math.abs(factor - 1.0f) > 0.01f) {
+                webView?.zoomBy(factor)
+            }
+        }
     }
 
     override fun evaluateJavascript(script: String) { webView?.evaluateJavascript(script, null) }

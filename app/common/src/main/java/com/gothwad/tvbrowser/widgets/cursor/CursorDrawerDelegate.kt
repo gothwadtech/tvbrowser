@@ -638,6 +638,12 @@ class CursorDrawerDelegate(val context: Context, val surface: View) {
         surface.postInvalidate()
     }
 
+    fun showCursor() {
+        lastCursorUpdate = System.currentTimeMillis()
+        scheduleCursorHide()
+        surface.postInvalidate()
+    }
+
     private val pinchZoomRunnable: Runnable by lazy {
         object : Runnable {
             override fun run() {

@@ -90,7 +90,8 @@
                 <LinearLayout
                     android:id="@+id/btnSidePrivacy"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="54dp"
                     android:layout_marginBottom="8dp"
                     android:background="@drawable/bg_tv_side_item"
                     android:clickable="true"
@@ -99,27 +100,45 @@
                     android:nextFocusUp="@id/btnSideMenuBack"
                     android:orientation="horizontal"
                     android:paddingStart="14dp"
-                    android:paddingEnd="14dp">
+                    android:paddingEnd="14dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp">
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:contentDescription="@null"
                         android:duplicateParentState="true"
                         android:src="@drawable/ic_lock_security"
                         android:tint="@color/selector_tv_side_item_icon" />
 
-                    <TextView
-                        android:id="@+id/tvSidePrivacyTitle"
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:duplicateParentState="true"
-                        android:text="Privacy &amp; Security"
-                        android:textColor="@color/selector_tv_side_item_text"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvSidePrivacyTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="Privacy &amp; Security"
+                            android:textColor="@color/selector_tv_side_item_text"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvSidePrivacySub"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="App lock, PIN &amp; protection"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp" />
+                    </LinearLayout>
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -144,7 +163,8 @@
                 <LinearLayout
                     android:id="@+id/btnSideIncognito"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="54dp"
                     android:layout_marginBottom="8dp"
                     android:background="@drawable/bg_tv_side_item"
                     android:clickable="true"
@@ -152,26 +172,45 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="14dp"
-                    android:paddingEnd="14dp">
+                    android:paddingEnd="14dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp">
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:contentDescription="@null"
                         android:duplicateParentState="true"
                         android:src="@drawable/ic_incognito"
                         android:tint="@color/selector_tv_side_item_icon" />
 
-                    <TextView
-                        android:id="@+id/tvSideIncognitoTitle"
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:duplicateParentState="true"
-                        android:text="Start incognito"
-                        android:textColor="@color/selector_tv_side_item_text"
-                        android:textSize="14sp" />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvSideIncognitoTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="Start incognito"
+                            android:textColor="@color/selector_tv_side_item_text"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvSideIncognitoSub"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="Private browsing without history"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp" />
+                    </LinearLayout>
 
                     <ImageView
                         android:layout_width="16dp"
@@ -186,7 +225,8 @@
                 <LinearLayout
                     android:id="@+id/btnSideShare"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="54dp"
                     android:layout_marginBottom="8dp"
                     android:background="@drawable/bg_tv_side_item"
                     android:clickable="true"
@@ -194,25 +234,43 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="14dp"
-                    android:paddingEnd="14dp">
+                    android:paddingEnd="14dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp">
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:contentDescription="@null"
                         android:duplicateParentState="true"
                         android:src="@drawable/ic_menu_share"
                         android:tint="@color/selector_tv_side_item_icon" />
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:duplicateParentState="true"
-                        android:text="Share"
-                        android:textColor="@color/selector_tv_side_item_text"
-                        android:textSize="14sp" />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="Share"
+                            android:textColor="@color/selector_tv_side_item_text"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="Send current link or web page"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp" />
+                    </LinearLayout>
 
                     <ImageView
                         android:layout_width="16dp"
@@ -227,7 +285,8 @@
                 <LinearLayout
                     android:id="@+id/btnSideBookmarks"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="54dp"
                     android:layout_marginBottom="8dp"
                     android:background="@drawable/bg_tv_side_item"
                     android:clickable="true"
@@ -235,25 +294,43 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="14dp"
-                    android:paddingEnd="14dp">
+                    android:paddingEnd="14dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp">
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:contentDescription="@null"
                         android:duplicateParentState="true"
                         android:src="@drawable/ic_star_border_grey_900_36dp"
                         android:tint="@color/selector_tv_side_item_icon" />
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:duplicateParentState="true"
-                        android:text="Bookmarks"
-                        android:textColor="@color/selector_tv_side_item_text"
-                        android:textSize="14sp" />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="Bookmarks"
+                            android:textColor="@color/selector_tv_side_item_text"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="Saved websites &amp; quick favorites"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp" />
+                    </LinearLayout>
 
                     <ImageView
                         android:layout_width="16dp"
@@ -268,7 +345,8 @@
                 <LinearLayout
                     android:id="@+id/btnSideHistory"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="54dp"
                     android:layout_marginBottom="8dp"
                     android:background="@drawable/bg_tv_side_item"
                     android:clickable="true"
@@ -276,25 +354,43 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="14dp"
-                    android:paddingEnd="14dp">
+                    android:paddingEnd="14dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp">
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:contentDescription="@null"
                         android:duplicateParentState="true"
                         android:src="@drawable/ic_history_grey_900_36dp"
                         android:tint="@color/selector_tv_side_item_icon" />
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:duplicateParentState="true"
-                        android:text="History"
-                        android:textColor="@color/selector_tv_side_item_text"
-                        android:textSize="14sp" />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="History"
+                            android:textColor="@color/selector_tv_side_item_text"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="Recently visited pages &amp; logs"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp" />
+                    </LinearLayout>
 
                     <ImageView
                         android:layout_width="16dp"
@@ -309,7 +405,8 @@
                 <LinearLayout
                     android:id="@+id/btnSideDownloads"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="54dp"
                     android:layout_marginBottom="8dp"
                     android:background="@drawable/bg_tv_side_item"
                     android:clickable="true"
@@ -317,25 +414,43 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="14dp"
-                    android:paddingEnd="14dp">
+                    android:paddingEnd="14dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp">
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:contentDescription="@null"
                         android:duplicateParentState="true"
                         android:src="@drawable/ic_file_download_grey_900"
                         android:tint="@color/selector_tv_side_item_icon" />
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:duplicateParentState="true"
-                        android:text="Downloads"
-                        android:textColor="@color/selector_tv_side_item_text"
-                        android:textSize="14sp" />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="Downloads"
+                            android:textColor="@color/selector_tv_side_item_text"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="Manage downloaded files &amp; progress"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp" />
+                    </LinearLayout>
 
                     <ImageView
                         android:layout_width="16dp"
@@ -350,7 +465,8 @@
                 <LinearLayout
                     android:id="@+id/btnSideFileManager"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="54dp"
                     android:layout_marginBottom="8dp"
                     android:background="@drawable/bg_tv_side_item"
                     android:clickable="true"
@@ -358,25 +474,43 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="14dp"
-                    android:paddingEnd="14dp">
+                    android:paddingEnd="14dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp">
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:contentDescription="@null"
                         android:duplicateParentState="true"
                         android:src="@drawable/ic_nav_files"
                         android:tint="@color/selector_tv_side_item_icon" />
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:duplicateParentState="true"
-                        android:text="File Manager"
-                        android:textColor="@color/selector_tv_side_item_text"
-                        android:textSize="14sp" />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="File Manager"
+                            android:textColor="@color/selector_tv_side_item_text"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="Browse storage, APKs &amp; media"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp" />
+                    </LinearLayout>
 
                     <ImageView
                         android:layout_width="16dp"
@@ -391,7 +525,8 @@
                 <LinearLayout
                     android:id="@+id/btnSideNotes"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="54dp"
                     android:layout_marginBottom="8dp"
                     android:background="@drawable/bg_tv_side_item"
                     android:clickable="true"
@@ -399,25 +534,43 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="14dp"
-                    android:paddingEnd="14dp">
+                    android:paddingEnd="14dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp">
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:contentDescription="@null"
                         android:duplicateParentState="true"
                         android:src="@drawable/ic_nav_notes"
                         android:tint="@color/selector_tv_side_item_icon" />
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:duplicateParentState="true"
-                        android:text="Notes"
-                        android:textColor="@color/selector_tv_side_item_text"
-                        android:textSize="14sp" />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="Notes"
+                            android:textColor="@color/selector_tv_side_item_text"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="Quick text notes &amp; ideas for TV"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp" />
+                    </LinearLayout>
 
                     <ImageView
                         android:layout_width="16dp"
@@ -432,7 +585,8 @@
                 <LinearLayout
                     android:id="@+id/btnSideClipboard"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="54dp"
                     android:layout_marginBottom="8dp"
                     android:background="@drawable/bg_tv_side_item"
                     android:clickable="true"
@@ -440,25 +594,43 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="14dp"
-                    android:paddingEnd="14dp">
+                    android:paddingEnd="14dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp">
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:contentDescription="@null"
                         android:duplicateParentState="true"
                         android:src="@drawable/ic_nav_clipboard"
                         android:tint="@color/selector_tv_side_item_icon" />
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:duplicateParentState="true"
-                        android:text="Clipboard"
-                        android:textColor="@color/selector_tv_side_item_text"
-                        android:textSize="14sp" />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="Clipboard"
+                            android:textColor="@color/selector_tv_side_item_text"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="Copied text &amp; clipboard history"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp" />
+                    </LinearLayout>
 
                     <ImageView
                         android:layout_width="16dp"
@@ -473,7 +645,8 @@
                 <LinearLayout
                     android:id="@+id/btnSideDesktopMode"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="54dp"
                     android:layout_marginBottom="8dp"
                     android:background="@drawable/bg_tv_side_item"
                     android:clickable="true"
@@ -481,26 +654,45 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="14dp"
-                    android:paddingEnd="14dp">
+                    android:paddingEnd="14dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp">
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:contentDescription="@null"
                         android:duplicateParentState="true"
                         android:src="@drawable/ic_menu_desktop"
                         android:tint="@color/selector_tv_side_item_icon" />
 
-                    <TextView
-                        android:id="@+id/tvSideDesktopTitle"
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:duplicateParentState="true"
-                        android:text="Desktop Mode"
-                        android:textColor="@color/selector_tv_side_item_text"
-                        android:textSize="14sp" />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvSideDesktopTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="Desktop Mode"
+                            android:textColor="@color/selector_tv_side_item_text"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvSideDesktopSub"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="Request desktop site view"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp" />
+                    </LinearLayout>
 
                     <ImageView
                         android:id="@+id/ivSideDesktopCheck"
@@ -516,7 +708,8 @@
                 <LinearLayout
                     android:id="@+id/btnSideSettings"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
+                    android:minHeight="54dp"
                     android:layout_marginBottom="8dp"
                     android:background="@drawable/bg_tv_side_item"
                     android:clickable="true"
@@ -524,25 +717,43 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="14dp"
-                    android:paddingEnd="14dp">
+                    android:paddingEnd="14dp"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp">
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:contentDescription="@null"
                         android:duplicateParentState="true"
                         android:src="@drawable/ic_settings_grey_900_24dp"
                         android:tint="@color/selector_tv_side_item_icon" />
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
                         android:duplicateParentState="true"
-                        android:text="All Settings"
-                        android:textColor="@color/selector_tv_side_item_text"
-                        android:textSize="14sp" />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="All Settings"
+                            android:textColor="@color/selector_tv_side_item_text"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:duplicateParentState="true"
+                            android:text="Preferences, engine &amp; shortcuts"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp" />
+                    </LinearLayout>
 
                     <ImageView
                         android:layout_width="16dp"

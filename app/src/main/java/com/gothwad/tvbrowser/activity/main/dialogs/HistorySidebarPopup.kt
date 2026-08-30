@@ -82,8 +82,7 @@ class HistorySidebarPopup(
 
         contentView = LayoutInflater.from(activity).inflate(R.layout.dialog_sidebar_history, rootContainer, true)
 
-        val dm = activity.resources.displayMetrics
-        val popupWidth = (dm.widthPixels * 0.28f).toInt().coerceIn(300, 560)
+        val popupWidth = SidebarHelper.calculateSidebarWidth(activity)
 
         popupWindow = PopupWindow(
             rootContainer,
@@ -190,7 +189,7 @@ class HistorySidebarPopup(
         val screenWidth = if (decorView.width > 0) decorView.width else activity.resources.displayMetrics.widthPixels
         val screenHeight = if (decorView.height > 0) decorView.height else activity.resources.displayMetrics.heightPixels
 
-        val popupWidth = (screenWidth * 0.28f).toInt().coerceIn(300, 560)
+        val popupWidth = SidebarHelper.calculateSidebarWidth(activity)
         val popupHeight = (screenHeight - headerBottom).coerceAtLeast(100)
 
         popupWindow.width = popupWidth
