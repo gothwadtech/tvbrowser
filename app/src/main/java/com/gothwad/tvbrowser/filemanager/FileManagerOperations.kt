@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
 import com.gothwad.tvbrowser.BuildConfig
+import com.gothwad.tvbrowser.activity.main.openFileInNewTab
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Locale
@@ -24,6 +25,60 @@ object FileManagerOperations {
     }
 
     fun openFile(context: Context, file: File) {
+        val ext = file.extension.lowercase(Locale.ROOT)
+        when {
+            FileViewerContentHelper.isPdf(ext) -> {
+                if (context is android.app.Activity) {
+                    PdfViewerDialog(context, file).show()
+                } else {
+                    InAppFileViewerActivity.start(context, file.absolutePath)
+                }
+            }
+            FileViewerContentHelper.isArchive(ext) -> {
+                if (ext == "apk") {
+                    showApkChoiceDialog(context, file)
+                } else if (context is android.app.Activity) {
+                    ZipViewerDialog(context, file).show()
+                } else {
+                    InAppFileViewerActivity.start(context, file.absolutePath)
+                }
+            }
+            FileViewerContentHelper.isMarkdown(ext) ||
+            FileViewerContentHelper.isCodeFile(ext) ||
+            FileViewerContentHelper.isImage(ext) ||
+            FileViewerContentHelper.isMedia(ext) -> {
+                if (context is com.gothwad.tvbrowser.activity.main.MainActivity) {
+                    context.openFileInNewTab(file)
+                } else {
+                    InAppFileViewerActivity.start(context, file.absolutePath)
+                }
+            }
+            else -> {
+                openFileExternal(context, file)
+            }
+        }
+    }
+
+    fun showApkChoiceDialog(context: Context, file: File) {
+        if (context !is android.app.Activity) {
+            openFileExternal(context, file)
+            return
+        }
+
+        AlertDialog.Builder(context)
+            .setTitle(file.name)
+            .setMessage("Choose action for this Android Package:")
+            .setPositiveButton("Install APK") { _, _ ->
+                openFileExternal(context, file)
+            }
+            .setNeutralButton("Explore Contents") { _, _ ->
+                ZipViewerDialog(context, file).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    fun openFileExternal(context: Context, file: File) {
         try {
             val uri: Uri = FileProvider.getUriForFile(context, "${BuildConfig.APPLICATION_ID}.provider", file)
             val mimeType = getMimeType(file)
@@ -35,7 +90,7 @@ object FileManagerOperations {
             }
             context.startActivity(intent)
         } catch (_: ActivityNotFoundException) {
-            Toast.makeText(context, "No app found to open this file", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "No external app found to handle this file", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
             Toast.makeText(context, "Cannot open file: ${e.message}", Toast.LENGTH_SHORT).show()
         }
@@ -62,7 +117,26 @@ object FileManagerOperations {
         onRefresh: () -> Unit
     ) {
         val options = mutableListOf<String>()
-        options.add(if (item.extension == "apk") "Install APK" else if (item.isDirectory) "Open Folder" else "Open File")
+        val ext = item.extension.lowercase(Locale.ROOT)
+
+        if (item.isDirectory) {
+            options.add("Open Folder")
+        } else if (ext == "apk") {
+            options.add("Install APK")
+            options.add("Explore APK Contents")
+        } else if (FileViewerContentHelper.isArchive(ext)) {
+            options.add("Explore Archive")
+            options.add("Extract Archive")
+        } else if (FileViewerContentHelper.isPdf(ext)) {
+            options.add("View PDF")
+        } else {
+            options.add("Open in Browser / Viewer")
+        }
+
+        if (!item.isDirectory) {
+            options.add("Open with External App")
+        }
+
         options.add("Rename")
         options.add("Delete")
         options.add("Details")
@@ -72,7 +146,19 @@ object FileManagerOperations {
             .setTitle(item.name)
             .setItems(options.toTypedArray()) { _, which ->
                 when (options[which]) {
-                    "Install APK", "Open File", "Open Folder" -> onOpen(item)
+                    "Open Folder", "View PDF", "Open in Browser / Viewer" -> onOpen(item)
+                    "Install APK" -> openFileExternal(context, item.file)
+                    "Explore APK Contents", "Explore Archive" -> {
+                        if (context is android.app.Activity) {
+                            ZipViewerDialog(context, item.file).show()
+                        }
+                    }
+                    "Extract Archive" -> {
+                        if (context is android.app.Activity) {
+                            ZipViewerDialog(context, item.file).show()
+                        }
+                    }
+                    "Open with External App" -> openFileExternal(context, item.file)
                     "Rename" -> showRenameDialog(context, item, onRefresh)
                     "Delete" -> showDeleteDialog(context, item, onRefresh)
                     "Details" -> showDetailsDialog(context, item)

@@ -129,6 +129,13 @@
             android:windowSoftInputMode="adjustResize"
             tools:ignore="DiscouragedApi"/>
 
+        <activity android:name=".filemanager.InAppFileViewerActivity"
+            android:theme="@style/Theme.BrowserApp"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:screenOrientation="behind"
+            android:windowSoftInputMode="adjustResize"
+            tools:ignore="DiscouragedApi"/>
+
         <activity android:name=".notes.NotesActivity"
             android:theme="@style/Theme.SidebarRight"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"

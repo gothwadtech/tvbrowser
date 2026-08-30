@@ -86,12 +86,21 @@ class FileManagerAdapter(
 
         // Long click for TV remote options or PC right-click / drag
         holder.itemView.setOnLongClickListener { v ->
-            val itemUri = item.file.absolutePath
-            val clipData = ClipData.newPlainText("file_path", itemUri)
-            val shadow = View.DragShadowBuilder(v)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                v.startDragAndDrop(clipData, shadow, item, 0)
-            }
+            try {
+                val context = v.context
+                val uri = androidx.core.content.FileProvider.getUriForFile(
+                    context,
+                    "${com.gothwad.tvbrowser.BuildConfig.APPLICATION_ID}.provider",
+                    item.file
+                )
+                val mimeType = FileManagerOperations.getMimeType(item.file)
+                val clipItem = ClipData.Item(uri)
+                val clipData = ClipData(item.name, arrayOf(mimeType, android.content.ClipDescription.MIMETYPE_TEXT_URILIST, android.content.ClipDescription.MIMETYPE_TEXT_PLAIN), clipItem)
+                val shadow = View.DragShadowBuilder(v)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    v.startDragAndDrop(clipData, shadow, item.file, View.DRAG_FLAG_GLOBAL or View.DRAG_FLAG_GLOBAL_URI_READ)
+                }
+            } catch (_: Exception) {}
             onItemLongClick(item)
         }
     }

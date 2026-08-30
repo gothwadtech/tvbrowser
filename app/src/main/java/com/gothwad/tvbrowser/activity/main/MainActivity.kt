@@ -186,6 +186,7 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
 
         setupHeaderClickListeners(incognitoMode)
         setupTopTabBar()
+        setupDragAndDropListener()
         setupSettingsSubscriptions()
 
         tabsModel.currentTab.subscribe(this) {

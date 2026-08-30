@@ -248,3 +248,58 @@ internal val MainActivity.bottomButtonsKeyListener
             else -> false
         }
     }
+
+internal fun MainActivity.setupDragAndDropListener() {
+    val dragListener = View.OnDragListener { v, event ->
+        when (event.action) {
+            android.view.DragEvent.ACTION_DRAG_STARTED -> true
+            android.view.DragEvent.ACTION_DRAG_ENTERED -> {
+                v.alpha = 0.95f
+                true
+            }
+            android.view.DragEvent.ACTION_DRAG_EXITED,
+            android.view.DragEvent.ACTION_DRAG_ENDED -> {
+                v.alpha = 1.0f
+                true
+            }
+            android.view.DragEvent.ACTION_DROP -> {
+                v.alpha = 1.0f
+                val clipData = event.clipData
+                val localFile = event.localState as? java.io.File
+                if (localFile != null) {
+                    openFileInApp(localFile)
+                    true
+                } else if (clipData != null && clipData.itemCount > 0) {
+                    val item = clipData.getItemAt(0)
+                    val uri = item.uri
+                    val text = item.text?.toString()
+                    if (uri != null && uri.scheme == "file") {
+                        val file = java.io.File(uri.path ?: "")
+                        if (file.exists()) {
+                            openFileInApp(file)
+                        } else {
+                            navigate(uri.toString())
+                        }
+                    } else if (uri != null) {
+                        navigate(uri.toString())
+                    } else if (!text.isNullOrEmpty()) {
+                        val file = java.io.File(text)
+                        if (file.exists()) {
+                            openFileInApp(file)
+                        } else {
+                            navigate(text)
+                        }
+                    }
+                    true
+                } else {
+                    false
+                }
+            }
+            else -> true
+        }
+    }
+
+    vb.flWebViewContainer.setOnDragListener(dragListener)
+    vb.vNativeHome.setOnDragListener(dragListener)
+}
+

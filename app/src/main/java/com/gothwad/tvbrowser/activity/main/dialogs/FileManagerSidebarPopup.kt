@@ -135,7 +135,7 @@ class FileManagerSidebarPopup(private val activity: MainActivity) {
         adapter = FileManagerSidebarAdapter(
             items = fileList,
             onItemClick = { file -> onFileClicked(file) },
-            onDeleteClick = { file -> deleteFile(file) }
+            onOptionsClick = { file -> onFileOptionsClicked(file) }
         )
         rvFmFiles.adapter = adapter
     }
@@ -298,24 +298,19 @@ class FileManagerSidebarPopup(private val activity: MainActivity) {
         if (file.isDirectory) {
             loadDirectory(file, pushHistory = true)
         } else {
-            try {
-                val fileURI = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    FileProvider.getUriForFile(activity, BuildConfig.APPLICATION_ID + ".provider", file)
-                } else {
-                    Uri.fromFile(file)
-                }
-
-                val openIntent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(fileURI, activity.contentResolver.getType(fileURI) ?: "*/*")
-                    flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK
-                }
-                activity.startActivity(openIntent)
-            } catch (e: ActivityNotFoundException) {
-                Toast.makeText(activity, "No application found to open this file", Toast.LENGTH_SHORT).show()
-            } catch (e: Exception) {
-                Toast.makeText(activity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
+            dismiss()
+            com.gothwad.tvbrowser.filemanager.FileManagerOperations.openFile(activity, file)
         }
+    }
+
+    private fun onFileOptionsClicked(file: File) {
+        val fileItem = com.gothwad.tvbrowser.filemanager.FileItem(file = file)
+        com.gothwad.tvbrowser.filemanager.FileManagerOperations.showFileOptionsDialog(
+            context = activity,
+            item = fileItem,
+            onOpen = { onFileClicked(file) },
+            onRefresh = { loadDirectory(currentDirectory, pushHistory = false) }
+        )
     }
 
     private fun deleteFile(file: File) {
@@ -337,7 +332,7 @@ class FileManagerSidebarPopup(private val activity: MainActivity) {
 class FileManagerSidebarAdapter(
     private val items: List<File>,
     private val onItemClick: (File) -> Unit,
-    private val onDeleteClick: (File) -> Unit
+    private val onOptionsClick: (File) -> Unit
 ) : RecyclerView.Adapter<FileManagerSidebarAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -368,8 +363,8 @@ class FileManagerSidebarAdapter(
                 "mp4", "mkv", "avi", "webm" -> R.drawable.ic_file_video
                 "mp3", "wav", "aac", "ogg" -> R.drawable.ic_file_audio
                 "jpg", "jpeg", "png", "gif" -> R.drawable.ic_file_image
-                "pdf", "doc", "docx", "txt" -> R.drawable.ic_file_doc
-                "zip", "rar", "7z", "tar" -> R.drawable.ic_file_zip
+                "pdf" -> R.drawable.ic_file_doc
+                "zip", "rar", "7z", "tar", "gz" -> R.drawable.ic_file_zip
                 else -> R.drawable.ic_file_generic
             }
             holder.ivIcon.setImageResource(iconRes)
@@ -378,7 +373,36 @@ class FileManagerSidebarAdapter(
         }
 
         holder.root.setOnClickListener { onItemClick(file) }
-        holder.btnOptions.setOnClickListener { onDeleteClick(file) }
+        holder.btnOptions.setOnClickListener { onOptionsClick(file) }
+
+        if (!file.isDirectory) {
+            holder.root.setOnLongClickListener { v ->
+                try {
+                    val context = v.context
+                    val uri = androidx.core.content.FileProvider.getUriForFile(
+                        context,
+                        "${com.gothwad.tvbrowser.BuildConfig.APPLICATION_ID}.provider",
+                        file
+                    )
+                    val mimeType = com.gothwad.tvbrowser.filemanager.FileManagerOperations.getMimeType(file)
+                    val clipItem = android.content.ClipData.Item(uri)
+                    val clipData = android.content.ClipData(
+                        file.name,
+                        arrayOf(mimeType, android.content.ClipDescription.MIMETYPE_TEXT_URILIST, android.content.ClipDescription.MIMETYPE_TEXT_PLAIN),
+                        clipItem
+                    )
+                    val shadow = View.DragShadowBuilder(holder.root)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        v.startDragAndDrop(clipData, shadow, file, View.DRAG_FLAG_GLOBAL or View.DRAG_FLAG_GLOBAL_URI_READ)
+                    } else {
+                        v.startDrag(clipData, shadow, file, 0)
+                    }
+                } catch (_: Exception) {}
+                true
+            }
+        } else {
+            holder.root.setOnLongClickListener(null)
+        }
     }
 
     override fun getItemCount(): Int = items.size

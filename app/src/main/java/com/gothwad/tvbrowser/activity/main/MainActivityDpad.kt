@@ -16,44 +16,60 @@ import com.gothwad.tvbrowser.utils.HardwareInputManager
 
 fun MainActivity.getHeaderFocusableViews(): List<View> {
     val list = mutableListOf<View>()
-    // Menu and Home are always focusable in toolbar
-    if (vb.ibMenu.isShown && vb.ibMenu.visibility == View.VISIBLE) list.add(vb.ibMenu)
-    if (vb.ibHome.isShown && vb.ibHome.visibility == View.VISIBLE) list.add(vb.ibHome)
-    // Include Back and Forward so sequential D-Pad navigation steps through without skipping
-    if (vb.ibBack.isShown && vb.ibBack.visibility == View.VISIBLE) list.add(vb.ibBack)
-    if (vb.ibForward.isShown && vb.ibForward.visibility == View.VISIBLE) list.add(vb.ibForward)
-    if (vb.ibRefresh.isShown && vb.ibRefresh.visibility == View.VISIBLE) list.add(vb.ibRefresh)
-    val etUrl = vb.vActionBar.getUrlEditText()
-    if (etUrl.isShown && etUrl.visibility == View.VISIBLE) list.add(etUrl)
-    val ibVoice = vb.vActionBar.getVoiceSearchButton()
-    if (ibVoice.isShown && ibVoice.visibility == View.VISIBLE) list.add(ibVoice)
-    if (vb.ibNewTab.isShown && vb.ibNewTab.visibility == View.VISIBLE) list.add(vb.ibNewTab)
-    if (vb.flTabsSwitcher.isShown && vb.flTabsSwitcher.visibility == View.VISIBLE) list.add(vb.flTabsSwitcher)
-    if (vb.ibNotes.isShown && vb.ibNotes.visibility == View.VISIBLE) list.add(vb.ibNotes)
-    if (vb.ibDownloads.isShown && vb.ibDownloads.visibility == View.VISIBLE) list.add(vb.ibDownloads)
-    if (vb.ibFileManager.isShown && vb.ibFileManager.visibility == View.VISIBLE) list.add(vb.ibFileManager)
-    if (vb.ibBookmarks.isShown && vb.ibBookmarks.visibility == View.VISIBLE) list.add(vb.ibBookmarks)
-    if (vb.ibIncognito.isShown && vb.ibIncognito.visibility == View.VISIBLE) list.add(vb.ibIncognito)
-    if (vb.ibSettings.isShown && vb.ibSettings.visibility == View.VISIBLE) list.add(vb.ibSettings)
+    val candidateViews = listOf(
+        vb.ibMenu,
+        vb.ibHome,
+        vb.ibBack,
+        vb.ibForward,
+        vb.ibRefresh,
+        vb.vActionBar.getUrlEditText(),
+        vb.vActionBar.getVoiceSearchButton(),
+        vb.ibNewTab,
+        vb.flTabsSwitcher,
+        vb.ibNotes,
+        vb.ibDownloads,
+        vb.ibFileManager,
+        vb.ibBookmarks,
+        vb.ibIncognito,
+        vb.ibSettings
+    )
+    for (v in candidateViews) {
+        if (v.isShown && v.visibility == View.VISIBLE && v.isEnabled) {
+            list.add(v)
+        }
+    }
     return list
 }
 
 fun MainActivity.focusHeaderViewNearX(cursorX: Float) {
     val headerViews = getHeaderFocusableViews()
     if (headerViews.isEmpty()) {
-        vb.ibHome.requestFocus()
+        if (vb.ibHome.isShown && vb.ibHome.visibility == View.VISIBLE && vb.ibHome.isEnabled) {
+            vb.ibHome.requestFocus()
+        } else {
+            vb.ibMenu.requestFocus()
+        }
         return
     }
 
     val loc = IntArray(2)
+    val surfaceLoc = IntArray(2)
+    vb.flWebViewContainer.getLocationInWindow(surfaceLoc)
+    val screenWidth = resources.displayMetrics.widthPixels
+    val windowCursorX = if (cursorX >= 0 && cursorX <= screenWidth) {
+        cursorX
+    } else {
+        surfaceLoc[0] + cursorX
+    }
+
     var closestView: View = headerViews.first()
     var minDiff = Float.MAX_VALUE
 
     for (v in headerViews) {
-        if (!v.isShown || v.visibility != View.VISIBLE) continue
+        if (!v.isShown || v.visibility != View.VISIBLE || !v.isEnabled) continue
         v.getLocationInWindow(loc)
         val centerX = loc[0] + v.width / 2.0f
-        val diff = Math.abs(centerX - cursorX)
+        val diff = Math.abs(centerX - windowCursorX)
         if (diff < minDiff) {
             minDiff = diff
             closestView = v
@@ -199,18 +215,24 @@ fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
                 }
                 KeyEvent.KEYCODE_DPAD_DOWN -> {
                     if (isNativeHomeVisible) {
-                        val total = headerViews.size
-                        val ratio = if (currentIndex >= 0 && total > 1) currentIndex.toFloat() / (total - 1) else 0f
-                        val targetCol = (ratio * 4.99f).toInt().coerceIn(0, 4)
-                        vb.vNativeHome.focusShortcutAtColumn(targetCol)
+                        val loc = IntArray(2)
+                        focus?.getLocationInWindow(loc)
+                        val headerCenterX = (loc[0] + (focus?.width ?: 0) / 2.0f).coerceAtLeast(0f)
+                        val screenWidth = resources.displayMetrics.widthPixels
+                        val col = ((headerCenterX / screenWidth) * 5.0f).toInt().coerceIn(0, 4)
+                        vb.vNativeHome.focusShortcutAtColumn(col)
                     } else {
                         vb.flWebViewContainer.requestFocus()
                         if (config.enableVirtualCursor) {
                             val loc = IntArray(2)
+                            val surfaceLoc = IntArray(2)
+                            vb.flWebViewContainer.getLocationInWindow(surfaceLoc)
                             focus?.let { f ->
                                 f.getLocationInWindow(loc)
                                 val headerCenterX = loc[0] + f.width / 2.0f
-                                vb.flWebViewContainer.cursorDrawerDelegate.cursorPosition.set(headerCenterX, 50f)
+                                val containerWidth = vb.flWebViewContainer.width.toFloat().takeIf { it > 100f } ?: resources.displayMetrics.widthPixels.toFloat()
+                                val relativeCursorX = (headerCenterX - surfaceLoc[0]).coerceIn(50f, containerWidth - 50f)
+                                vb.flWebViewContainer.cursorDrawerDelegate.cursorPosition.set(relativeCursorX, 50f)
                             }
                             vb.flWebViewContainer.cursorDrawerDelegate.showCursor()
                             vb.flWebViewContainer.cursorDrawerDelegate.dispatchKeyEvent(event)
@@ -239,15 +261,9 @@ fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
                     val canMoveUp = vb.vNativeHome.navigateFocus(KeyEvent.KEYCODE_DPAD_UP)
                     if (!canMoveUp) {
                         val col = vb.vNativeHome.getFocusedShortcutColumn()
-                        val headerViews = getHeaderFocusableViews()
-                        if (headerViews.isNotEmpty()) {
-                            val targetHeaderIndex = ((col.toFloat() / 4f) * (headerViews.size - 1)).toInt().coerceIn(0, headerViews.size - 1)
-                            headerViews[targetHeaderIndex].requestFocus()
-                        } else if (vb.ibHome.isShown && vb.ibHome.visibility == View.VISIBLE) {
-                            vb.ibHome.requestFocus()
-                        } else {
-                            vb.ibMenu.requestFocus()
-                        }
+                        val screenWidth = resources.displayMetrics.widthPixels
+                        val approxX = (col + 0.5f) * (screenWidth / 5.0f)
+                        focusHeaderViewNearX(approxX)
                         return true
                     }
                     return true
@@ -288,7 +304,10 @@ fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
         if (config.enableVirtualCursor) {
             // If cursor is at the very top edge and user presses DPAD UP, navigate into Toolbar
             if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_DPAD_UP && vb.flWebViewContainer.cursorDrawerDelegate.isCursorNearTop()) {
-                focusHeaderViewNearX(vb.flWebViewContainer.cursorDrawerDelegate.cursorPosition.x)
+                val surfaceLoc = IntArray(2)
+                vb.flWebViewContainer.getLocationInWindow(surfaceLoc)
+                val windowCursorX = surfaceLoc[0] + vb.flWebViewContainer.cursorDrawerDelegate.cursorPosition.x
+                focusHeaderViewNearX(windowCursorX)
                 return true
             }
             // Dispatch live stream (DOWN & UP) to virtual cursor
