@@ -33,6 +33,8 @@ class HomeCardAdapter(
                     true
                 } else if (old.isDeleteButton && new.isDeleteButton) {
                     true
+                } else if (old.isDashboardCard && new.isDashboardCard) {
+                    old.dashboardType == new.dashboardType
                 } else {
                     old.url == new.url && old.title == new.title
                 }
@@ -77,6 +79,16 @@ class HomeCardAdapter(
         }
     }
 
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int, payloads: MutableList<Any>) {
+        if (payloads.isNotEmpty() && holder is ShortcutViewHolder && position in items.indices) {
+            val item = items[position]
+            holder.tvShortcutTitle.text = item.title
+            holder.tvShortcutDomain.text = item.domainText
+            return
+        }
+        super.onBindViewHolder(holder, position, payloads)
+    }
+
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = items[position]
 
@@ -106,7 +118,12 @@ class HomeCardAdapter(
                 holder.ivIconDrawable.visibility = View.VISIBLE
                 holder.tvIconText.visibility = View.GONE
                 holder.ivIconDrawable.imageTintList = null
-                holder.ivIconDrawable.setImageResource(item.iconDrawableRes)
+                try {
+                    val d = ContextCompat.getDrawable(holder.view.context, item.iconDrawableRes)
+                    holder.ivIconDrawable.setImageDrawable(d)
+                } catch (e: Throwable) {
+                    holder.ivIconDrawable.setImageResource(item.iconDrawableRes)
+                }
             } else {
                 holder.ivIconDrawable.visibility = View.GONE
                 holder.tvIconText.visibility = View.VISIBLE

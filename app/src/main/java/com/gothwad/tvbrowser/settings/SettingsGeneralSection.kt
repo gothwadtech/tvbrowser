@@ -236,4 +236,39 @@ object SettingsGeneralSection {
             Toast.makeText(context, R.string.quick_zoom_reset, Toast.LENGTH_SHORT).show()
         }
     }
+
+    fun initDefaultBrowserUI(
+        context: Context,
+        vb: ViewSettingsMainBinding,
+        onDismissDialog: (() -> Unit)?,
+        activity: Context?
+    ) {
+        fun updateDefaultBrowserStatus() {
+            val isDefault = com.gothwad.tvbrowser.utils.DefaultBrowserHelper.isDefaultBrowser(context)
+            if (isDefault) {
+                vb.tvDefaultBrowserStatus.text = "Status: Currently Default Browser (Active)"
+                vb.tvDefaultBrowserStatus.setTextColor(0xFF38BDF8.toInt())
+            } else {
+                vb.tvDefaultBrowserStatus.text = "Status: Not Default Browser (Click to Set)"
+                vb.tvDefaultBrowserStatus.setTextColor(0xFF94A3B8.toInt())
+            }
+        }
+
+        updateDefaultBrowserStatus()
+
+        val action = {
+            com.gothwad.tvbrowser.utils.DefaultBrowserHelper.requestSetDefaultBrowser(context)
+            vb.root.postDelayed({
+                updateDefaultBrowserStatus()
+            }, 1000)
+        }
+
+        vb.llSetDefaultBrowser.setOnClickListener {
+            action()
+        }
+
+        vb.btnQuickDefaultBrowser.setOnClickListener {
+            action()
+        }
+    }
 }

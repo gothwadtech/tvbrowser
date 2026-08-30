@@ -54,6 +54,7 @@ internal fun MainActivity.toggleMenu() {
 
 internal fun MainActivity.setupHeaderClickListeners(incognitoMode: Boolean) {
     vb.ibMenu.setOnClickListener { showBrowserSidebar(vb.ibMenu) }
+    vb.ibHistory.setOnClickListener { showHistoryActivity(vb.ibHistory) }
     vb.ibHome.setOnClickListener {
         if (vb.vNativeHome.visibility == View.VISIBLE) {
             vb.vNativeHome.scrollToTop()
@@ -95,7 +96,7 @@ internal fun MainActivity.setupHeaderClickListeners(incognitoMode: Boolean) {
 
     listOf(
         vb.ibTopNewTab,
-        vb.ibMenu, vb.ibHome, vb.ibBack, vb.ibForward, vb.ibRefresh,
+        vb.ibMenu, vb.ibHistory, vb.ibHome, vb.ibBack, vb.ibForward, vb.ibRefresh,
         vb.ibNewTab, vb.flTabsSwitcher, vb.ibNotes, vb.ibDownloads,
         vb.ibFileManager, vb.ibBookmarks, vb.ibIncognito, vb.ibSettings
     ).forEach {
@@ -179,7 +180,7 @@ internal fun MainActivity.showFavorites(anchorView: View? = null) {
 internal fun MainActivity.showHistoryActivity(anchorView: View? = null) {
     HistorySidebarPopup(this) { item ->
         item.url?.let { navigate(it) }
-    }.show(anchorView ?: vb.ibMenu)
+    }.show(anchorView ?: vb.ibHistory)
     hideMenuOverlay()
 }
 

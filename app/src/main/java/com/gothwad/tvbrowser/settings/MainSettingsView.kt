@@ -28,6 +28,7 @@ class MainSettingsView @JvmOverloads constructor(
 
     init {
         SettingsGeneralSection.initQuickToolsUI(context, vb, config, onDismissDialog, activity)
+        SettingsGeneralSection.initDefaultBrowserUI(context, vb, onDismissDialog, activity)
         SettingsDisplaySection.initDisplayAndZoomSettingsUI(context, vb, config, onDismissDialog, activity)
         SettingsEngineSection.initWebBrowserEngineSettingsUI(context, vb, config, activity)
         SettingsEngineSection.initHomePageAndSearchEngineConfigUI(context, vb, config, settingsModel)

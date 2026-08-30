@@ -180,7 +180,7 @@ class ChromeMenuPopup(private val activity: MainActivity) {
         // 9. Help & feedback
         bindMenuItem(contentView.findViewById(R.id.btnMenuHelp)) {
             AlertDialog.Builder(activity)
-                .setTitle("Gothwad TV Browser")
+                .setTitle("Gothwad Browser")
                 .setMessage("Modern Fast TV Web Browser with Native Clipboard, File Manager & Notes.\n\nVersion: ${BuildConfig.VERSION_NAME}\nDeveloper: gothwadtech@gmail.com")
                 .setPositiveButton("OK", null)
                 .show()

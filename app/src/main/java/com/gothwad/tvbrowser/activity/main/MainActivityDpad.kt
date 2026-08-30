@@ -18,6 +18,7 @@ fun MainActivity.getHeaderFocusableViews(): List<View> {
     val list = mutableListOf<View>()
     val candidateViews = listOf(
         vb.ibMenu,
+        vb.ibHistory,
         vb.ibHome,
         vb.ibBack,
         vb.ibForward,

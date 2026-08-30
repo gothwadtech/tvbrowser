@@ -60,7 +60,7 @@ class BrowserSidebarPopup(private val activity: MainActivity) {
 
         contentView = LayoutInflater.from(activity).inflate(R.layout.dialog_browser_side_menu, rootContainer, true)
 
-        val popupWidth = SidebarHelper.calculateSidebarWidth(activity)
+        val popupWidth = SidebarHelper.calculateLeftSidebarWidth(activity)
 
         popupWindow = PopupWindow(
             rootContainer,
@@ -268,7 +268,7 @@ class BrowserSidebarPopup(private val activity: MainActivity) {
         val screenWidth = if (decorView.width > 0) decorView.width else activity.resources.displayMetrics.widthPixels
         val screenHeight = if (decorView.height > 0) decorView.height else activity.resources.displayMetrics.heightPixels
 
-        val popupWidth = SidebarHelper.calculateSidebarWidth(activity)
+        val popupWidth = SidebarHelper.calculateLeftSidebarWidth(activity)
         val popupHeight = (screenHeight - headerBottom).coerceAtLeast(100)
 
         popupWindow.width = popupWidth

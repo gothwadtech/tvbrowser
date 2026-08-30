@@ -11,7 +11,9 @@ data class HomeShortcutItem(
     val isAddButton: Boolean = false,
     val isDeleteButton: Boolean = false,
     val isActionCard: Boolean = false,
-    val isUserBookmark: Boolean = false
+    val isUserBookmark: Boolean = false,
+    val isDashboardCard: Boolean = false,
+    val dashboardType: String? = null
 ) {
     val singleLetter: String
         get() {

@@ -824,6 +824,68 @@
                     android:dropDownWidth="300dp"
                     android:focusable="true" />
             </LinearLayout>
+
+            <!-- Set as Default Browser Item in Home Page & Startup -->
+            <LinearLayout
+                android:id="@+id/llSetDefaultBrowser"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_tv_setting_item"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@null"
+                    android:duplicateParentState="true"
+                    android:src="@drawable/ic_gothwad_logo" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginEnd="12dp"
+                    android:layout_weight="1"
+                    android:duplicateParentState="true"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:duplicateParentState="true"
+                        android:text="Set as Default Browser"
+                        android:textColor="@color/selector_tv_setting_item_text"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvDefaultBrowserStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:duplicateParentState="true"
+                        android:text="Make Gothwad Browser your system default browser"
+                        android:textColor="#94A3B8"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:contentDescription="@null"
+                    android:duplicateParentState="true"
+                    android:src="@drawable/ic_keyboard_arrow_right_grey_900_18dp"
+                    android:tint="@color/selector_tv_side_item_chevron" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
@@ -1469,6 +1531,7 @@
             android:id="@+id/btnQuickPopupBlock"
             android:layout_width="match_parent"
             android:layout_height="50dp"
+            android:layout_marginBottom="10dp"
             android:background="@drawable/bg_tv_tab_pill"
             android:drawableStart="@drawable/ic_block_popups"
             android:drawableTint="@color/selector_tv_tab_pill_icon"
@@ -1478,6 +1541,22 @@
             android:paddingStart="14dp"
             android:paddingEnd="14dp"
             android:text="@string/block_popups"
+            android:textColor="@color/selector_tv_tab_pill_text"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnQuickDefaultBrowser"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/bg_tv_tab_pill"
+            android:drawableStart="@drawable/ic_gothwad_logo"
+            android:drawablePadding="10dp"
+            android:focusable="true"
+            android:gravity="center_vertical|start"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
+            android:text="Set as Default Browser"
             android:textColor="@color/selector_tv_tab_pill_text"
             android:textSize="13sp"
             android:textStyle="bold" />

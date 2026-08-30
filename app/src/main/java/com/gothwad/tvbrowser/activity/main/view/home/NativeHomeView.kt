@@ -4,6 +4,9 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Color
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import android.view.KeyEvent
 import android.view.LayoutInflater
@@ -40,11 +43,20 @@ class NativeHomeView @JvmOverloads constructor(
     private lateinit var btnExitIncognito: Button
     private lateinit var flNativeHomeRoot: FrameLayout
 
+    private val tickerHandler = Handler(Looper.getMainLooper())
+    private val tickerRunnable = object : Runnable {
+        override fun run() {
+            updateDashboardCardsLive()
+            tickerHandler.postDelayed(this, 1000L)
+        }
+    }
+
     init {
         orientation = VERTICAL
         LayoutInflater.from(context).inflate(R.layout.view_native_home, this, true)
         initViews()
         setupBookmarks()
+        updateIncognitoState((activity as? MainActivity)?.config?.incognitoMode == true)
     }
 
     private fun initViews() {
@@ -52,7 +64,6 @@ class NativeHomeView @JvmOverloads constructor(
         rvBookmarks = findViewById(R.id.rvBookmarks)
         svIncognitoHome = findViewById(R.id.svIncognitoHome)
         btnExitIncognito = findViewById(R.id.btnExitIncognito)
-        updateIncognitoState((activity as? MainActivity)?.config?.incognitoMode == true)
     }
 
     fun updateIncognitoState(isIncognito: Boolean, mainActivity: MainActivity? = activity as? MainActivity) {
@@ -63,14 +74,76 @@ class NativeHomeView @JvmOverloads constructor(
             btnExitIncognito.setOnClickListener {
                 (mainActivity ?: activity as? MainActivity)?.toggleIncognitoMode(andSwitchProcess = true)
             }
+            stopDashboardTicker()
         } else {
             rvBookmarks.visibility = View.VISIBLE
             svIncognitoHome.visibility = View.GONE
+            startDashboardTicker()
         }
+    }
+
+    private fun createDashboardCards(): List<HomeShortcutItem> {
+        val netInfo = SystemMonitorHelper.getNetworkInfo(context)
+        val ramStats = SystemMonitorHelper.getRamStats(context)
+        val storageStats = SystemMonitorHelper.getStorageStats()
+
+        val ramUsedStr = SystemMonitorHelper.formatBytes(ramStats.usedBytes)
+        val ramTotalStr = SystemMonitorHelper.formatBytes(ramStats.totalBytes)
+
+        val storageFreeStr = SystemMonitorHelper.formatBytes(storageStats.freeBytes)
+        val storageUsedStr = SystemMonitorHelper.formatBytes(storageStats.usedBytes)
+        val storageTotalStr = SystemMonitorHelper.formatBytes(storageStats.totalBytes)
+
+        return listOf(
+            HomeShortcutItem(
+                title = SystemMonitorHelper.getFormattedTime(),
+                subtitleText = SystemMonitorHelper.getTimeSubtitle(),
+                iconDrawableRes = R.drawable.ic_stat_time,
+                isDashboardCard = true,
+                dashboardType = "TIME"
+            ),
+            HomeShortcutItem(
+                title = SystemMonitorHelper.getFormattedDate(),
+                subtitleText = SystemMonitorHelper.getCalendarSubtitle(),
+                iconDrawableRes = R.drawable.ic_stat_calendar,
+                isDashboardCard = true,
+                dashboardType = "CALENDAR"
+            ),
+            HomeShortcutItem(
+                title = netInfo.first,
+                subtitleText = netInfo.second,
+                iconDrawableRes = R.drawable.ic_stat_network,
+                isDashboardCard = true,
+                dashboardType = "NETWORK"
+            ),
+            HomeShortcutItem(
+                title = "RAM: $ramUsedStr / $ramTotalStr (${ramStats.usedPercent}%)",
+                subtitleText = "⚡ Click to Boost RAM",
+                iconDrawableRes = R.drawable.ic_stat_ram,
+                isDashboardCard = true,
+                dashboardType = "RAM"
+            ),
+            HomeShortcutItem(
+                title = "Disk: $storageFreeStr Free",
+                subtitleText = "Used: $storageUsedStr / $storageTotalStr (${storageStats.usedPercent}%)",
+                iconDrawableRes = R.drawable.ic_stat_storage,
+                isDashboardCard = true,
+                dashboardType = "STORAGE"
+            )
+        )
     }
 
     private fun populateBookmarkItemsList() {
         bookmarkItems.clear()
+
+        // 0. Gothwad Browser Category (Dashboard Status Cards)
+        bookmarkItems.add(
+            HomeShortcutItem(
+                title = "Gothwad Browser",
+                isHeader = true
+            )
+        )
+        bookmarkItems.addAll(createDashboardCards())
 
         // 1. My Shortcuts Category (Manual user-added shortcuts + Add/Remove controls)
         val userManualBookmarks = loadUserBookmarks()
@@ -145,6 +218,175 @@ class NativeHomeView @JvmOverloads constructor(
         bookmarkItems.addAll(HomeData.getUtilityShortcuts())
     }
 
+    private fun startDashboardTicker() {
+        tickerHandler.removeCallbacks(tickerRunnable)
+        tickerHandler.postDelayed(tickerRunnable, 1000L)
+    }
+
+    private fun stopDashboardTicker() {
+        tickerHandler.removeCallbacks(tickerRunnable)
+    }
+
+    private fun updateDashboardCardsLive() {
+        try {
+            if (!::rvBookmarks.isInitialized || rvBookmarks.isComputingLayout) return
+            if (bookmarksAdapter == null) return
+            if (bookmarkItems.size < 6) return
+            if (!bookmarkItems[0].isHeader || bookmarkItems[0].title != "Gothwad Browser") return
+
+            SystemMonitorHelper.updateNetworkSpeed()
+            val netInfo = SystemMonitorHelper.getNetworkInfo(context)
+            val ramStats = SystemMonitorHelper.getRamStats(context)
+            val storageStats = SystemMonitorHelper.getStorageStats()
+
+            val ramUsedStr = SystemMonitorHelper.formatBytes(ramStats.usedBytes)
+            val ramTotalStr = SystemMonitorHelper.formatBytes(ramStats.totalBytes)
+
+            val storageFreeStr = SystemMonitorHelper.formatBytes(storageStats.freeBytes)
+            val storageUsedStr = SystemMonitorHelper.formatBytes(storageStats.usedBytes)
+            val storageTotalStr = SystemMonitorHelper.formatBytes(storageStats.totalBytes)
+
+            // Pos 1: TIME
+            bookmarkItems[1] = bookmarkItems[1].copy(
+                title = SystemMonitorHelper.getFormattedTime(),
+                subtitleText = SystemMonitorHelper.getTimeSubtitle()
+            )
+            // Pos 2: CALENDAR
+            bookmarkItems[2] = bookmarkItems[2].copy(
+                title = SystemMonitorHelper.getFormattedDate(),
+                subtitleText = SystemMonitorHelper.getCalendarSubtitle()
+            )
+            // Pos 3: NETWORK
+            bookmarkItems[3] = bookmarkItems[3].copy(
+                title = netInfo.first,
+                subtitleText = netInfo.second
+            )
+            // Pos 4: RAM
+            bookmarkItems[4] = bookmarkItems[4].copy(
+                title = "RAM: $ramUsedStr / $ramTotalStr (${ramStats.usedPercent}%)",
+                subtitleText = "⚡ Click to Boost RAM"
+            )
+            // Pos 5: STORAGE
+            bookmarkItems[5] = bookmarkItems[5].copy(
+                title = "Disk: $storageFreeStr Free",
+                subtitleText = "Used: $storageUsedStr / $storageTotalStr (${storageStats.usedPercent}%)"
+            )
+
+            if (!rvBookmarks.isComputingLayout) {
+                bookmarksAdapter?.notifyItemRangeChanged(1, 5, "STATS_PAYLOAD")
+            }
+        } catch (e: Throwable) {
+            // Ignore any transient update errors
+        }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        startDashboardTicker()
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        stopDashboardTicker()
+    }
+
+    override fun onWindowVisibilityChanged(visibility: Int) {
+        super.onWindowVisibilityChanged(visibility)
+        if (visibility == View.VISIBLE) {
+            startDashboardTicker()
+        } else {
+            stopDashboardTicker()
+        }
+    }
+
+    private fun handleDashboardCardClick(item: HomeShortcutItem) {
+        when (item.dashboardType) {
+            "TIME" -> showTimeInfoDialog()
+            "CALENDAR" -> showCalendarInfoDialog()
+            "NETWORK" -> showNetworkInfoDialog()
+            "RAM" -> showRamBoostDialog()
+            "STORAGE" -> showStorageInfoDialog()
+        }
+    }
+
+    private fun showTimeInfoDialog() {
+        val cal = java.util.Calendar.getInstance()
+        val timeFormatted = SystemMonitorHelper.getFormattedTime()
+        val timeZone = cal.timeZone.displayName ?: "Local Time"
+        val timeZoneId = cal.timeZone.id
+
+        AlertDialog.Builder(context)
+            .setTitle("🕒 System Time")
+            .setMessage("Current Time: $timeFormatted\nTimezone: $timeZone ($timeZoneId)\nLive clock updates automatically.")
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    private fun showCalendarInfoDialog() {
+        val dateFormatted = SystemMonitorHelper.getFormattedDate()
+        val subtitle = SystemMonitorHelper.getCalendarSubtitle()
+        val cal = java.util.Calendar.getInstance()
+        val year = cal.get(java.util.Calendar.YEAR)
+        val isLeapYear = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
+
+        AlertDialog.Builder(context)
+            .setTitle("📅 System Calendar")
+            .setMessage("Date: $dateFormatted\nProgress: $subtitle\nYear: $year (Leap year: ${if (isLeapYear) "Yes" else "No"})")
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    private fun showNetworkInfoDialog() {
+        val netInfo = SystemMonitorHelper.getNetworkInfo(context)
+        val downSpeed = SystemMonitorHelper.currentDownloadSpeedStr
+        val upSpeed = SystemMonitorHelper.currentUploadSpeedStr
+
+        val totalRx = SystemMonitorHelper.formatBytes(android.net.TrafficStats.getTotalRxBytes())
+        val totalTx = SystemMonitorHelper.formatBytes(android.net.TrafficStats.getTotalTxBytes())
+
+        AlertDialog.Builder(context)
+            .setTitle("🌐 Network & Speed Monitor")
+            .setMessage("Status: ${netInfo.first}\n\nReal-Time Speed:\n• Download: $downSpeed\n• Upload: $upSpeed\n\nTotal Session Traffic:\n• Total Received: $totalRx\n• Total Sent: $totalTx\n\n(Monitored directly via device network stats without consuming internet)")
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    private fun showRamBoostDialog() {
+        val freed = SystemMonitorHelper.performRamBoost(context)
+        val ramStats = SystemMonitorHelper.getRamStats(context)
+        val used = SystemMonitorHelper.formatBytes(ramStats.usedBytes)
+        val total = SystemMonitorHelper.formatBytes(ramStats.totalBytes)
+        val avail = SystemMonitorHelper.formatBytes(ramStats.availBytes)
+
+        updateDashboardCardsLive()
+
+        val freedText = if (freed > 0) "${SystemMonitorHelper.formatBytes(freed)} freed!" else "Memory already optimized!"
+        Toast.makeText(context, "⚡ RAM Boosted: $freedText", Toast.LENGTH_SHORT).show()
+
+        AlertDialog.Builder(context)
+            .setTitle("⚡ RAM & Performance Status")
+            .setMessage("RAM Optimizer Result: $freedText\n\n• Used RAM: $used (${ramStats.usedPercent}%)\n• Available Free RAM: $avail\n• Total RAM: $total\n\nBrowser cache and memory trimmed safely.")
+            .setPositiveButton("OK", null)
+            .setNeutralButton("Boost Again") { _, _ ->
+                showRamBoostDialog()
+            }
+            .show()
+    }
+
+    private fun showStorageInfoDialog() {
+        val storage = SystemMonitorHelper.getStorageStats()
+        val total = SystemMonitorHelper.formatBytes(storage.totalBytes)
+        val free = SystemMonitorHelper.formatBytes(storage.freeBytes)
+        val used = SystemMonitorHelper.formatBytes(storage.usedBytes)
+        val cores = Runtime.getRuntime().availableProcessors()
+
+        AlertDialog.Builder(context)
+            .setTitle("💾 Storage & Device Info")
+            .setMessage("Internal Storage:\n• Free: $free\n• Used: $used (${storage.usedPercent}%)\n• Total: $total\n\nDevice & CPU Info:\n• Device: ${Build.MANUFACTURER} ${Build.MODEL}\n• Android: ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})\n• CPU Cores: $cores Cores")
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
     private fun setupBookmarks() {
         populateBookmarkItemsList()
 
@@ -163,7 +405,9 @@ class NativeHomeView @JvmOverloads constructor(
         bookmarksAdapter = HomeCardAdapter(
             items = bookmarkItems,
             onItemClick = { shortcut ->
-                if (shortcut.url.isNotEmpty()) {
+                if (shortcut.isDashboardCard) {
+                    handleDashboardCardClick(shortcut)
+                } else if (shortcut.url.isNotEmpty()) {
                     onNavigateUrl?.invoke(shortcut.url)
                 }
             },

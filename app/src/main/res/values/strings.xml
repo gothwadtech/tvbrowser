@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">Gothwad TV Browser</string>
-    <string name="app_name_short" translatable="false">Gothwad TV Browser</string>
+    <string name="app_name">Gothwad Browser</string>
+    <string name="app_name_short" translatable="false">Gothwad Browser</string>
     <string name="error">Error</string>
     <string name="ok">OK</string>
     <string name="loading">Loading&#8230;</string>
@@ -255,7 +255,7 @@
     <string name="shortcuts_customization_hint">Click any shortcut to record a new key combination. Supports physical keyboards, mice, and TV remotes.</string>
     <string name="about_gothwad_title">About Gothwad Tech</string>
     <string name="about_tagline">Fastest · Lightest · Securest · Zero Tracking · 100% Client-Side Local</string>
-    <string name="gothwad_tech_desc">Gothwad TV Browser is an ultra-fast, lightweight, and completely open-source web browser designed specifically for Android TV and Set-Top Boxes. Built with a 100% local-first architecture, it ensures zero telemetry, zero background data tracking, and maximum user privacy.</string>
+    <string name="gothwad_tech_desc">Gothwad Browser is an ultra-fast, lightweight, and completely open-source web browser designed specifically for Android TV and Set-Top Boxes. Built with a 100% local-first architecture, it ensures zero telemetry, zero background data tracking, and maximum user privacy.</string>
     <string name="created_by_gothwad_tech">Created &amp; Maintained by Gothwad Tech</string>
     <string name="github_repository">GitHub: github.com/gothwadtech/tvbrowser</string>
     <string name="official_website">Official Website: gothwadtech.com</string>

@@ -78,11 +78,11 @@ class NativeInfoDialog(
 
     companion object {
         val PRIVACY_POLICY_TEXT = """
-🔒 GOTHWAD TV BROWSER - PRIVACY POLICY
+🔒 GOTHWAD BROWSER - PRIVACY POLICY
 Effective Date: August 2026
 
 1. ZERO TELEMETRY & ZERO DATA COLLECTION
-Gothwad TV Browser is designed from the ground up with a 100% private, local-first architecture. We do NOT collect, transmit, store, or sell any of your personal information, browsing habits, IP address, device identifiers, or search history.
+Gothwad Browser is designed from the ground up with a 100% private, local-first architecture. We do NOT collect, transmit, store, or sell any of your personal information, browsing habits, IP address, device identifiers, or search history.
 
 2. 100% ON-DEVICE LOCAL PERSISTENCE
 All your data—including Favorites, Bookmarks, Quick Notes, Clipboard History, Download Logs, and Custom Preferences—is stored strictly and exclusively on your local Android TV device storage. 
@@ -100,17 +100,17 @@ Developed with ❤️ by Gothwad Tech (https://gothwadtech.com)
 """.trimIndent()
 
         val TERMS_TEXT = """
-📜 GOTHWAD TV BROWSER - TERMS AND CONDITIONS
+📜 GOTHWAD BROWSER - TERMS AND CONDITIONS
 Last Updated: August 2026
 
 1. ACCEPTANCE OF TERMS
-By installing and using Gothwad TV Browser, you agree to these Terms and Conditions. If you do not agree with any portion, please uninstall the application.
+By installing and using Gothwad Browser, you agree to these Terms and Conditions. If you do not agree with any portion, please uninstall the application.
 
 2. OPEN SOURCE & LICENSE
-Gothwad TV Browser is open-source software provided free of charge under the permissive open-source license. The source code is publicly accessible on GitHub (github.com/gothwadtech/tvbrowser).
+Gothwad Browser is open-source software provided free of charge under the permissive open-source license. The source code is publicly accessible on GitHub (github.com/gothwadtech/tvbrowser).
 
 3. LOCAL USE & USER RESPONSIBILITY
-Gothwad TV Browser provides standard web navigation tools for Android TV. You are solely responsible for the content you access, download, or interact with while browsing the internet.
+Gothwad Browser provides standard web navigation tools for Android TV. You are solely responsible for the content you access, download, or interact with while browsing the internet.
 
 4. NO WARRANTY
 The software is provided "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
