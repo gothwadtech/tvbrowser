@@ -3,8 +3,8 @@
     <item>
         <shape android:shape="rectangle">
             <corners
-                android:topLeftRadius="8dp"
-                android:topRightRadius="8dp"
+                android:topLeftRadius="5dp"
+                android:topRightRadius="5dp"
                 android:bottomLeftRadius="0dp"
                 android:bottomRightRadius="0dp" />
             <solid android:color="@color/day_night_focus_bg" />
@@ -13,8 +13,8 @@
     <item>
         <shape android:shape="rectangle">
             <corners
-                android:topLeftRadius="8dp"
-                android:topRightRadius="8dp"
+                android:topLeftRadius="5dp"
+                android:topRightRadius="5dp"
                 android:bottomLeftRadius="0dp"
                 android:bottomRightRadius="0dp" />
             <stroke android:width="2dp" android:color="@color/day_night_focus_stroke" />

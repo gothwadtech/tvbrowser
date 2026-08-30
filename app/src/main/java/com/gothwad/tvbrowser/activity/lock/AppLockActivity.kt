@@ -26,10 +26,11 @@ class AppLockActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         applyThemeMode()
-        if (!AppLockManager.isLockEnabled(this) || !AppLockManager.hasPinSet(this)) {
-            AppLockManager.setSessionUnlocked(true)
+        if (!AppLockManager.requiresUnlock(this)) {
+            AppLockManager.setSessionUnlocked(this, true)
             setResult(RESULT_OK)
             finish()
+            overridePendingTransition(0, 0)
             return
         }
         setContentView(R.layout.activity_app_lock)
@@ -127,9 +128,10 @@ class AppLockActivity : AppCompatActivity() {
     private fun checkPin() {
         val entered = inputPin.toString()
         if (AppLockManager.verifyPin(this, entered)) {
-            AppLockManager.setSessionUnlocked(true)
+            AppLockManager.setSessionUnlocked(this, true)
             setResult(RESULT_OK)
             finish()
+            overridePendingTransition(0, 0)
         } else {
             Toast.makeText(this, "Incorrect PIN", Toast.LENGTH_SHORT).show()
             dotsContainer?.animate()

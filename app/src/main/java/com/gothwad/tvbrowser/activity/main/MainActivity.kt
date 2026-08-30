@@ -153,6 +153,12 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
             Process.killProcess(pidToKill)
         }
 
+        if (AppLockManager.requiresUnlock(this)) {
+            val lockIntent = Intent(this, com.gothwad.tvbrowser.activity.lock.AppLockActivity::class.java)
+            lockIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+            startActivity(lockIntent)
+        }
+
         viewModel = ActiveModelsRepository.get(MainActivityViewModel::class, this)
         if (incognitoMode) {
             viewModel.prepareSwitchToIncognito()
