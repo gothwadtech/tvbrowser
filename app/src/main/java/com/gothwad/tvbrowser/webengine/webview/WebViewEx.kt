@@ -68,6 +68,7 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
     private val uiHandler = Handler(Looper.getMainLooper())
     internal val config = AppContext.provideConfig()
     private var documentStartDesktopScriptRef: ScriptHandler? = null
+    var currentAppliedZoomPercent: Int = 100
 
     interface Callback {
         fun getActivity(): Activity?
@@ -124,6 +125,9 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
             layoutAlgorithm = WebSettings.LayoutAlgorithm.NORMAL
             defaultTextEncodingName = "UTF-8"
             textZoom = 100
+            val initialZoom = config.webPageZoomPercent.coerceIn(Config.WEB_PAGE_ZOOM_PERCENT_MIN, Config.WEB_PAGE_ZOOM_PERCENT_MAX)
+            currentAppliedZoomPercent = initialZoom
+            setInitialScale(if (initialZoom == 100) 0 else initialZoom)
             domStorageEnabled = true
             databaseEnabled = true
             allowFileAccess = true
@@ -503,5 +507,24 @@ open class WebViewEx(context: Context, val callback: Callback, val jsInterface: 
                 }
             }
         }
+    }
+
+    fun applyZoom(percent: Int) {
+        val clamped = percent.coerceIn(Config.WEB_PAGE_ZOOM_PERCENT_MIN, Config.WEB_PAGE_ZOOM_PERCENT_MAX)
+        settings.textZoom = 100
+        val old = currentAppliedZoomPercent
+        if (old > 0 && clamped > 0 && old != clamped) {
+            val factor = clamped.toFloat() / old.toFloat()
+            zoomBy(factor)
+        }
+        currentAppliedZoomPercent = clamped
+        setInitialScale(if (clamped == 100) 0 else clamped)
+    }
+
+    fun onPageStartedResetZoom() {
+        val configuredZoom = config.webPageZoomPercent.coerceIn(Config.WEB_PAGE_ZOOM_PERCENT_MIN, Config.WEB_PAGE_ZOOM_PERCENT_MAX)
+        currentAppliedZoomPercent = configuredZoom
+        settings.textZoom = 100
+        setInitialScale(if (configuredZoom == 100) 0 else configuredZoom)
     }
 }

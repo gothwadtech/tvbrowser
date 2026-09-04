@@ -83,14 +83,20 @@ object SettingsDisplaySection {
         fun setWebZoom(percent: Int) {
             config.webPageZoomPercent = percent
             vb.sbWebPageZoom.progress = (percent - minWebZoom).coerceIn(0, maxWebZoom - minWebZoom)
-            vb.tvWebPageZoomValue.text = "$percent%"
+            vb.tvWebPageZoomValue.text = if (percent == 100) "100% (Default)" else "$percent%"
             mainAct?.applyWebPageZoom(percent)
         }
 
+        vb.btnWebZoom50.setOnClickListener { setWebZoom(50) }
         vb.btnWebZoom75.setOnClickListener { setWebZoom(75) }
+        vb.btnWebZoom90.setOnClickListener { setWebZoom(90) }
         vb.btnWebZoom100.setOnClickListener { setWebZoom(100) }
+        vb.btnWebZoom110.setOnClickListener { setWebZoom(110) }
         vb.btnWebZoom125.setOnClickListener { setWebZoom(125) }
         vb.btnWebZoom150.setOnClickListener { setWebZoom(150) }
+        vb.btnWebZoom175.setOnClickListener { setWebZoom(175) }
         vb.btnWebZoom200.setOnClickListener { setWebZoom(200) }
+        vb.btnWebZoom250.setOnClickListener { setWebZoom(250) }
+        vb.btnWebZoom300.setOnClickListener { setWebZoom(300) }
     }
 }

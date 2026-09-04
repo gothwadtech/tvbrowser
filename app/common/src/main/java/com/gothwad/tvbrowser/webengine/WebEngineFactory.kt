@@ -71,5 +71,5 @@ object WebEngineFactory {
 }
 
 fun WebEngine.isGecko(): Boolean {
-    return false
+    return this.getWebEngineName() == Config.ENGINE_GECKO_VIEW
 }

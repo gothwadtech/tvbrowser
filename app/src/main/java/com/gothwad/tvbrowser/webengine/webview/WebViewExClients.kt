@@ -243,6 +243,7 @@ object WebViewExClients {
             override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
                 webViewEx.currentOriginalUrl = url.toUri()
+                webViewEx.onPageStartedResetZoom()
                 callback.onPageStarted(url)
                 if (webViewEx.isDesktopModeEnabled()) {
                     if (!WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {

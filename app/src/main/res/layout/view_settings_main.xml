@@ -335,10 +335,23 @@
                 android:orientation="horizontal">
 
                 <Button
+                    android:id="@+id/btnWebZoom50"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="3dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:focusable="true"
+                    android:text="50%"
+                    android:textColor="@color/selector_tv_tab_pill_text"
+                    android:textSize="12sp" />
+
+                <Button
                     android:id="@+id/btnWebZoom75"
                     android:layout_width="0dp"
                     android:layout_height="40dp"
-                    android:layout_marginEnd="4dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="3dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_tv_tab_pill"
                     android:focusable="true"
@@ -347,24 +360,56 @@
                     android:textSize="12sp" />
 
                 <Button
+                    android:id="@+id/btnWebZoom90"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="3dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:focusable="true"
+                    android:text="90%"
+                    android:textColor="@color/selector_tv_tab_pill_text"
+                    android:textSize="12sp" />
+
+                <Button
                     android:id="@+id/btnWebZoom100"
                     android:layout_width="0dp"
                     android:layout_height="40dp"
                     android:layout_marginStart="2dp"
-                    android:layout_marginEnd="2dp"
+                    android:layout_marginEnd="3dp"
+                    android:layout_weight="1.2"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:focusable="true"
+                    android:text="100% (Def)"
+                    android:textColor="@color/selector_tv_tab_pill_text"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnWebZoom110"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="2dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_tv_tab_pill"
                     android:focusable="true"
-                    android:text="100%"
+                    android:text="110%"
                     android:textColor="@color/selector_tv_tab_pill_text"
                     android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/btnWebZoom125"
                     android:layout_width="0dp"
                     android:layout_height="40dp"
-                    android:layout_marginStart="2dp"
-                    android:layout_marginEnd="2dp"
+                    android:layout_marginEnd="3dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_tv_tab_pill"
                     android:focusable="true"
@@ -377,7 +422,7 @@
                     android:layout_width="0dp"
                     android:layout_height="40dp"
                     android:layout_marginStart="2dp"
-                    android:layout_marginEnd="2dp"
+                    android:layout_marginEnd="3dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_tv_tab_pill"
                     android:focusable="true"
@@ -386,14 +431,53 @@
                     android:textSize="12sp" />
 
                 <Button
+                    android:id="@+id/btnWebZoom175"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="3dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:focusable="true"
+                    android:text="175%"
+                    android:textColor="@color/selector_tv_tab_pill_text"
+                    android:textSize="12sp" />
+
+                <Button
                     android:id="@+id/btnWebZoom200"
                     android:layout_width="0dp"
                     android:layout_height="40dp"
-                    android:layout_marginStart="4dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="3dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_tv_tab_pill"
                     android:focusable="true"
                     android:text="200%"
+                    android:textColor="@color/selector_tv_tab_pill_text"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/btnWebZoom250"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="3dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:focusable="true"
+                    android:text="250%"
+                    android:textColor="@color/selector_tv_tab_pill_text"
+                    android:textSize="12sp" />
+
+                <Button
+                    android:id="@+id/btnWebZoom300"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_tv_tab_pill"
+                    android:focusable="true"
+                    android:text="300%"
                     android:textColor="@color/selector_tv_tab_pill_text"
                     android:textSize="12sp" />
             </LinearLayout>
