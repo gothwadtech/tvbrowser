@@ -15,11 +15,9 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
-        maven { url = uri("https://maven.mozilla.org/maven2/") }
     }
 }
 
 rootProject.name = "tvbrowser"
 include(":app")
 include(":app:common")
-include(":app:gecko")

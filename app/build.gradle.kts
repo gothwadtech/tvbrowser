@@ -99,7 +99,6 @@ android {
 
 dependencies {
     implementation(project(":app:common"))
-    implementation(project(":app:gecko"))
 
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 

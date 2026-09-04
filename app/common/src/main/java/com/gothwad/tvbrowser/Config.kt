@@ -42,9 +42,9 @@ class Config(val prefs: SharedPreferences) {
         const val UI_SCALE_PERCENT_MIN = 1
         const val UI_SCALE_PERCENT_MAX = 100
         const val UI_SCALE_PERCENT_DEFAULT = 50
-        val STANDARD_ZOOM_LEVELS = intArrayOf(50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300)
+        val STANDARD_ZOOM_LEVELS = intArrayOf(25, 33, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300)
         const val WEB_PAGE_ZOOM_PERCENT_KEY = "web_page_zoom_percent"
-        const val WEB_PAGE_ZOOM_PERCENT_MIN = 50
+        const val WEB_PAGE_ZOOM_PERCENT_MIN = 25
         const val WEB_PAGE_ZOOM_PERCENT_MAX = 300
         const val WEB_PAGE_ZOOM_PERCENT_DEFAULT = 100
         const val INCOGNITO_MODE_KEY = "incognito_mode"
@@ -75,7 +75,6 @@ class Config(val prefs: SharedPreferences) {
         const val DESKTOP_MODE_KEY = "desktop_mode"
         const val DESKTOP_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 
-        const val ENGINE_GECKO_VIEW = "GeckoView"
         const val ENGINE_WEB_VIEW = "WebView"
 
         const val DEFAULT_ADBLOCK_LIST_URL = "https://easylist.to/easylist/easylist.txt"
@@ -84,13 +83,10 @@ class Config(val prefs: SharedPreferences) {
         val SearchEnginesURLs = listOf("https://www.google.com/search?q=[query]", "https://www.bing.com/search?q=[query]",
             "https://search.yahoo.com/search?p=[query]", "https://duckduckgo.com/?q=[query]",
             "https://yandex.com/search/?text=[query]", "https://www.startpage.com/sp/search?query=[query]", "")
-        val SupportedWebEngines = arrayOf(ENGINE_GECKO_VIEW, ENGINE_WEB_VIEW)
+        val SupportedWebEngines = arrayOf(ENGINE_WEB_VIEW)
         const val HOME_PAGE_URL = "https://tvbrowser.phlox.dev/appcontent/home/"
 
         fun canRecommendGeckoView(): Boolean {
-            //disable recommendation for now
-            //There are plans to keep its support, but user reports and internal testing show
-            // that, at least for now, in terms of performance and stability, it is inferior to WebView.
             return false
         }
     }
@@ -300,15 +296,7 @@ class Config(val prefs: SharedPreferences) {
     var searchEngineURL = ObservableStringPreference(SearchEnginesURLs[0], SEARCH_ENGINE_URL_PREF_KEY)
 
     var webEngine: String
-        get() {
-            if (!prefs.contains(WEB_ENGINE)) {
-                prefs.edit().putString(
-                    WEB_ENGINE, if (canRecommendGeckoView())
-                    SupportedWebEngines[0] else SupportedWebEngines[1]).apply()
-            }
-
-            return prefs.getString(WEB_ENGINE, SupportedWebEngines[0])!!
-        }
+        get() = ENGINE_WEB_VIEW
         set(value) {
             prefs.edit().putString(WEB_ENGINE, value).apply()
         }
@@ -394,7 +382,7 @@ class Config(val prefs: SharedPreferences) {
         }
 
     fun isWebEngineGecko(): Boolean {
-        return webEngine == SupportedWebEngines[0]
+        return false
     }
 
     fun isWebEngineNotSet(): Boolean {

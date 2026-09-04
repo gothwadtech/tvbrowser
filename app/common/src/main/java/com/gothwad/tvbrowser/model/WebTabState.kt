@@ -11,7 +11,6 @@ import androidx.room.PrimaryKey
 import com.gothwad.tvbrowser.AppContext
 import com.gothwad.tvbrowser.utils.Utils
 import com.gothwad.tvbrowser.webengine.WebEngineFactory
-import com.gothwad.tvbrowser.webengine.isGecko
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONException
@@ -176,10 +175,7 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
             webEngine.restoreState(state)
             return true
         } else if (stateFileName != null) {
-            //if state file was saved by the other engine (Gecko<->WebView) than the one
-            //currently active for this tab, it's not usable - treat as no saved state
-            if ((stateFileName.startsWith(GECKO_SESSION_STATE_HASH_PREFIX) && !webEngine.isGecko()) ||
-                (!stateFileName.startsWith(GECKO_SESSION_STATE_HASH_PREFIX) && webEngine.isGecko())) {
+            if (stateFileName.startsWith(GECKO_SESSION_STATE_HASH_PREFIX)) {
                 return false
             }
             try {
@@ -200,14 +196,7 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
     fun saveWebViewStateToFile() {
         val state = savedState
         var stateFileName = wvStateFileName
-        if (stateFileName != null && (
-                    (webEngine.isGecko() && !stateFileName.startsWith(
-                        GECKO_SESSION_STATE_HASH_PREFIX
-                    )) ||
-                            ((!webEngine.isGecko()) && stateFileName.startsWith(
-                                GECKO_SESSION_STATE_HASH_PREFIX
-                            ))
-                    )) {
+        if (stateFileName != null && stateFileName.startsWith(GECKO_SESSION_STATE_HASH_PREFIX)) {
             File(getWVStatePath(stateFileName)).delete()
             stateFileName = null
         }
@@ -222,9 +211,6 @@ data class WebTabState(@PrimaryKey(autoGenerate = true)
         }
         if (stateFileName == null) {
             stateFileName = Utils.MD5_Hash(stateBytes) ?: return
-            if (webEngine.isGecko()) {
-                stateFileName = GECKO_SESSION_STATE_HASH_PREFIX + stateFileName
-            }
         }
         try {
             val statesDir = File(AppContext.get().filesDir.absolutePath + File.separator + TAB_WVSTATES_DIR)
