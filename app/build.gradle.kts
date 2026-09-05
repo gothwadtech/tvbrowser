@@ -9,7 +9,7 @@ android {
     defaultConfig {
         applicationId = "com.gothwad.tvbrowser"
         val vCode = (project.findProperty("versionCode") as? String)?.toIntOrNull() ?: 2
-        val vName = (project.findProperty("versionName") as? String) ?: "1.0.1"
+        val vName = (project.findProperty("versionName") as? String) ?: "1.0.$vCode"
         versionCode = vCode
         versionName = vName
 

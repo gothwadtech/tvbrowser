@@ -58,9 +58,9 @@ jobs:
           echo "v_code=$V_CODE" >> $GITHUB_OUTPUT
           echo "v_name=$V_NAME" >> $GITHUB_OUTPUT
 
-      - name: Build Release APK and AAB Bundle with Gradle
+      - name: Build Release APK, Debug APK and AAB Bundle with Gradle
         run: |
-          ./gradlew assembleRelease bundleRelease \
+          ./gradlew assembleRelease assembleDebug bundleRelease \
             -PversionCode=${{ steps.versioning.outputs.v_code }} \
             -PversionName=${{ steps.versioning.outputs.v_name }} \
             --no-daemon
@@ -73,11 +73,19 @@ jobs:
           KEY_PASS: ${{ secrets.KEY_PASSWORD || 'android123' }}
           V_NAME: ${{ steps.versioning.outputs.v_name }}
         run: |
-          echo "Locating generated Release APK and AAB..."
+          echo "Locating generated Release APK, Debug APK, and AAB..."
           UNSIGNED_APK=$(find app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
+          DEBUG_APK=$(find app/build/outputs/apk/debug/ -name "*.apk" | head -n 1)
           UNSIGNED_AAB=$(find app/build/outputs/bundle/release/ -name "*.aab" | head -n 1)
           
           mkdir -p output_release
+
+          # 0. Copy Debug APK directly (already signed with debug keystore)
+          if [ -n "$DEBUG_APK" ]; then
+            cp "$DEBUG_APK" output_release/GothwadTVBrowser-v${V_NAME}-Debug.apk
+            echo "Successfully included Debug APK: output_release/GothwadTVBrowser-v${V_NAME}-Debug.apk"
+          fi
+
           # Store keystore in secure temporary location outside release outputs
           KS_PATH="/tmp/gothwad_release_key.jks"
           
@@ -148,7 +156,7 @@ jobs:
           rm -f "$KS_PATH"
           echo "Keystore securely cleaned up."
 
-      - name: Upload Signed Release APK & AAB Artifacts
+      - name: Upload Signed Release APK, Debug APK & AAB Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Gothwad-TV-Browser-v${{ steps.versioning.outputs.v_name }}-Build${{ steps.versioning.outputs.v_code }}
@@ -160,10 +168,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ steps.versioning.outputs.v_name }}
-          name: Gothwad TV Browser v${{ steps.versioning.outputs.v_name }} (Build ${{ steps.versioning.outputs.v_code }})
+          name: v${{ steps.versioning.outputs.v_name }}
           draft: false
           prerelease: false
           generate_release_notes: true
           files: |
             output_release/GothwadTVBrowser-v${{ steps.versioning.outputs.v_name }}-Release.apk
+            output_release/GothwadTVBrowser-v${{ steps.versioning.outputs.v_name }}-Debug.apk
             output_release/GothwadTVBrowser-v${{ steps.versioning.outputs.v_name }}-PlayStore.aab

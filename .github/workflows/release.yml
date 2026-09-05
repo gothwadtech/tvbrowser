@@ -60,9 +60,9 @@ jobs:
           echo "v_code=$V_CODE" >> $GITHUB_OUTPUT
           echo "v_name=$V_NAME" >> $GITHUB_OUTPUT
 
-      - name: Build Release APK and AAB
+      - name: Build Release APK, Debug APK and AAB
         run: |
-          ./gradlew assembleRelease bundleRelease \
+          ./gradlew assembleRelease assembleDebug bundleRelease \
             -PversionCode=${{ steps.versioning.outputs.v_code }} \
             -PversionName=${{ steps.versioning.outputs.v_name }} \
             --no-daemon
@@ -77,7 +77,14 @@ jobs:
         run: |
           mkdir -p release_out
           APK=$(find app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
+          DEBUG_APK=$(find app/build/outputs/apk/debug/ -name "*.apk" | head -n 1)
           AAB=$(find app/build/outputs/bundle/release/ -name "*.aab" | head -n 1)
+
+          if [ -n "$DEBUG_APK" ]; then
+            cp "$DEBUG_APK" release_out/GothwadTVBrowser-v${V_NAME}-Debug.apk
+            echo "Copied Debug APK: release_out/GothwadTVBrowser-v${V_NAME}-Debug.apk"
+          fi
+
           # Store keystore in secure temporary location outside release outputs
           KS_PATH="/tmp/release_key.jks"
           
@@ -138,10 +145,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ steps.versioning.outputs.v_name }}
-          name: Gothwad TV Browser v${{ steps.versioning.outputs.v_name }} (Build ${{ steps.versioning.outputs.v_code }})
+          name: v${{ steps.versioning.outputs.v_name }}
           draft: false
           prerelease: false
           generate_release_notes: true
           files: |
             release_out/GothwadTVBrowser-v${{ steps.versioning.outputs.v_name }}-Release.apk
+            release_out/GothwadTVBrowser-v${{ steps.versioning.outputs.v_name }}-Debug.apk
             release_out/GothwadTVBrowser-v${{ steps.versioning.outputs.v_name }}-PlayStore.aab
