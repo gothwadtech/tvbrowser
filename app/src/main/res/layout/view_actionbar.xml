@@ -11,7 +11,7 @@
       android:layout_gravity="center_vertical"
       android:background="@drawable/chrome_omnibox_bg">
 
-    <!-- Lock Icon (Security) at start of search bar (Styled like round mic badge) -->
+    <!-- Lock Icon / Search Engine Icon at start of search bar -->
     <ImageView
         android:id="@+id/ivLockIcon"
         android:layout_width="30dp"
@@ -20,11 +20,12 @@
         android:layout_centerVertical="true"
         android:layout_marginStart="4dp"
         android:background="@drawable/mic_btn_bg_selector"
-        android:padding="6dp"
+        android:padding="5dp"
         android:scaleType="fitCenter"
-        android:src="@drawable/ic_lock_security"
-        android:tint="@color/day_night_icon_color"
-        android:contentDescription="@null" />
+        android:src="@drawable/ic_logo_google"
+        android:focusable="true"
+        android:clickable="true"
+        android:contentDescription="@string/choose_default_search_engine" />
 
     <!-- Microphone Icon at the end of search bar (Rounded Shape) -->
     <ImageButton

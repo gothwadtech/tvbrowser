@@ -1,6 +1,7 @@
 package com.gothwad.tvbrowser.activity.main.view
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.transition.TransitionManager
 import android.util.AttributeSet
 import android.view.KeyEvent
@@ -12,6 +13,7 @@ import android.view.View.OnKeyListener
 import android.view.animation.Animation
 import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
+import androidx.core.content.ContextCompat
 import com.gothwad.tvbrowser.AppContext
 import com.gothwad.tvbrowser.Config
 import com.gothwad.tvbrowser.R
@@ -29,6 +31,8 @@ class ActionBar @JvmOverloads constructor(
     private var downloadAnimation: Animation? = null
     private var downloadsModel = ActiveModelsRepository.get(ActiveDownloadsModel::class, context)
     private var extendedAddressBarMode = false
+    var isHttpsSecure: Boolean = false
+        private set
 
     interface Callback {
         fun closeWindow()
@@ -42,6 +46,8 @@ class ActionBar @JvmOverloads constructor(
         fun onUrlInputDone()
         fun toggleIncognitoMode()
         fun toggleHeader()
+        fun onSearchEngineIconClicked(anchorView: View) {}
+        fun onSecurityIconClicked(anchorView: View) {}
     }
 
     private val etUrlFocusChangeListener = OnFocusChangeListener { _, focused ->
@@ -106,8 +112,38 @@ class ActionBar @JvmOverloads constructor(
             vb.ibVoiceSearch.setOnClickListener { callback?.initiateVoiceSearch() }
         }
 
+        vb.ivLockIcon.setOnClickListener { view ->
+            if (isHttpsSecure) {
+                callback?.onSecurityIconClicked(view)
+            } else {
+                callback?.onSearchEngineIconClicked(view)
+            }
+        }
+
+        vb.ivLockIcon.setOnKeyListener { view, keyCode, event ->
+            if (event.action == KeyEvent.ACTION_DOWN) {
+                when (keyCode) {
+                    KeyEvent.KEYCODE_DPAD_CENTER,
+                    KeyEvent.KEYCODE_ENTER,
+                    KeyEvent.KEYCODE_NUMPAD_ENTER,
+                    KeyEvent.KEYCODE_BUTTON_A -> {
+                        view.performClick()
+                        true
+                    }
+                    else -> false
+                }
+            } else false
+        }
+
         vb.etUrl.onFocusChangeListener = etUrlFocusChangeListener
         vb.etUrl.setOnKeyListener(etUrlKeyListener)
+        vb.etUrl.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                updateAddressBarIcon(s?.toString())
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
 
         updateAddressBarIcon(vb.etUrl.text.toString())
 
@@ -117,7 +153,7 @@ class ActionBar @JvmOverloads constructor(
     }
 
     fun setAddressBoxText(text: String) {
-        if (text == Config.HOME_PAGE_URL || text == Config.HOME_URL_ALIAS) {
+        if (text == Config.HOME_PAGE_URL || text == Config.HOME_URL_ALIAS || text.isEmpty() || text == "about:blank") {
             vb.etUrl.setText("")
             updateAddressBarIcon("")
         } else {
@@ -130,8 +166,45 @@ class ActionBar @JvmOverloads constructor(
         // No-op (header toggle icon removed from inside actionbar)
     }
 
+    private fun getSearchEngineIcon(engineName: String): Int {
+        return when (engineName.lowercase()) {
+            "google" -> R.drawable.ic_logo_google
+            "bing" -> R.drawable.ic_logo_bing
+            "ddg", "duckduckgo" -> R.drawable.ic_logo_duckduckgo
+            "perplexity" -> R.drawable.ic_logo_perplexity
+            "wikipedia" -> R.drawable.ic_logo_wikipedia
+            "yahoo" -> R.drawable.ic_logo_yahoo
+            else -> R.drawable.ic_logo_google
+        }
+    }
+
     fun updateAddressBarIcon(url: String?) {
-        vb.ivLockIcon.setImageResource(R.drawable.ic_lock_security)
+        val cleanUrl = (url ?: "").trim()
+        val isHome = cleanUrl.isEmpty() ||
+                cleanUrl == Config.HOME_PAGE_URL ||
+                cleanUrl == Config.HOME_URL_ALIAS ||
+                cleanUrl == "about:blank" ||
+                cleanUrl.startsWith("file:///android_asset/home")
+
+        if (!isHome && cleanUrl.startsWith("https://", ignoreCase = true)) {
+            isHttpsSecure = true
+            vb.ivLockIcon.setImageResource(R.drawable.ic_lock_security)
+            vb.ivLockIcon.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.day_night_icon_color))
+            vb.ivLockIcon.contentDescription = context.getString(R.string.connection_is_secure)
+        } else if (!isHome && cleanUrl.startsWith("http://", ignoreCase = true)) {
+            isHttpsSecure = false
+            vb.ivLockIcon.setImageResource(R.drawable.ic_menu_info)
+            vb.ivLockIcon.imageTintList = ColorStateList.valueOf(ContextCompat.getColor(context, R.color.day_night_icon_color))
+            vb.ivLockIcon.contentDescription = "Not secure"
+        } else {
+            isHttpsSecure = false
+            val config = AppContext.provideConfig()
+            val engineIconRes = getSearchEngineIcon(config.guessSearchEngineName())
+            vb.ivLockIcon.setImageResource(engineIconRes)
+            vb.ivLockIcon.imageTintList = null
+            vb.ivLockIcon.clearColorFilter()
+            vb.ivLockIcon.contentDescription = context.getString(R.string.choose_default_search_engine)
+        }
     }
 
     fun setAddressBoxTextColor(color: Int) {
@@ -162,4 +235,6 @@ class ActionBar @JvmOverloads constructor(
     fun getUrlEditText(): View = vb.etUrl
 
     fun getVoiceSearchButton(): View = vb.ibVoiceSearch
+
+    fun getLockOrSearchEngineIcon(): View = vb.ivLockIcon
 }

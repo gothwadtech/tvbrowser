@@ -1,16 +1,22 @@
 name: Release to GitHub Releases
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version Name (e.g. 1.0.1)'
-        required: true
-        default: '1.0.1'
-      version_code:
-        description: 'Version Code (Integer, e.g. 2, 3... leave blank for auto increment)'
+        description: 'Version Name (e.g. 1.0.2 - leave empty for auto 1.0.X)'
         required: false
         default: ''
+      version_code:
+        description: 'Version Code (Integer, e.g. 12 - leave blank for auto increment)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
 
 jobs:
   build_release:
@@ -20,6 +26,8 @@ jobs:
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -30,7 +38,7 @@ jobs:
       - name: Make Gradle Executable
         run: chmod +x ./gradlew
 
-      - name: Determine Version Code
+      - name: Determine Version Code and Name
         id: versioning
         run: |
           if [ -n "${{ inputs.version_code }}" ]; then
@@ -38,14 +46,25 @@ jobs:
           else
             V_CODE=$(( 10 + ${{ github.run_number }} ))
           fi
+
+          if [ -n "${{ inputs.version }}" ]; then
+            V_NAME="${{ inputs.version }}"
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            V_NAME="${GITHUB_REF_NAME#v}"
+          else
+            V_NAME="1.0.${V_CODE}"
+          fi
+
           echo "Determined Version Code: $V_CODE"
+          echo "Determined Version Name: $V_NAME"
           echo "v_code=$V_CODE" >> $GITHUB_OUTPUT
+          echo "v_name=$V_NAME" >> $GITHUB_OUTPUT
 
       - name: Build Release APK and AAB
         run: |
           ./gradlew assembleRelease bundleRelease \
             -PversionCode=${{ steps.versioning.outputs.v_code }} \
-            -PversionName=${{ inputs.version }} \
+            -PversionName=${{ steps.versioning.outputs.v_name }} \
             --no-daemon
 
       - name: Sign Release APK & AAB
@@ -54,11 +73,13 @@ jobs:
           KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASSWORD || 'android123' }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS || '' }}
           KEY_PASS: ${{ secrets.KEY_PASSWORD || 'android123' }}
+          V_NAME: ${{ steps.versioning.outputs.v_name }}
         run: |
           mkdir -p release_out
           APK=$(find app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
           AAB=$(find app/build/outputs/bundle/release/ -name "*.aab" | head -n 1)
-          KS_PATH="release_out/release_key.jks"
+          # Store keystore in secure temporary location outside release outputs
+          KS_PATH="/tmp/release_key.jks"
           
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "Using Permanent Keystore from GitHub Secrets..."
@@ -94,27 +115,33 @@ jobs:
               --ks-key-alias "$ACTUAL_ALIAS" \
               --ks-pass "pass:$KEYSTORE_PASS" \
               --key-pass "pass:$KEY_PASS" \
-              --out release_out/GothwadTVBrowser-v${{ inputs.version }}-Release.apk \
+              --out release_out/GothwadTVBrowser-v${V_NAME}-Release.apk \
               "$APK"
           fi
 
           if [ -n "$AAB" ]; then
-            cp "$AAB" release_out/GothwadTVBrowser-v${{ inputs.version }}-PlayStore.aab
+            cp "$AAB" release_out/GothwadTVBrowser-v${V_NAME}-PlayStore.aab
             jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
               -keystore "$KS_PATH" \
               -storepass "$KEYSTORE_PASS" -keypass "$KEY_PASS" \
-              release_out/GothwadTVBrowser-v${{ inputs.version }}-PlayStore.aab \
+              release_out/GothwadTVBrowser-v${V_NAME}-PlayStore.aab \
               "$ACTUAL_ALIAS"
           fi
 
+          # Securely destroy the temporary keystore file so it is never exposed or uploaded
+          rm -f "$KS_PATH"
+          echo "Keystore securely cleaned up."
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ inputs.version }}
-          name: Gothwad TV Browser v${{ inputs.version }}
+          tag_name: v${{ steps.versioning.outputs.v_name }}
+          name: Gothwad TV Browser v${{ steps.versioning.outputs.v_name }} (Build ${{ steps.versioning.outputs.v_code }})
           draft: false
           prerelease: false
+          generate_release_notes: true
           files: |
-            release_out/GothwadTVBrowser-v${{ inputs.version }}-Release.apk
-            release_out/GothwadTVBrowser-v${{ inputs.version }}-PlayStore.aab
-            release_out/release_key.jks
+            release_out/GothwadTVBrowser-v${{ steps.versioning.outputs.v_name }}-Release.apk
+            release_out/GothwadTVBrowser-v${{ steps.versioning.outputs.v_name }}-PlayStore.aab

@@ -78,11 +78,19 @@ class Config(val prefs: SharedPreferences) {
         const val ENGINE_WEB_VIEW = "WebView"
 
         const val DEFAULT_ADBLOCK_LIST_URL = "https://easylist.to/easylist/easylist.txt"
-        val SearchEnginesTitles = arrayOf("Google", "Bing", "Yahoo!", "DuckDuckGo", "Yandex", "Startpage", "Custom")
-        val SearchEnginesNames = arrayOf("google", "bing", "yahoo", "ddg", "yandex", "startpage", "custom")
-        val SearchEnginesURLs = listOf("https://www.google.com/search?q=[query]", "https://www.bing.com/search?q=[query]",
-            "https://search.yahoo.com/search?p=[query]", "https://duckduckgo.com/?q=[query]",
-            "https://yandex.com/search/?text=[query]", "https://www.startpage.com/sp/search?query=[query]", "")
+        val SearchEnginesTitles = arrayOf("Google", "Bing", "DuckDuckGo", "Perplexity", "Wikipedia (en)", "Yahoo!", "Yandex", "Startpage", "Custom")
+        val SearchEnginesNames = arrayOf("google", "bing", "ddg", "perplexity", "wikipedia", "yahoo", "yandex", "startpage", "custom")
+        val SearchEnginesURLs = listOf(
+            "https://www.google.com/search?q=[query]",
+            "https://www.bing.com/search?q=[query]",
+            "https://duckduckgo.com/?q=[query]",
+            "https://www.perplexity.ai/search?q=[query]",
+            "https://en.wikipedia.org/wiki/Special:Search?search=[query]",
+            "https://search.yahoo.com/search?p=[query]",
+            "https://yandex.com/search/?text=[query]",
+            "https://www.startpage.com/sp/search?query=[query]",
+            ""
+        )
         val SupportedWebEngines = arrayOf(ENGINE_WEB_VIEW)
         const val HOME_PAGE_URL = "https://tvbrowser.phlox.dev/appcontent/home/"
 
@@ -392,8 +400,21 @@ class Config(val prefs: SharedPreferences) {
     fun guessSearchEngineName(): String {
         val url = searchEngineURL.value
         val index = SearchEnginesURLs.indexOf(url)
-        return if (index != -1 && index < SearchEnginesNames.size)
-            SearchEnginesNames[index] else SearchEnginesNames[SearchEnginesNames.size - 1]
+        if (index != -1 && index < SearchEnginesNames.size) {
+            return SearchEnginesNames[index]
+        }
+        val lower = url.lowercase()
+        return when {
+            lower.contains("google.") -> "google"
+            lower.contains("bing.") -> "bing"
+            lower.contains("duckduckgo.") -> "ddg"
+            lower.contains("perplexity.") -> "perplexity"
+            lower.contains("wikipedia.") -> "wikipedia"
+            lower.contains("yahoo.") -> "yahoo"
+            lower.contains("yandex.") -> "yandex"
+            lower.contains("startpage.") -> "startpage"
+            else -> SearchEnginesNames[SearchEnginesNames.size - 1]
+        }
     }
 
     inner class ObservableStringPreference(default: String, private val prefsKey: String) : ObservableValue<String>(default) {

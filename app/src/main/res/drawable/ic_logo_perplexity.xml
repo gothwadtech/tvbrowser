@@ -1,0 +1,13 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="36dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Perplexity AI stylized emblem -->
+    <path
+        android:fillColor="#20808D"
+        android:pathData="M24,4c-11,0 -20,9 -20,20s9,20 20,20 20,-9 20,-20S35,4 24,4z" />
+    <path
+        android:fillColor="#E0F7FA"
+        android:pathData="M22,12h4v8.5l6,-6 2.8,2.8 -6,6H36v4h-7.2l6,6 -2.8,2.8 -6,-6V36h-4v-7.2l-6,6 -2.8,-2.8 6,-6H12v-4h7.2l-6,-6 2.8,-2.8 6,6V12z" />
+</vector>

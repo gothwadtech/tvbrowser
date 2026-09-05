@@ -1,0 +1,26 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="36dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- DuckDuckGo circular orange emblem with duck head -->
+    <path
+        android:fillColor="#DE5833"
+        android:pathData="M24,4C13,4 4,13 4,24s9,20 20,20 20,-9 20,-20S35,4 24,4z" />
+    <!-- White neck and head contour -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M25,12c-5,0 -9,4 -9,9 0,2.5 1,4.7 2.6,6.4L18,34h12l-1.2,-7.2c2,-1.8 3.2,-4.5 3.2,-7.8 0,-5 -4,-9 -9,-9z" />
+    <!-- Green bow tie -->
+    <path
+        android:fillColor="#4CA146"
+        android:pathData="M20,33h8l-4,3z" />
+    <!-- Orange/Yellow beak -->
+    <path
+        android:fillColor="#F6A21E"
+        android:pathData="M28,21c0,0 6,-1.5 7,1.5 -1.2,2.5 -7,2 -7,2z" />
+    <!-- Eye dot -->
+    <path
+        android:fillColor="#333333"
+        android:pathData="M25,18m-1.5,0a1.5,1.5 0 1,0 3,0a1.5,1.5 0 1,0 -3,0" />
+</vector>

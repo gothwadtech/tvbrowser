@@ -6,13 +6,16 @@ on:
   workflow_dispatch:
     inputs:
       version_name:
-        description: 'Version Name (e.g. 1.0.1)'
-        required: false
-        default: '1.0.1'
-      version_code:
-        description: 'Version Code (Integer, e.g. 2, 3... leave blank for auto increment)'
+        description: 'Version Name (e.g. 1.0.2 - leave empty for auto 1.0.X)'
         required: false
         default: ''
+      version_code:
+        description: 'Version Code (Integer, e.g. 12 - leave blank for auto increment)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -22,6 +25,8 @@ jobs:
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Java 17 (JDK)
         uses: actions/setup-java@v4
@@ -40,7 +45,14 @@ jobs:
           else
             V_CODE=$(( 10 + ${{ github.run_number }} ))
           fi
-          V_NAME="${{ inputs.version_name || '1.0.1' }}"
+
+          if [ -n "${{ inputs.version_name }}" ]; then
+            V_NAME="${{ inputs.version_name }}"
+          else
+            # Auto-incrementing version name based on version code
+            V_NAME="1.0.${V_CODE}"
+          fi
+
           echo "Determined Version Code: $V_CODE"
           echo "Determined Version Name: $V_NAME"
           echo "v_code=$V_CODE" >> $GITHUB_OUTPUT
@@ -59,13 +71,15 @@ jobs:
           KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASSWORD || 'android123' }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS || '' }}
           KEY_PASS: ${{ secrets.KEY_PASSWORD || 'android123' }}
+          V_NAME: ${{ steps.versioning.outputs.v_name }}
         run: |
           echo "Locating generated Release APK and AAB..."
           UNSIGNED_APK=$(find app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
           UNSIGNED_AAB=$(find app/build/outputs/bundle/release/ -name "*.aab" | head -n 1)
           
           mkdir -p output_release
-          KS_PATH="output_release/gothwad_release_key.jks"
+          # Store keystore in secure temporary location outside release outputs
+          KS_PATH="/tmp/gothwad_release_key.jks"
           
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "Using Permanent Keystore from GitHub Secrets..."
@@ -100,10 +114,11 @@ jobs:
           
           # 1. Sign APK
           if [ -n "$UNSIGNED_APK" ]; then
+            UNALIGNED_TEMP="/tmp/unaligned_temp.apk"
             if [ -n "$ZIPALIGN" ]; then
-              $ZIPALIGN -v -p 4 "$UNSIGNED_APK" output_release/GothwadTVBrowser-v1.0.0-unaligned.apk || cp "$UNSIGNED_APK" output_release/GothwadTVBrowser-v1.0.0-unaligned.apk
+              $ZIPALIGN -v -p 4 "$UNSIGNED_APK" "$UNALIGNED_TEMP" || cp "$UNSIGNED_APK" "$UNALIGNED_TEMP"
             else
-              cp "$UNSIGNED_APK" output_release/GothwadTVBrowser-v1.0.0-unaligned.apk
+              cp "$UNSIGNED_APK" "$UNALIGNED_TEMP"
             fi
             
             $APKSIGNER sign \
@@ -111,26 +126,44 @@ jobs:
               --ks-key-alias "$ACTUAL_ALIAS" \
               --ks-pass "pass:$KEYSTORE_PASS" \
               --key-pass "pass:$KEY_PASS" \
-              --out output_release/GothwadTVBrowser-v1.0.0-Release.apk \
-              output_release/GothwadTVBrowser-v1.0.0-unaligned.apk
+              --out output_release/GothwadTVBrowser-v${V_NAME}-Release.apk \
+              "$UNALIGNED_TEMP"
               
-            $APKSIGNER verify --verbose output_release/GothwadTVBrowser-v1.0.0-Release.apk
-            rm -f output_release/*unaligned.apk
+            $APKSIGNER verify --verbose output_release/GothwadTVBrowser-v${V_NAME}-Release.apk
+            rm -f "$UNALIGNED_TEMP"
           fi
           
           # 2. Sign Play Store AAB Bundle using jarsigner
           if [ -n "$UNSIGNED_AAB" ]; then
-            cp "$UNSIGNED_AAB" output_release/GothwadTVBrowser-v1.0.0-PlayStore.aab
+            cp "$UNSIGNED_AAB" output_release/GothwadTVBrowser-v${V_NAME}-PlayStore.aab
             jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
               -keystore "$KS_PATH" \
               -storepass "$KEYSTORE_PASS" -keypass "$KEY_PASS" \
-              output_release/GothwadTVBrowser-v1.0.0-PlayStore.aab \
+              output_release/GothwadTVBrowser-v${V_NAME}-PlayStore.aab \
               "$ACTUAL_ALIAS"
             echo "Successfully signed Play Store AAB!"
           fi
 
-      - name: Upload Signed Release APK, AAB & Keystore
+          # Securely destroy the temporary keystore file so it is never exposed or uploaded
+          rm -f "$KS_PATH"
+          echo "Keystore securely cleaned up."
+
+      - name: Upload Signed Release APK & AAB Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: Gothwad-TV-Browser-v1.0.0-Production-Binaries
+          name: Gothwad-TV-Browser-v${{ steps.versioning.outputs.v_name }}-Build${{ steps.versioning.outputs.v_code }}
           path: output_release/
+
+      - name: Create Automatic GitHub Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.versioning.outputs.v_name }}
+          name: Gothwad TV Browser v${{ steps.versioning.outputs.v_name }} (Build ${{ steps.versioning.outputs.v_code }})
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            output_release/GothwadTVBrowser-v${{ steps.versioning.outputs.v_name }}-Release.apk
+            output_release/GothwadTVBrowser-v${{ steps.versioning.outputs.v_name }}-PlayStore.aab

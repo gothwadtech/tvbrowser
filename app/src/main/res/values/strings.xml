@@ -265,4 +265,8 @@
     <string name="press_back_again_to_exit">Press BACK again to exit</string>
     <string name="top_tab_bar_title">Desktop Chrome Tab Bar</string>
     <string name="top_tab_bar_desc">Show desktop PC Chrome-style horizontal tabs at the top with website icon, title, and close button</string>
+    <string name="this_time_search_with">This time search with:</string>
+    <string name="search_settings">Search Settings</string>
+    <string name="menu_actions">Actions</string>
+    <string name="connection_is_secure">Connection is secure</string>
 </resources>

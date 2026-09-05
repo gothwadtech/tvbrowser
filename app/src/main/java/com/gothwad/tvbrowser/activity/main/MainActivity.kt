@@ -31,6 +31,8 @@ import com.gothwad.tvbrowser.BrowserApp
 import com.gothwad.tvbrowser.R
 import com.gothwad.tvbrowser.activity.IncognitoModeMainActivity
 import com.gothwad.tvbrowser.activity.history.HistoryActivity
+import com.gothwad.tvbrowser.activity.main.dialogs.SearchEngineMenuPopup
+import com.gothwad.tvbrowser.activity.main.dialogs.WebsiteMenuPopup
 import com.gothwad.tvbrowser.activity.main.view.ActionBar
 import com.gothwad.tvbrowser.browser.tabs.TabsRowDialog
 import com.gothwad.tvbrowser.databinding.ActivityMainBinding
@@ -251,6 +253,12 @@ open class MainActivity : AppCompatActivity(), ActionBar.Callback {
     override fun onExtendedAddressBarMode() { vb.llBottomPanel.visibility = View.INVISIBLE }
     override fun onUrlInputDone() {}
     override fun toggleHeader() = toggleMenu()
+    override fun onSearchEngineIconClicked(anchorView: View) {
+        SearchEngineMenuPopup(this).show(anchorView)
+    }
+    override fun onSecurityIconClicked(anchorView: View) {
+        WebsiteMenuPopup(this).show(anchorView)
+    }
 
     override fun onDestroy() {
         if (::tabsModel.isInitialized) {

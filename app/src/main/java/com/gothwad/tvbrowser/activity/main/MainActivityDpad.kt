@@ -23,6 +23,7 @@ fun MainActivity.getHeaderFocusableViews(): List<View> {
         vb.ibBack,
         vb.ibForward,
         vb.ibRefresh,
+        vb.vActionBar.getLockOrSearchEngineIcon(),
         vb.vActionBar.getUrlEditText(),
         vb.vActionBar.getVoiceSearchButton(),
         vb.ibNewTab,

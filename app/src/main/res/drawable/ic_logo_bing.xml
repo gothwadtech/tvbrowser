@@ -1,0 +1,13 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="36dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Bing / Microsoft Bing stylized 'b' logo -->
+    <path
+        android:fillColor="#008373"
+        android:pathData="M11,6v33.5l10.8,5.7 15.2,-8.8V23.7l-9.6,-4.5v12.2l-5.6,3.1V12.1L11,6z" />
+    <path
+        android:fillColor="#00A4EF"
+        android:pathData="M11,6l10.8,6.1v15.2l9.6,-5.5 5.6,3.2V8.2L21.8,4 11,6z" />
+</vector>
