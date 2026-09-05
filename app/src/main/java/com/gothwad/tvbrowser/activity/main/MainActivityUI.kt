@@ -101,11 +101,11 @@ internal fun MainActivity.setupHeaderClickListeners(incognitoMode: Boolean) {
         vb.ibFileManager, vb.ibBookmarks, vb.ibIncognito, vb.ibSettings
     ).forEach {
         it.isFocusable = true
-        it.isFocusableInTouchMode = true
+        it.isFocusableInTouchMode = false
         it.setOnTouchListener(bottomButtonsOnTouchListener)
         it.onFocusChangeListener = bottomButtonsFocusListener
-        it.setOnKeyListener(bottomButtonsKeyListener)
     }
+    updateBackForwardButtons(canGoBack = false, canGoForward = false)
 }
 
 internal fun MainActivity.setupSettingsSubscriptions() {
@@ -234,19 +234,6 @@ internal val MainActivity.bottomButtonsFocusListener
     get() = View.OnFocusChangeListener { _, hasFocus ->
         if (hasFocus) {
             hideMenuOverlay(false)
-        }
-    }
-
-internal val MainActivity.bottomButtonsKeyListener
-    get() = View.OnKeyListener { _, _, keyEvent ->
-        when (keyEvent.keyCode) {
-            KeyEvent.KEYCODE_DPAD_UP -> {
-                if (keyEvent.action == KeyEvent.ACTION_UP) {
-                    tabsModel.currentTab.value?.webEngine?.getView()?.requestFocus()
-                }
-                true
-            }
-            else -> false
         }
     }
 

@@ -11,15 +11,16 @@ data class FileItem(
     val name: String = file.name,
     val isDirectory: Boolean = file.isDirectory,
     val size: Long = if (file.isDirectory) 0L else file.length(),
-    val lastModified: Long = file.lastModified()
+    val lastModified: Long = file.lastModified(),
+    val childCount: Int = -1,
+    val isSelected: Boolean = false
 ) {
     val extension: String = if (isDirectory) "" else file.extension.lowercase(Locale.ROOT)
 
     val formattedSize: String
         get() {
             if (isDirectory) {
-                val childCount = file.list()?.size ?: 0
-                return "$childCount items"
+                return if (childCount >= 0) "$childCount items" else "Folder"
             }
             if (size <= 0) return "0 B"
             val units = arrayOf("B", "KB", "MB", "GB", "TB")

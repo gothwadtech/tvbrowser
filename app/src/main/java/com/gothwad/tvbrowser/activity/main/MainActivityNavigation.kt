@@ -102,6 +102,16 @@ internal fun MainActivity.handleIntent(intent: Intent) {
     )
 }
 
+internal fun MainActivity.updateBackForwardButtons(canGoBack: Boolean, canGoForward: Boolean) {
+    vb.ibBack.isEnabled = true
+    vb.ibBack.isFocusable = true
+    vb.ibBack.alpha = if (canGoBack) 1.0f else 0.4f
+
+    vb.ibForward.isEnabled = true
+    vb.ibForward.isFocusable = true
+    vb.ibForward.alpha = if (canGoForward) 1.0f else 0.4f
+}
+
 internal fun MainActivity.showHomeScreen() {
     val currentTab = tabsModel.currentTab.value
     if (currentTab != null) {
@@ -127,10 +137,12 @@ internal fun MainActivity.showHomeScreen() {
     vb.vNativeHome.bringToFront()
     vb.rlActionBar.bringToFront()
     vb.vActionBar.setAddressBoxText("")
-    vb.ibBack.isEnabled = false
-    vb.ibForward.isEnabled = !currentTab?.lastUrlBeforeHome.isNullOrEmpty()
+    updateBackForwardButtons(
+        canGoBack = false,
+        canGoForward = !currentTab?.lastUrlBeforeHome.isNullOrEmpty()
+    )
     showMenuOverlay()
-    vb.ibMenu.requestFocus()
+    vb.ibHome.requestFocus()
 }
 
 internal fun MainActivity.switchToTab(newTab: WebTabState) {
@@ -141,16 +153,20 @@ internal fun MainActivity.switchToTab(newTab: WebTabState) {
         vb.vNativeHome.bringToFront()
         vb.rlActionBar.bringToFront()
         vb.vActionBar.setAddressBoxText("")
-        vb.ibBack.isEnabled = false
-        vb.ibForward.isEnabled = !newTab.lastUrlBeforeHome.isNullOrEmpty()
+        updateBackForwardButtons(
+            canGoBack = false,
+            canGoForward = !newTab.lastUrlBeforeHome.isNullOrEmpty()
+        )
         showMenuOverlay()
-        vb.ibMenu.requestFocus()
+        vb.ibHome.requestFocus()
     } else {
         vb.vNativeHome.visibility = View.GONE
         vb.flWebViewContainer.visibility = View.VISIBLE
         vb.vActionBar.setAddressBoxText(newTab.url)
-        vb.ibBack.isEnabled = newTab.webEngine.canGoBack() == true
-        vb.ibForward.isEnabled = newTab.webEngine.canGoForward() == true
+        updateBackForwardButtons(
+            canGoBack = newTab.webEngine.canGoBack() == true,
+            canGoForward = newTab.webEngine.canGoForward() == true
+        )
         hideMenuOverlay(false)
         newTab.webEngine.getView()?.requestFocus()
     }
@@ -250,17 +266,24 @@ internal fun MainActivity.onWebViewUpdated(tab: WebTabState) {
     if (tab != tabsModel.currentTab.value) return
     val isHome = tab.url == settingsModel.homePage || tab.url == Config.HOME_PAGE_URL || tab.url == Config.HOME_URL_ALIAS || tab.url.isEmpty() || tab.url == "about:blank"
     if (isHome) {
-        vb.ibBack.isEnabled = false
-        vb.ibForward.isEnabled = !tab.lastUrlBeforeHome.isNullOrEmpty()
+        updateBackForwardButtons(
+            canGoBack = false,
+            canGoForward = !tab.lastUrlBeforeHome.isNullOrEmpty()
+        )
         vb.vNativeHome.visibility = View.VISIBLE
         vb.vNativeHome.bringToFront()
         vb.rlActionBar.bringToFront()
         vb.vActionBar.setAddressBoxText("")
         showMenuOverlay()
-        vb.ibHome.post { vb.ibHome.requestFocus() }
+        val current = currentFocus
+        if (current == null || (!isToolbarView(current) && !vb.vNativeHome.hasFocus())) {
+            vb.ibHome.post { vb.ibHome.requestFocus() }
+        }
     } else {
-        vb.ibBack.isEnabled = tab.webEngine.canGoBack() == true
-        vb.ibForward.isEnabled = tab.webEngine.canGoForward() == true
+        updateBackForwardButtons(
+            canGoBack = tab.webEngine.canGoBack() == true,
+            canGoForward = tab.webEngine.canGoForward() == true
+        )
         vb.vNativeHome.visibility = View.GONE
         vb.flWebViewContainer.visibility = View.VISIBLE
         hideMenuOverlay(false)

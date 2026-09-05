@@ -17,6 +17,75 @@ import java.util.Locale
 
 object FileManagerOperations {
 
+    enum class ClipMode { COPY, CUT }
+
+    data class ClipboardData(
+        val files: List<File>,
+        val mode: ClipMode
+    )
+
+    var clipboard: ClipboardData? = null
+
+    fun copyFiles(files: List<File>) {
+        clipboard = ClipboardData(files, ClipMode.COPY)
+    }
+
+    fun cutFiles(files: List<File>) {
+        clipboard = ClipboardData(files, ClipMode.CUT)
+    }
+
+    fun clearClipboard() {
+        clipboard = null
+    }
+
+    fun hasClipboard(): Boolean = clipboard?.files?.isNotEmpty() == true
+
+    fun pasteTo(targetDir: File): Pair<Int, String> {
+        val clip = clipboard ?: return Pair(0, "Clipboard is empty")
+        if (!targetDir.exists() || !targetDir.isDirectory || !targetDir.canWrite()) {
+            return Pair(0, "Cannot write to target directory")
+        }
+
+        var successCount = 0
+        for (src in clip.files) {
+            if (!src.exists()) continue
+            val dest = File(targetDir, src.name)
+            try {
+                if (clip.mode == ClipMode.CUT) {
+                    if (src.renameTo(dest)) {
+                        successCount++
+                    } else {
+                        // Fallback across partitions
+                        if (src.copyRecursively(dest, overwrite = true)) {
+                            src.deleteRecursively()
+                            successCount++
+                        }
+                    }
+                } else {
+                    if (src.copyRecursively(dest, overwrite = true)) {
+                        successCount++
+                    }
+                }
+            } catch (_: Exception) {}
+        }
+
+        if (clip.mode == ClipMode.CUT) {
+            clipboard = null
+        }
+
+        return Pair(successCount, "Pasted $successCount items")
+    }
+
+    fun deleteBatch(files: List<File>): Int {
+        var count = 0
+        for (f in files) {
+            if (deleteRecursive(f)) {
+                count++
+            }
+        }
+        return count
+    }
+
     fun getMimeType(file: File): String {
         val ext = file.extension.lowercase(Locale.ROOT)
         if (ext == "apk") return "application/vnd.android.package-archive"
@@ -137,6 +206,14 @@ object FileManagerOperations {
             options.add("Open with External App")
         }
 
+        options.add("Copy")
+        options.add("Cut")
+        if (hasClipboard()) {
+            val clipCount = clipboard?.files?.size ?: 0
+            val targetDir = if (item.isDirectory) item.file else (item.file.parentFile ?: item.file)
+            options.add("Paste Here ($clipCount items)")
+        }
+
         options.add("Rename")
         options.add("Delete")
         options.add("Details")
@@ -145,7 +222,7 @@ object FileManagerOperations {
         AlertDialog.Builder(context)
             .setTitle(item.name)
             .setItems(options.toTypedArray()) { _, which ->
-                when (options[which]) {
+                when (val selected = options[which]) {
                     "Open Folder", "View PDF", "Open in Browser / Viewer" -> onOpen(item)
                     "Install APK" -> openFileExternal(context, item.file)
                     "Explore APK Contents", "Explore Archive" -> {
@@ -159,10 +236,26 @@ object FileManagerOperations {
                         }
                     }
                     "Open with External App" -> openFileExternal(context, item.file)
+                    "Copy" -> {
+                        copyFiles(listOf(item.file))
+                        Toast.makeText(context, "Copied to clipboard. Navigate to target folder and choose Paste.", Toast.LENGTH_SHORT).show()
+                    }
+                    "Cut" -> {
+                        cutFiles(listOf(item.file))
+                        Toast.makeText(context, "Cut to clipboard. Navigate to target folder and choose Paste.", Toast.LENGTH_SHORT).show()
+                    }
                     "Rename" -> showRenameDialog(context, item, onRefresh)
                     "Delete" -> showDeleteDialog(context, item, onRefresh)
                     "Details" -> showDetailsDialog(context, item)
                     "Share" -> shareFile(context, item.file)
+                    else -> {
+                        if (selected.startsWith("Paste Here")) {
+                            val targetDir = if (item.isDirectory) item.file else (item.file.parentFile ?: item.file)
+                            val (count, msg) = pasteTo(targetDir)
+                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                            onRefresh()
+                        }
+                    }
                 }
             }
             .setNegativeButton("Cancel", null)

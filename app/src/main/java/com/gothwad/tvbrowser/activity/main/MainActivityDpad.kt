@@ -35,7 +35,7 @@ fun MainActivity.getHeaderFocusableViews(): List<View> {
         vb.ibSettings
     )
     for (v in candidateViews) {
-        if (v.isShown && v.visibility == View.VISIBLE && v.isEnabled) {
+        if (v.isShown && v.visibility == View.VISIBLE) {
             list.add(v)
         }
     }
@@ -45,7 +45,7 @@ fun MainActivity.getHeaderFocusableViews(): List<View> {
 fun MainActivity.focusHeaderViewNearX(cursorX: Float) {
     val headerViews = getHeaderFocusableViews()
     if (headerViews.isEmpty()) {
-        if (vb.ibHome.isShown && vb.ibHome.visibility == View.VISIBLE && vb.ibHome.isEnabled) {
+        if (vb.ibHome.isShown && vb.ibHome.visibility == View.VISIBLE) {
             vb.ibHome.requestFocus()
         } else {
             vb.ibMenu.requestFocus()
@@ -67,7 +67,7 @@ fun MainActivity.focusHeaderViewNearX(cursorX: Float) {
     var minDiff = Float.MAX_VALUE
 
     for (v in headerViews) {
-        if (!v.isShown || v.visibility != View.VISIBLE || !v.isEnabled) continue
+        if (!v.isShown || v.visibility != View.VISIBLE) continue
         v.getLocationInWindow(loc)
         val centerX = loc[0] + v.width / 2.0f
         val diff = Math.abs(centerX - windowCursorX)
@@ -78,9 +78,7 @@ fun MainActivity.focusHeaderViewNearX(cursorX: Float) {
     }
 
     vb.flWebViewContainer.cursorDrawerDelegate.hideCursor()
-    closestView.post {
-        closestView.requestFocus()
-    }
+    closestView.requestFocus()
 }
 
 fun MainActivity.isTopTabBarView(view: View): Boolean {
@@ -161,6 +159,17 @@ fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
                     focus.performClick()
                     return true
                 }
+            }
+        } else if (event.action == KeyEvent.ACTION_UP) {
+            when (keyCode) {
+                KeyEvent.KEYCODE_DPAD_DOWN,
+                KeyEvent.KEYCODE_DPAD_UP,
+                KeyEvent.KEYCODE_DPAD_RIGHT,
+                KeyEvent.KEYCODE_DPAD_LEFT,
+                KeyEvent.KEYCODE_DPAD_CENTER,
+                KeyEvent.KEYCODE_ENTER,
+                KeyEvent.KEYCODE_NUMPAD_ENTER,
+                KeyEvent.KEYCODE_BUTTON_A -> return true
             }
         }
         return false
@@ -246,6 +255,17 @@ fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
                     return true
                 }
             }
+        } else if (event.action == KeyEvent.ACTION_UP) {
+            when (keyCode) {
+                KeyEvent.KEYCODE_DPAD_LEFT,
+                KeyEvent.KEYCODE_DPAD_RIGHT,
+                KeyEvent.KEYCODE_DPAD_UP,
+                KeyEvent.KEYCODE_DPAD_DOWN,
+                KeyEvent.KEYCODE_DPAD_CENTER,
+                KeyEvent.KEYCODE_ENTER,
+                KeyEvent.KEYCODE_NUMPAD_ENTER,
+                KeyEvent.KEYCODE_BUTTON_A -> return true
+            }
         }
         return false
     }
@@ -298,6 +318,17 @@ fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
                     return true
                 }
             }
+        } else if (event.action == KeyEvent.ACTION_UP) {
+            when (keyCode) {
+                KeyEvent.KEYCODE_DPAD_UP,
+                KeyEvent.KEYCODE_DPAD_DOWN,
+                KeyEvent.KEYCODE_DPAD_LEFT,
+                KeyEvent.KEYCODE_DPAD_RIGHT,
+                KeyEvent.KEYCODE_DPAD_CENTER,
+                KeyEvent.KEYCODE_ENTER,
+                KeyEvent.KEYCODE_NUMPAD_ENTER,
+                KeyEvent.KEYCODE_BUTTON_A -> return true
+            }
         }
         return false
     } else {
@@ -321,6 +352,7 @@ fun MainActivity.handleDpadEvent(event: KeyEvent): Boolean {
 }
 
 fun MainActivity.isToolbarView(view: View): Boolean {
+    if (isTopTabBarView(view)) return false
     var p: Any? = view
     while (p is View) {
         if (p.id == R.id.rlActionBar || p.id == R.id.llBottomPanel) {

@@ -3,20 +3,26 @@ package com.gothwad.tvbrowser.filemanager
 import android.Manifest
 import android.content.ClipData
 import android.content.ClipDescription
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import com.gothwad.tvbrowser.utils.setupAsSidebar
 import android.os.Environment
 import android.os.StatFs
 import android.provider.Settings
+import android.text.Editable
+import android.text.TextWatcher
 import android.text.format.Formatter
 import android.view.DragEvent
+import android.view.Gravity
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
+import android.widget.HorizontalScrollView
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -27,11 +33,16 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.gothwad.tvbrowser.BuildConfig
 import com.gothwad.tvbrowser.R
+import com.gothwad.tvbrowser.utils.setupAsSidebar
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -44,29 +55,72 @@ class FileManagerActivity : AppCompatActivity() {
         STORAGE, SYSTEM_ROOT, RECENTS, DOWNLOADS, APKS, VIDEOS, AUDIO, IMAGES, DOCS
     }
 
+    enum class SortMode(val title: String) {
+        NAME_ASC("Name (A to Z)"),
+        NAME_DESC("Name (Z to A)"),
+        DATE_DESC("Date (Newest first)"),
+        DATE_ASC("Date (Oldest first)"),
+        SIZE_DESC("Size (Largest first)"),
+        SIZE_ASC("Size (Smallest first)"),
+        TYPE_ASC("Type / Extension")
+    }
+
     private var currentCategory = Category.STORAGE
     private var currentDirectory: File = Environment.getExternalStorageDirectory()
 
-    // MT Manager style History Stacks for forward and backward navigation
+    // History Stacks for forward and backward navigation
     private val backHistoryStack = Stack<File>()
     private val forwardHistoryStack = Stack<File>()
 
+    private var allLoadedFiles: List<FileItem> = emptyList()
+    private var currentFilterText: String = ""
+    private var sortMode: SortMode = SortMode.NAME_ASC
+    private var isGridMode: Boolean = false
+    private var isMultiSelectMode: Boolean = false
+
+    private lateinit var prefs: SharedPreferences
+
+    // Views
     private lateinit var rvFiles: RecyclerView
     private lateinit var adapter: FileManagerAdapter
+    private lateinit var hsvBreadcrumbs: HorizontalScrollView
+    private lateinit var llBreadcrumbs: LinearLayout
     private lateinit var tvCurrentPath: TextView
     private lateinit var tvItemCountBadge: TextView
     private lateinit var ivPathTypeIcon: ImageView
-    private lateinit var llEmptyView: LinearLayout
-    private lateinit var llPermissionPrompt: LinearLayout
-    private lateinit var btnGrantPermission: Button
-    private lateinit var pbLoading: ProgressBar
+    private lateinit var llPathContainer: LinearLayout
 
-    private val STORAGE_PERMISSION_REQUEST_CODE = 1001
+    // Search Views
+    private lateinit var llSearchBar: LinearLayout
+    private lateinit var etSearchQuery: EditText
+    private lateinit var ibClearSearch: ImageButton
+    private lateinit var ibSearch: ImageButton
 
+    // Header Action Buttons
+    private lateinit var ibSort: ImageButton
+    private lateinit var ibViewMode: ImageButton
+    private lateinit var ibSelectMode: ImageButton
+    private lateinit var ibPaste: ImageButton
+    private lateinit var ibRefresh: ImageButton
+    private lateinit var ibNewFile: ImageButton
+    private lateinit var ibNewFolder: ImageButton
     private lateinit var ibNavHistoryBack: ImageButton
     private lateinit var ibNavHistoryForward: ImageButton
 
-    // Left Sidebar category layouts
+    // USB / OTG Partitions Container
+    private lateinit var llUsbPartitions: LinearLayout
+
+    // Multi-Select Bottom Bar
+    private lateinit var llMultiSelectBar: LinearLayout
+    private lateinit var tvSelectedCount: TextView
+    private lateinit var btnSelectAll: Button
+    private lateinit var btnBatchCopy: Button
+    private lateinit var btnBatchCut: Button
+    private lateinit var btnBatchDelete: Button
+    private lateinit var btnBatchShare: Button
+    private lateinit var btnCancelSelect: Button
+
+    // Sidebar Category Layouts
     private lateinit var btnCatStorage: LinearLayout
     private lateinit var btnCatSystemRoot: LinearLayout
     private lateinit var btnCatRecents: LinearLayout
@@ -82,30 +136,68 @@ class FileManagerActivity : AppCompatActivity() {
     private lateinit var pbSidebarStorage: ProgressBar
     private lateinit var tvSidebarStorageStats: TextView
 
+    // Status Views
+    private lateinit var llEmptyView: LinearLayout
+    private lateinit var llPermissionPrompt: LinearLayout
+    private lateinit var btnGrantPermission: Button
+    private lateinit var pbLoading: ProgressBar
+
+    private var searchJob: Job? = null
+    private val STORAGE_PERMISSION_REQUEST_CODE = 1001
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setupAsSidebar(true)
         setContentView(R.layout.activity_file_manager)
 
+        prefs = getSharedPreferences("file_manager_prefs", Context.MODE_PRIVATE)
+        isGridMode = prefs.getBoolean("pref_grid_mode", false)
+        val savedSortOrdinal = prefs.getInt("pref_sort_mode", SortMode.NAME_ASC.ordinal)
+        sortMode = SortMode.values().getOrElse(savedSortOrdinal) { SortMode.NAME_ASC }
+
         initViews()
         setupListeners()
         setupDragAndDropSupport()
         loadSidebarStorageStats()
+        loadUsbPartitions()
+        updatePasteButton()
         checkPermissionsAndLoad()
     }
 
     private fun initViews() {
         rvFiles = findViewById(R.id.rvFiles)
+        llPathContainer = findViewById(R.id.llPathContainer)
+        hsvBreadcrumbs = findViewById(R.id.hsvBreadcrumbs)
+        llBreadcrumbs = findViewById(R.id.llBreadcrumbs)
         tvCurrentPath = findViewById(R.id.tvCurrentPath)
         tvItemCountBadge = findViewById(R.id.tvItemCountBadge)
         ivPathTypeIcon = findViewById(R.id.ivPathTypeIcon)
-        llEmptyView = findViewById(R.id.llEmptyView)
-        llPermissionPrompt = findViewById(R.id.llPermissionPrompt)
-        btnGrantPermission = findViewById(R.id.btnGrantPermission)
-        pbLoading = findViewById(R.id.pbLoading)
 
+        llSearchBar = findViewById(R.id.llSearchBar)
+        etSearchQuery = findViewById(R.id.etSearchQuery)
+        ibClearSearch = findViewById(R.id.ibClearSearch)
+        ibSearch = findViewById(R.id.ibSearch)
+
+        ibSort = findViewById(R.id.ibSort)
+        ibViewMode = findViewById(R.id.ibViewMode)
+        ibSelectMode = findViewById(R.id.ibSelectMode)
+        ibPaste = findViewById(R.id.ibPaste)
+        ibRefresh = findViewById(R.id.ibRefresh)
+        ibNewFile = findViewById(R.id.ibNewFile)
+        ibNewFolder = findViewById(R.id.ibNewFolder)
         ibNavHistoryBack = findViewById(R.id.ibNavHistoryBack)
         ibNavHistoryForward = findViewById(R.id.ibNavHistoryForward)
+
+        llUsbPartitions = findViewById(R.id.llUsbPartitions)
+
+        llMultiSelectBar = findViewById(R.id.llMultiSelectBar)
+        tvSelectedCount = findViewById(R.id.tvSelectedCount)
+        btnSelectAll = findViewById(R.id.btnSelectAll)
+        btnBatchCopy = findViewById(R.id.btnBatchCopy)
+        btnBatchCut = findViewById(R.id.btnBatchCut)
+        btnBatchDelete = findViewById(R.id.btnBatchDelete)
+        btnBatchShare = findViewById(R.id.btnBatchShare)
+        btnCancelSelect = findViewById(R.id.btnCancelSelect)
 
         btnCatStorage = findViewById(R.id.btnCatStorage)
         btnCatSystemRoot = findViewById(R.id.btnCatSystemRoot)
@@ -121,8 +213,13 @@ class FileManagerActivity : AppCompatActivity() {
         pbSidebarStorage = findViewById(R.id.pbSidebarStorage)
         tvSidebarStorageStats = findViewById(R.id.tvSidebarStorageStats)
 
-        // Compact list with crisp divider & padding
-        rvFiles.layoutManager = LinearLayoutManager(this)
+        llEmptyView = findViewById(R.id.llEmptyView)
+        llPermissionPrompt = findViewById(R.id.llPermissionPrompt)
+        btnGrantPermission = findViewById(R.id.btnGrantPermission)
+        pbLoading = findViewById(R.id.pbLoading)
+
+        setupRecyclerViewLayout()
+
         adapter = FileManagerAdapter(
             items = emptyList(),
             onItemClick = { fileItem -> onFileClicked(fileItem) },
@@ -131,7 +228,10 @@ class FileManagerActivity : AppCompatActivity() {
                     context = this,
                     item = fileItem,
                     onOpen = { onFileClicked(it) },
-                    onRefresh = { loadCurrentCategory() }
+                    onRefresh = {
+                        updatePasteButton()
+                        loadCurrentCategory()
+                    }
                 )
                 true
             },
@@ -140,25 +240,45 @@ class FileManagerActivity : AppCompatActivity() {
                     context = this,
                     item = fileItem,
                     onOpen = { onFileClicked(it) },
-                    onRefresh = { loadCurrentCategory() }
+                    onRefresh = {
+                        updatePasteButton()
+                        loadCurrentCategory()
+                    }
                 )
+            },
+            onSelectionChanged = { count ->
+                tvSelectedCount.text = "$count selected"
             }
         )
+        adapter.isGridMode = isGridMode
         rvFiles.adapter = adapter
     }
 
+    private fun setupRecyclerViewLayout() {
+        if (isGridMode) {
+            val spanCount = if (resources.configuration.smallestScreenWidthDp >= 600) 4 else 3
+            rvFiles.layoutManager = GridLayoutManager(this, spanCount)
+            ibViewMode.setImageResource(R.drawable.ic_view_list)
+            ibViewMode.contentDescription = "Switch to List View"
+        } else {
+            rvFiles.layoutManager = LinearLayoutManager(this)
+            ibViewMode.setImageResource(R.drawable.ic_view_grid)
+            ibViewMode.contentDescription = "Switch to Grid View"
+        }
+    }
+
     private fun setupListeners() {
-        // 1. Exit to browser
+        // Exit to browser
         findViewById<ImageButton>(R.id.ibBack).setOnClickListener {
             finish()
         }
 
-        // 2. Home / Internal Storage Root Shortcut
+        // Home / Internal Storage Root Shortcut
         findViewById<ImageButton>(R.id.ibHomeRoot).setOnClickListener {
             navigateToDirectory(Environment.getExternalStorageDirectory(), Category.STORAGE)
         }
 
-        // 3. History Back (<) Navigation
+        // History Back (<)
         ibNavHistoryBack.setOnClickListener {
             if (backHistoryStack.isNotEmpty()) {
                 forwardHistoryStack.push(currentDirectory)
@@ -170,7 +290,7 @@ class FileManagerActivity : AppCompatActivity() {
             }
         }
 
-        // 4. History Forward (>) Navigation
+        // History Forward (>)
         ibNavHistoryForward.setOnClickListener {
             if (forwardHistoryStack.isNotEmpty()) {
                 backHistoryStack.push(currentDirectory)
@@ -180,19 +300,72 @@ class FileManagerActivity : AppCompatActivity() {
             }
         }
 
-        // 5. Clickable Path container for Breadcrumbs / Direct path jump
-        findViewById<LinearLayout>(R.id.llPathContainer).setOnClickListener {
-            showPathJumpDialog()
+        // Search Toggle Button
+        ibSearch.setOnClickListener {
+            toggleSearchBar()
         }
 
-        // 6. Refresh / Reload
-        findViewById<ImageButton>(R.id.ibRefresh).setOnClickListener {
+        // Search Input TextWatcher for Instant In-Folder Filter
+        etSearchQuery.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                currentFilterText = s?.toString()?.trim() ?: ""
+                applyFilterAndSort()
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        // Search Action (Enter key on keyboard / remote) -> Recursive Deep Search
+        etSearchQuery.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
+                performRecursiveSearch(etSearchQuery.text.toString().trim())
+                true
+            } else {
+                false
+            }
+        }
+
+        ibClearSearch.setOnClickListener {
+            if (etSearchQuery.text.isNotEmpty()) {
+                etSearchQuery.setText("")
+            } else {
+                toggleSearchBar(false)
+            }
+        }
+
+        // Sort Options Dialog
+        ibSort.setOnClickListener {
+            showSortDialog()
+        }
+
+        // Grid / List Switcher Button
+        ibViewMode.setOnClickListener {
+            isGridMode = !isGridMode
+            prefs.edit().putBoolean("pref_grid_mode", isGridMode).apply()
+            setupRecyclerViewLayout()
+            adapter.isGridMode = isGridMode
+        }
+
+        // Multi-Selection Toggle Button
+        ibSelectMode.setOnClickListener {
+            toggleMultiSelectMode()
+        }
+
+        // Paste Button
+        ibPaste.setOnClickListener {
+            executePasteAction()
+        }
+
+        // Refresh / Reload
+        ibRefresh.setOnClickListener {
             loadCurrentCategory()
             loadSidebarStorageStats()
+            loadUsbPartitions()
+            updatePasteButton()
         }
 
-        // 7. Create New File
-        findViewById<ImageButton>(R.id.ibNewFile).setOnClickListener {
+        // Create New File
+        ibNewFile.setOnClickListener {
             if (currentCategory == Category.SYSTEM_ROOT && !currentDirectory.canWrite()) {
                 Toast.makeText(this, "Root directory is read-only without root access", Toast.LENGTH_SHORT).show()
             } else {
@@ -202,8 +375,8 @@ class FileManagerActivity : AppCompatActivity() {
             }
         }
 
-        // 8. Create New Folder
-        findViewById<ImageButton>(R.id.ibNewFolder).setOnClickListener {
+        // Create New Folder
+        ibNewFolder.setOnClickListener {
             if (currentCategory == Category.SYSTEM_ROOT && !currentDirectory.canWrite()) {
                 Toast.makeText(this, "Root directory is read-only without root access", Toast.LENGTH_SHORT).show()
             } else {
@@ -211,6 +384,65 @@ class FileManagerActivity : AppCompatActivity() {
                     loadCurrentCategory()
                 }
             }
+        }
+
+        // Multi-Select Bar Buttons
+        btnSelectAll.setOnClickListener {
+            adapter.selectAll()
+        }
+
+        btnBatchCopy.setOnClickListener {
+            val selected = adapter.getSelectedFiles()
+            if (selected.isNotEmpty()) {
+                FileManagerOperations.copyFiles(selected)
+                updatePasteButton()
+                toggleMultiSelectMode(false)
+                Toast.makeText(this, "Copied ${selected.size} items to clipboard. Navigate to target and click Paste.", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        btnBatchCut.setOnClickListener {
+            val selected = adapter.getSelectedFiles()
+            if (selected.isNotEmpty()) {
+                FileManagerOperations.cutFiles(selected)
+                updatePasteButton()
+                toggleMultiSelectMode(false)
+                Toast.makeText(this, "Cut ${selected.size} items to clipboard. Navigate to target and click Paste.", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        btnBatchDelete.setOnClickListener {
+            val selected = adapter.getSelectedFiles()
+            if (selected.isEmpty()) return@setOnClickListener
+
+            AlertDialog.Builder(this)
+                .setTitle("Delete Files")
+                .setMessage("Are you sure you want to permanently delete ${selected.size} items?")
+                .setPositiveButton("Delete") { _, _ ->
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        val deletedCount = FileManagerOperations.deleteBatch(selected)
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@FileManagerActivity, "Deleted $deletedCount items", Toast.LENGTH_SHORT).show()
+                            toggleMultiSelectMode(false)
+                            loadCurrentCategory()
+                        }
+                    }
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+
+        btnBatchShare.setOnClickListener {
+            val selected = adapter.getSelectedFiles().filter { !it.isDirectory }
+            if (selected.isEmpty()) {
+                Toast.makeText(this, "Folders cannot be shared directly", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            shareBatchFiles(selected)
+        }
+
+        btnCancelSelect.setOnClickListener {
+            toggleMultiSelectMode(false)
         }
 
         // Sidebar Storage Manager Click
@@ -232,33 +464,151 @@ class FileManagerActivity : AppCompatActivity() {
             navigateToDirectory(downloadsDir, Category.DOWNLOADS)
         }
 
-        btnCatRecents.setOnClickListener {
-            switchCategoryView(Category.RECENTS)
-        }
-
-        btnCatApks.setOnClickListener {
-            switchCategoryView(Category.APKS)
-        }
-
-        btnCatVideos.setOnClickListener {
-            switchCategoryView(Category.VIDEOS)
-        }
-
-        btnCatAudio.setOnClickListener {
-            switchCategoryView(Category.AUDIO)
-        }
-
-        btnCatImages.setOnClickListener {
-            switchCategoryView(Category.IMAGES)
-        }
-
-        btnCatDocs.setOnClickListener {
-            switchCategoryView(Category.DOCS)
-        }
+        btnCatRecents.setOnClickListener { switchCategoryView(Category.RECENTS) }
+        btnCatApks.setOnClickListener { switchCategoryView(Category.APKS) }
+        btnCatVideos.setOnClickListener { switchCategoryView(Category.VIDEOS) }
+        btnCatAudio.setOnClickListener { switchCategoryView(Category.AUDIO) }
+        btnCatImages.setOnClickListener { switchCategoryView(Category.IMAGES) }
+        btnCatDocs.setOnClickListener { switchCategoryView(Category.DOCS) }
 
         btnGrantPermission.setOnClickListener {
             requestStoragePermission()
         }
+    }
+
+    private fun toggleSearchBar(forceState: Boolean? = null) {
+        val show = forceState ?: (llSearchBar.visibility != View.VISIBLE)
+        if (show) {
+            llPathContainer.visibility = View.GONE
+            llSearchBar.visibility = View.VISIBLE
+            etSearchQuery.requestFocus()
+        } else {
+            etSearchQuery.setText("")
+            currentFilterText = ""
+            llSearchBar.visibility = View.GONE
+            llPathContainer.visibility = View.VISIBLE
+            applyFilterAndSort()
+        }
+    }
+
+    private fun toggleMultiSelectMode(forceState: Boolean? = null) {
+        isMultiSelectMode = forceState ?: !isMultiSelectMode
+        adapter.isMultiSelect = isMultiSelectMode
+        llMultiSelectBar.visibility = if (isMultiSelectMode) View.VISIBLE else View.GONE
+        tvSelectedCount.text = "${adapter.selectedPaths.size} selected"
+    }
+
+    private fun updatePasteButton() {
+        if (FileManagerOperations.hasClipboard()) {
+            val clip = FileManagerOperations.clipboard
+            val count = clip?.files?.size ?: 0
+            val mode = if (clip?.mode == FileManagerOperations.ClipMode.CUT) "Cut" else "Copy"
+            ibPaste.visibility = View.VISIBLE
+            ibPaste.contentDescription = "Paste ($mode $count items)"
+        } else {
+            ibPaste.visibility = View.GONE
+        }
+    }
+
+    private fun executePasteAction() {
+        val clip = FileManagerOperations.clipboard ?: return
+        if (!currentDirectory.canWrite()) {
+            Toast.makeText(this, "Current directory is read-only", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        pbLoading.visibility = View.VISIBLE
+        lifecycleScope.launch(Dispatchers.IO) {
+            val (count, msg) = FileManagerOperations.pasteTo(currentDirectory)
+            withContext(Dispatchers.Main) {
+                pbLoading.visibility = View.GONE
+                Toast.makeText(this@FileManagerActivity, msg, Toast.LENGTH_SHORT).show()
+                updatePasteButton()
+                loadCurrentCategory()
+            }
+        }
+    }
+
+    private fun showSortDialog() {
+        val modes = SortMode.values()
+        val titles = modes.map { it.title }.toTypedArray()
+        val checkedItem = modes.indexOf(sortMode).coerceAtLeast(0)
+
+        AlertDialog.Builder(this)
+            .setTitle("Sort Files By")
+            .setSingleChoiceItems(titles, checkedItem) { dialog, which ->
+                sortMode = modes[which]
+                prefs.edit().putInt("pref_sort_mode", sortMode.ordinal).apply()
+                applyFilterAndSort()
+                dialog.dismiss()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun loadUsbPartitions() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val partitions = StorageVolumeDetector.getStoragePartitions(this@FileManagerActivity)
+            withContext(Dispatchers.Main) {
+                llUsbPartitions.removeAllViews()
+                for (part in partitions) {
+                    addPartitionView(part)
+                }
+            }
+        }
+    }
+
+    private fun addPartitionView(part: StoragePartition) {
+        val row = LinearLayout(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                (34 * resources.displayMetrics.density).toInt()
+            ).apply {
+                bottomMargin = (2 * resources.displayMetrics.density).toInt()
+            }
+            setBackgroundResource(R.drawable.sidebar_nav_button_bg)
+            isClickable = true
+            isFocusable = true
+            gravity = Gravity.CENTER_VERTICAL
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(
+                (8 * resources.displayMetrics.density).toInt(),
+                0,
+                (6 * resources.displayMetrics.density).toInt(),
+                0
+            )
+        }
+
+        val icon = ImageView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                (17 * resources.displayMetrics.density).toInt(),
+                (17 * resources.displayMetrics.density).toInt()
+            )
+            setImageResource(if (part.isUsb) R.drawable.ic_usb else R.drawable.ic_storage_internal)
+            setColorFilter(ContextCompat.getColor(this@FileManagerActivity, R.color.progressbar_tint))
+        }
+
+        val title = TextView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1.0f
+            ).apply {
+                marginStart = (8 * resources.displayMetrics.density).toInt()
+            }
+            isSingleLine = true
+            text = part.name
+            setTextColor(ContextCompat.getColor(this@FileManagerActivity, R.color.day_night_text_color_contrast))
+            textSize = 11.5f
+        }
+
+        row.addView(icon)
+        row.addView(title)
+        row.setOnClickListener {
+            navigateToDirectory(part.path, Category.STORAGE)
+        }
+
+        llUsbPartitions.addView(row)
     }
 
     private fun loadSidebarStorageStats() {
@@ -277,9 +627,7 @@ class FileManagerActivity : AppCompatActivity() {
                     pbSidebarStorage.progress = percentUsed
                     tvSidebarStorageStats.text = "$usedStr / $totalStr used ($percentUsed%)"
                 }
-            } catch (e: Exception) {
-                // Ignore storage calculation errors
-            }
+            } catch (_: Exception) {}
         }
     }
 
@@ -328,26 +676,70 @@ class FileManagerActivity : AppCompatActivity() {
         }
     }
 
-    private fun showPathJumpDialog() {
-        val etPath = EditText(this).apply {
-            setText(currentDirectory.absolutePath)
-            setSelection(text.length)
+    private fun updateBreadcrumbs(dir: File) {
+        val isFolderCategory = currentCategory == Category.STORAGE || currentCategory == Category.SYSTEM_ROOT || currentCategory == Category.DOWNLOADS
+
+        if (!isFolderCategory) {
+            hsvBreadcrumbs.visibility = View.GONE
+            tvCurrentPath.visibility = View.VISIBLE
+            tvCurrentPath.text = when (currentCategory) {
+                Category.RECENTS -> "Recent Files"
+                else -> "Category: ${currentCategory.name.lowercase().replaceFirstChar { it.uppercase() }}"
+            }
+            return
         }
 
-        AlertDialog.Builder(this)
-            .setTitle("Go to Path")
-            .setView(etPath)
-            .setPositiveButton("Go") { _, _ ->
-                val targetPath = etPath.text.toString().trim()
-                val targetDir = File(targetPath)
-                if (targetDir.exists() && targetDir.isDirectory) {
-                    navigateToDirectory(targetDir, Category.STORAGE)
-                } else {
-                    Toast.makeText(this, "Directory does not exist or inaccessible", Toast.LENGTH_SHORT).show()
+        hsvBreadcrumbs.visibility = View.VISIBLE
+        tvCurrentPath.visibility = View.GONE
+        llBreadcrumbs.removeAllViews()
+
+        val chain = mutableListOf<File>()
+        var curr: File? = dir
+        while (curr != null) {
+            chain.add(0, curr)
+            curr = curr.parentFile
+        }
+
+        val primaryStorage = Environment.getExternalStorageDirectory().absolutePath
+
+        for ((index, folder) in chain.withIndex()) {
+            val displayName = when {
+                folder.absolutePath == "/" -> "Root (/)"
+                folder.absolutePath == primaryStorage -> "Internal (ROM)"
+                else -> folder.name
+            }
+
+            val chip = TextView(this).apply {
+                text = displayName
+                textSize = 11.5f
+                setTextColor(ContextCompat.getColor(this@FileManagerActivity, if (index == chain.size - 1) android.R.color.white else R.color.day_night_text_color_contrast))
+                setBackgroundResource(R.drawable.button_bg_selector)
+                isClickable = true
+                isFocusable = true
+                val padH = (6 * resources.displayMetrics.density).toInt()
+                val padV = (2 * resources.displayMetrics.density).toInt()
+                setPadding(padH, padV, padH, padV)
+                setOnClickListener {
+                    if (folder.absolutePath != currentDirectory.absolutePath) {
+                        navigateToDirectory(folder, if (folder.absolutePath == "/") Category.SYSTEM_ROOT else Category.STORAGE)
+                    }
                 }
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+            llBreadcrumbs.addView(chip)
+
+            if (index < chain.size - 1) {
+                val arrow = TextView(this).apply {
+                    text = " > "
+                    textSize = 11f
+                    setTextColor(ContextCompat.getColor(this@FileManagerActivity, R.color.day_night_disabled_icon_color))
+                }
+                llBreadcrumbs.addView(arrow)
+            }
+        }
+
+        hsvBreadcrumbs.post {
+            hsvBreadcrumbs.fullScroll(HorizontalScrollView.FOCUS_RIGHT)
+        }
     }
 
     private fun setupDragAndDropSupport() {
@@ -424,11 +816,13 @@ class FileManagerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        updatePasteButton()
         if (hasStoragePermission()) {
             if (llPermissionPrompt.visibility == View.VISIBLE) {
                 llPermissionPrompt.visibility = View.GONE
                 loadCurrentCategory()
                 loadSidebarStorageStats()
+                loadUsbPartitions()
             }
         }
     }
@@ -450,7 +844,7 @@ class FileManagerActivity : AppCompatActivity() {
                     data = Uri.parse("package:$packageName")
                 }
                 startActivity(intent)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 try {
                     val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
                     startActivity(intent)
@@ -475,6 +869,7 @@ class FileManagerActivity : AppCompatActivity() {
             llPermissionPrompt.visibility = View.GONE
             loadCurrentCategory()
             loadSidebarStorageStats()
+            loadUsbPartitions()
         } else {
             pbLoading.visibility = View.GONE
             llEmptyView.visibility = View.GONE
@@ -494,6 +889,7 @@ class FileManagerActivity : AppCompatActivity() {
                 llPermissionPrompt.visibility = View.GONE
                 loadCurrentCategory()
                 loadSidebarStorageStats()
+                loadUsbPartitions()
             } else {
                 llPermissionPrompt.visibility = View.VISIBLE
                 Toast.makeText(this, "Storage permission is required to browse files", Toast.LENGTH_SHORT).show()
@@ -507,33 +903,116 @@ class FileManagerActivity : AppCompatActivity() {
         updateNavButtonStates()
 
         lifecycleScope.launch(Dispatchers.IO) {
-            val filesList = when (currentCategory) {
+            val filesList: List<FileItem> = when (currentCategory) {
                 Category.STORAGE, Category.SYSTEM_ROOT, Category.DOWNLOADS -> loadDirectoryFiles(currentDirectory)
-                Category.RECENTS -> loadRecentFiles()
-                Category.APKS -> scanFilesByExtensions(setOf("apk"))
-                Category.VIDEOS -> scanFilesByExtensions(setOf("mp4", "mkv", "avi", "mov", "webm", "ts", "flv", "3gp", "m4v"))
-                Category.AUDIO -> scanFilesByExtensions(setOf("mp3", "m4a", "aac", "flac", "wav", "ogg", "wma", "opus"))
-                Category.IMAGES -> scanFilesByExtensions(setOf("png", "jpg", "jpeg", "webp", "gif", "bmp", "svg"))
-                Category.DOCS -> scanFilesByExtensions(setOf("pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "rtf", "csv", "json", "zip", "rar", "7z"))
+                Category.RECENTS -> {
+                    val ms = MediaStoreHelper.loadRecentFiles(this@FileManagerActivity)
+                    if (ms.isNotEmpty()) ms else loadRecentFiles()
+                }
+                Category.APKS -> {
+                    val ms = MediaStoreHelper.loadApks(this@FileManagerActivity)
+                    if (ms.isNotEmpty()) ms else scanFilesByExtensions(setOf("apk"))
+                }
+                Category.VIDEOS -> {
+                    val ms = MediaStoreHelper.loadVideos(this@FileManagerActivity)
+                    if (ms.isNotEmpty()) ms else scanFilesByExtensions(setOf("mp4", "mkv", "avi", "mov", "webm", "ts", "flv", "3gp", "m4v"))
+                }
+                Category.AUDIO -> {
+                    val ms = MediaStoreHelper.loadAudio(this@FileManagerActivity)
+                    if (ms.isNotEmpty()) ms else scanFilesByExtensions(setOf("mp3", "m4a", "aac", "flac", "wav", "ogg", "wma", "opus"))
+                }
+                Category.IMAGES -> {
+                    val ms = MediaStoreHelper.loadImages(this@FileManagerActivity)
+                    if (ms.isNotEmpty()) ms else scanFilesByExtensions(setOf("png", "jpg", "jpeg", "webp", "gif", "bmp", "svg"))
+                }
+                Category.DOCS -> {
+                    val ms = MediaStoreHelper.loadDocuments(this@FileManagerActivity)
+                    if (ms.isNotEmpty()) ms else scanFilesByExtensions(setOf("pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "rtf", "csv", "json", "zip", "rar", "7z"))
+                }
             }
 
             withContext(Dispatchers.Main) {
                 pbLoading.visibility = View.GONE
-                tvCurrentPath.text = when (currentCategory) {
-                    Category.STORAGE, Category.SYSTEM_ROOT, Category.DOWNLOADS -> currentDirectory.absolutePath
-                    Category.RECENTS -> "Recent Files (Chronological)"
-                    else -> "Category: ${currentCategory.name}"
-                }
-                tvItemCountBadge.text = "${filesList.size} items"
-
-                if (filesList.isEmpty()) {
-                    llEmptyView.visibility = View.VISIBLE
-                    adapter.updateItems(emptyList())
-                } else {
-                    llEmptyView.visibility = View.GONE
-                    adapter.updateItems(filesList)
-                }
+                allLoadedFiles = filesList
+                updateBreadcrumbs(currentDirectory)
+                applyFilterAndSort()
                 updateNavButtonStates()
+            }
+        }
+    }
+
+    private fun applyFilterAndSort() {
+        var list = allLoadedFiles
+
+        // 1. In-Folder / Category Filter
+        if (currentFilterText.isNotBlank()) {
+            list = list.filter { it.name.contains(currentFilterText, ignoreCase = true) }
+        }
+
+        // 2. Configurable Sorting
+        val isFolderMode = currentCategory == Category.STORAGE || currentCategory == Category.SYSTEM_ROOT || currentCategory == Category.DOWNLOADS
+
+        list = list.sortedWith { a, b ->
+            if (isFolderMode && a.isDirectory != b.isDirectory) {
+                if (a.isDirectory) -1 else 1
+            } else {
+                when (sortMode) {
+                    SortMode.NAME_ASC -> a.name.lowercase(Locale.ROOT).compareTo(b.name.lowercase(Locale.ROOT))
+                    SortMode.NAME_DESC -> b.name.lowercase(Locale.ROOT).compareTo(a.name.lowercase(Locale.ROOT))
+                    SortMode.DATE_DESC -> b.lastModified.compareTo(a.lastModified)
+                    SortMode.DATE_ASC -> a.lastModified.compareTo(b.lastModified)
+                    SortMode.SIZE_DESC -> b.size.compareTo(a.size)
+                    SortMode.SIZE_ASC -> a.size.compareTo(b.size)
+                    SortMode.TYPE_ASC -> a.extension.compareTo(b.extension)
+                }
+            }
+        }
+
+        tvItemCountBadge.text = "${list.size} items"
+        if (list.isEmpty()) {
+            llEmptyView.visibility = View.VISIBLE
+            adapter.updateItems(emptyList())
+        } else {
+            llEmptyView.visibility = View.GONE
+            adapter.updateItems(list)
+        }
+    }
+
+    private fun performRecursiveSearch(query: String) {
+        if (query.isBlank()) {
+            applyFilterAndSort()
+            return
+        }
+
+        searchJob?.cancel()
+        pbLoading.visibility = View.VISIBLE
+        searchJob = lifecycleScope.launch(Dispatchers.IO) {
+            val results = mutableListOf<FileItem>()
+            val baseDir = if (currentCategory == Category.SYSTEM_ROOT) File("/") else currentDirectory
+            searchRecursiveDir(baseDir, query.lowercase(Locale.ROOT), results, 0, 5)
+            withContext(Dispatchers.Main) {
+                pbLoading.visibility = View.GONE
+                allLoadedFiles = results
+                tvCurrentPath.visibility = View.VISIBLE
+                hsvBreadcrumbs.visibility = View.GONE
+                tvCurrentPath.text = "Search: \"$query\""
+                applyFilterAndSort()
+            }
+        }
+    }
+
+    private fun searchRecursiveDir(dir: File, queryLower: String, list: MutableList<FileItem>, depth: Int, maxDepth: Int) {
+        if (depth > maxDepth || !dir.exists() || !dir.canRead() || list.size > 300) return
+        val files = dir.listFiles() ?: return
+
+        for (f in files) {
+            if (f.name.startsWith(".")) continue
+            if (f.name.lowercase(Locale.ROOT).contains(queryLower)) {
+                val childCount = if (f.isDirectory) f.list()?.size ?: 0 else -1
+                list.add(FileItem(file = f, childCount = childCount))
+            }
+            if (f.isDirectory && !f.name.equals("Android", ignoreCase = true)) {
+                searchRecursiveDir(f, queryLower, list, depth + 1, maxDepth)
             }
         }
     }
@@ -557,7 +1036,7 @@ class FileManagerActivity : AppCompatActivity() {
                     scanRecentRecursive(f, list, currentDepth + 1, maxDepth)
                 }
             } else {
-                list.add(FileItem(file = f))
+                list.add(FileItem(file = f, childCount = -1))
             }
         }
     }
@@ -568,7 +1047,9 @@ class FileManagerActivity : AppCompatActivity() {
 
         val files = dir.listFiles() ?: return list
         for (f in files) {
-            list.add(FileItem(file = f))
+            // Count directory items here on Dispatchers.IO to prevent main-thread lag
+            val count = if (f.isDirectory) f.list()?.size ?: 0 else -1
+            list.add(FileItem(file = f, childCount = count))
         }
 
         // Directories first, then alphabetical
@@ -597,9 +1078,26 @@ class FileManagerActivity : AppCompatActivity() {
             } else {
                 val ext = f.extension.lowercase(Locale.ROOT)
                 if (extensions.contains(ext)) {
-                    list.add(FileItem(file = f))
+                    list.add(FileItem(file = f, childCount = -1))
                 }
             }
+        }
+    }
+
+    private fun shareBatchFiles(files: List<File>) {
+        try {
+            val uris = ArrayList<Uri>()
+            for (f in files) {
+                uris.add(FileProvider.getUriForFile(this, "${BuildConfig.APPLICATION_ID}.provider", f))
+            }
+            val intent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                type = "*/*"
+                putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(intent, "Share ${files.size} files via"))
+        } catch (e: Exception) {
+            Toast.makeText(this, "Cannot share files: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -617,6 +1115,14 @@ class FileManagerActivity : AppCompatActivity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
+        if (isMultiSelectMode) {
+            toggleMultiSelectMode(false)
+            return
+        }
+        if (llSearchBar.visibility == View.VISIBLE) {
+            toggleSearchBar(false)
+            return
+        }
         if (backHistoryStack.isNotEmpty()) {
             forwardHistoryStack.push(currentDirectory)
             currentDirectory = backHistoryStack.pop()

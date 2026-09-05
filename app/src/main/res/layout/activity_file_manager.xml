@@ -107,6 +107,25 @@
                     android:tint="@color/progressbar_tint"
                     android:contentDescription="@null" />
 
+                <!-- Clickable Breadcrumb Chips Container -->
+                <HorizontalScrollView
+                    android:id="@+id/hsvBreadcrumbs"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:scrollbars="none"
+                    android:fillViewport="true">
+
+                    <LinearLayout
+                        android:id="@+id/llBreadcrumbs"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal" />
+                </HorizontalScrollView>
+
+                <!-- Static Path text (used for non-folder categories) -->
                 <TextView
                     android:id="@+id/tvCurrentPath"
                     android:layout_width="0dp"
@@ -118,6 +137,7 @@
                     android:textColor="@color/day_night_text_color_contrast"
                     android:textSize="11.5sp"
                     android:textStyle="bold"
+                    android:visibility="gone"
                     tools:text="/storage/emulated/0/Download" />
 
                 <TextView
@@ -135,7 +155,125 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- 6. Refresh / Reload Icon (First on right side of search bar) -->
+            <!-- Expandable Search Bar Container -->
+            <LinearLayout
+                android:id="@+id/llSearchBar"
+                android:layout_width="0dp"
+                android:layout_height="34dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/chrome_omnibox_bg"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_search"
+                    android:tint="@color/progressbar_tint"
+                    android:contentDescription="Search" />
+
+                <EditText
+                    android:id="@+id/etSearchQuery"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:background="@null"
+                    android:hint="Search files..."
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:maxLines="1"
+                    android:textColor="@color/day_night_text_color_contrast"
+                    android:textColorHint="@color/day_night_disabled_icon_color"
+                    android:textSize="12sp" />
+
+                <ImageButton
+                    android:id="@+id/ibClearSearch"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:background="@drawable/button_bg_selector"
+                    android:src="@drawable/ic_close"
+                    android:tint="@color/day_night_disabled_icon_color"
+                    android:contentDescription="Clear Search"
+                    android:padding="4dp" />
+            </LinearLayout>
+
+            <!-- Search Toggle Button -->
+            <ImageButton
+                android:id="@+id/ibSearch"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_marginEnd="1dp"
+                android:background="@drawable/button_bg_selector"
+                android:contentDescription="Search"
+                android:focusable="true"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                android:tint="@color/day_night_icon_color"
+                android:src="@drawable/ic_search" />
+
+            <!-- Sort Options Button -->
+            <ImageButton
+                android:id="@+id/ibSort"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_marginEnd="1dp"
+                android:background="@drawable/button_bg_selector"
+                android:contentDescription="Sort by"
+                android:focusable="true"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                android:tint="@color/day_night_icon_color"
+                android:src="@drawable/ic_sort_white" />
+
+            <!-- Grid / List Switcher Button -->
+            <ImageButton
+                android:id="@+id/ibViewMode"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_marginEnd="1dp"
+                android:background="@drawable/button_bg_selector"
+                android:contentDescription="Toggle Grid / List View"
+                android:focusable="true"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                android:tint="@color/day_night_icon_color"
+                android:src="@drawable/ic_view_grid" />
+
+            <!-- Multi-Selection Toggle Button -->
+            <ImageButton
+                android:id="@+id/ibSelectMode"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_marginEnd="1dp"
+                android:background="@drawable/button_bg_selector"
+                android:contentDescription="Multi-Select"
+                android:focusable="true"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                android:tint="@color/day_night_icon_color"
+                android:src="@drawable/ic_select_all" />
+
+            <!-- Paste Button (Shown when clipboard has items) -->
+            <ImageButton
+                android:id="@+id/ibPaste"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:layout_marginEnd="1dp"
+                android:background="@drawable/button_bg_selector"
+                android:contentDescription="Paste"
+                android:focusable="true"
+                android:padding="6dp"
+                android:scaleType="fitCenter"
+                android:tint="@color/progressbar_tint"
+                android:visibility="gone"
+                android:src="@drawable/ic_content_paste" />
+
+            <!-- Refresh / Reload Icon -->
             <ImageButton
                 android:id="@+id/ibRefresh"
                 android:layout_width="34dp"
@@ -149,7 +287,7 @@
                 android:tint="@color/day_night_icon_color"
                 android:src="@drawable/ic_refresh_grey_900_24dp" />
 
-            <!-- 7. Create New File Icon -->
+            <!-- Create New File Icon -->
             <ImageButton
                 android:id="@+id/ibNewFile"
                 android:layout_width="34dp"
@@ -163,7 +301,7 @@
                 android:tint="@color/day_night_icon_color"
                 android:src="@drawable/ic_file_new" />
 
-            <!-- 8. Create New Folder Icon -->
+            <!-- Create New Folder Icon -->
             <ImageButton
                 android:id="@+id/ibNewFolder"
                 android:layout_width="34dp"
@@ -247,6 +385,13 @@
                         android:textSize="11.5sp"
                         android:textStyle="bold" />
                 </LinearLayout>
+
+                <!-- Dynamic USB / OTG Partitions Container -->
+                <LinearLayout
+                    android:id="@+id/llUsbPartitions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
 
                 <!-- 2. Root Directory ( / ) -->
                 <LinearLayout
@@ -717,6 +862,113 @@
                 android:indeterminateTint="@color/progressbar_tint"
                 android:visibility="gone" />
         </FrameLayout>
+    </LinearLayout>
+
+    <!-- Multi-Select Bottom Action Bar -->
+    <LinearLayout
+        android:id="@+id/llMultiSelectBar"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:background="@color/top_bar_background"
+        android:elevation="6dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/tvSelectedCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 selected"
+            android:textColor="@color/day_night_text_color_contrast"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/btnSelectAll"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/button_bg_selector"
+            android:text="Select All"
+            android:textColor="@color/day_night_text_color_contrast"
+            android:textSize="11sp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:focusable="true" />
+
+        <Button
+            android:id="@+id/btnBatchCopy"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/button_bg_selector"
+            android:text="Copy"
+            android:textColor="@color/day_night_text_color_contrast"
+            android:textSize="11sp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:focusable="true" />
+
+        <Button
+            android:id="@+id/btnBatchCut"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/button_bg_selector"
+            android:text="Cut"
+            android:textColor="@color/day_night_text_color_contrast"
+            android:textSize="11sp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:focusable="true" />
+
+        <Button
+            android:id="@+id/btnBatchDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/button_bg_selector"
+            android:text="Delete"
+            android:textColor="#FF5252"
+            android:textSize="11sp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:focusable="true" />
+
+        <Button
+            android:id="@+id/btnBatchShare"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/button_bg_selector"
+            android:text="Share"
+            android:textColor="@color/day_night_text_color_contrast"
+            android:textSize="11sp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:focusable="true" />
+
+        <Button
+            android:id="@+id/btnCancelSelect"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:background="@drawable/button_bg_selector"
+            android:text="Done"
+            android:textColor="@color/progressbar_tint"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:focusable="true" />
+
     </LinearLayout>
 
 </LinearLayout>

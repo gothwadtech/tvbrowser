@@ -21,6 +21,17 @@
     android:paddingTop="2dp"
     android:paddingBottom="2dp">
 
+    <!-- Multi-selection Checkbox -->
+    <ImageView
+        android:id="@+id/ivSelectCheck"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginEnd="8dp"
+        android:src="@drawable/ic_check_box_outline"
+        android:tint="@color/day_night_disabled_icon_color"
+        android:visibility="gone"
+        android:contentDescription="Select" />
+
     <!-- File/Folder Icon -->
     <FrameLayout
         android:id="@+id/flFileIconContainer"
